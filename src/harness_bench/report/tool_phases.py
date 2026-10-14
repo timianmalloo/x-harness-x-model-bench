@@ -60,15 +60,16 @@ TRACE_READERS = {"claude-code": claude_code, "codex": codex, "copilot": copilot,
 TRANSPORTS = ("acp", "native stream", "copilot -p (local adapter)")
 
 
-def transport(plan: dict, harness: str) -> str:
+def transport(plan: dict, harness: str, combo: str | None = None) -> str:
     """A combo's transport, a plan fact (ADR-0027 s0, Ruling 120): Copilot `-p` behind the local adapter when the
-    plan's build names `adapter_version` (`views._prompt_mode`, R-VALIDITY's detection); agy's native stream (its
-    profile's `transport`); else ACP. The one definition both report pages read (J2-FIX item 1).
+    plan's build names `adapter_version` and the combo names no transport (`views._prompt_mode`, R-VALIDITY's
+    detection; plan row A3: a Copilot `transport: acp` combo is ACP); agy's native stream (its profile's `transport`);
+    else ACP. The one definition both report pages read (J2-FIX item 1).
 
     assume: a profile record with no `transport` field is agy's `agy-stream` for agy and ACP for every other harness
     (`bench/profiles/agy.yaml:5`; a plan's profile record may not carry the field). Confirm: a `transport` field in
     every plan's profile record. Breaks if false: a row names the wrong transport; the fix is to require the field."""
-    if views._prompt_mode(plan, harness):
+    if views._prompt_mode(plan, harness, combo):
         return TRANSPORTS[2]
     recorded = ((plan.get("profiles") or {}).get(harness) or {}).get("transport")
     return TRANSPORTS[1] if recorded == "agy-stream" or (recorded is None and harness == "agy") else TRANSPORTS[0]

@@ -35,7 +35,9 @@ WORKSPACE_FROM_VALUES = ("workspace", "source")
 PACKS = ("on", "off")
 # ADR-0024 s1: /3 is /2 with effort and context on every combo; /1 and /2 files still load (their settings: "default").
 MATRIX_SCHEMAS = ("bench-matrix/1", "bench-matrix/2", "bench-matrix/3")
-MATRIX_V3_COMBO_KEYS = ("id", "harness", "model", "effort", "context")
+# Plan row A3: `transport` (optional) names a launch the profile declares under `transports` (Copilot `acp`, the
+# transport control); a combo without it runs the profile's own `command`.
+MATRIX_V3_COMBO_KEYS = ("id", "harness", "model", "effort", "context", "transport")
 ARM_OFF = "off"
 ARM_ID = re.compile(r"[a-z][a-z0-9-]{0,15}")
 PROPERTY_NAMES = ("security", "resilience", "rework", "no-guessing", "simplicity")
@@ -144,8 +146,8 @@ def validate_bom(bom: dict, p: Problems, where: str = "bench/bom.yaml") -> None:
 
 
 def _validate_combo_settings(c: dict, p: Problems, where: str) -> None:
-    """ADR-0024 s1: a bench-matrix/3 combo is exactly {id, harness, model, effort, context}. Whether the profile supports
-    the value is the plan's check (HB-PRE-010); here only the shape."""
+    """ADR-0024 s1: a bench-matrix/3 combo is exactly {id, harness, model, effort, context}, plus an optional transport
+    (plan row A3). Whether the profile supports the value is the plan's check (HB-PRE-010); here only the shape."""
     cid = c.get("id")
     for key in sorted(set(c) - set(MATRIX_V3_COMBO_KEYS)):
         p.add(where, f"{cid}: unknown combo key {key!r} (bench-matrix/3 combos have {', '.join(MATRIX_V3_COMBO_KEYS)})")
@@ -154,6 +156,8 @@ def _validate_combo_settings(c: dict, p: Problems, where: str) -> None:
         p.add(where, f"{cid}: effort is required: a nonempty string on the vendor's scale, or \"default\"")
     if context != "default" and (isinstance(context, bool) or not isinstance(context, int) or context < 1):
         p.add(where, f"{cid}: context is required: a positive integer token count, or \"default\"")
+    if "transport" in c and (not isinstance(c["transport"], str) or not c["transport"].strip()):
+        p.add(where, f"{cid}: transport must be a nonempty string naming one of the profile's transports")
 
 
 def validate_matrix(m: dict, bom: dict, p: Problems, where: str) -> None:

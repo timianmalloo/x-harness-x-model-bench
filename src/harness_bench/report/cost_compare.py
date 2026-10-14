@@ -282,7 +282,7 @@ def _cell(view: RunView, cell: CellView) -> _Cell:
 
 
 def _key(view: RunView, cell: CellView) -> SeriesKey:
-    return SeriesKey(cell.combo, cell.harness, cell.model, cell.arm, tool_phases.transport(view.plan, cell.harness))
+    return SeriesKey(cell.combo, cell.harness, cell.model, cell.arm, tool_phases.transport(view.plan, cell.harness, cell.combo))
 
 
 def _part(c: _Cell, part: str) -> Measure:

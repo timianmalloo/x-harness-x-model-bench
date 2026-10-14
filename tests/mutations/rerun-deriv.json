@@ -74,8 +74,8 @@
  {
   "name": "a Copilot -p combo reads ACP",
   "file": "src/harness_bench/report/tool_phases.py",
-  "find": "    if views._prompt_mode(plan, harness):\n        return TRANSPORTS[2]\n",
-  "replace": "    if views._prompt_mode(plan, harness):\n        return TRANSPORTS[0]\n",
+  "find": "    if views._prompt_mode(plan, harness, combo):\n        return TRANSPORTS[2]\n",
+  "replace": "    if views._prompt_mode(plan, harness, combo):\n        return TRANSPORTS[0]\n",
   "tests": [
    "tests/test_cost_compare_e2e.py::test_build_fills_each_combo_transport_from_the_plan"
   ]

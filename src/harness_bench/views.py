@@ -580,10 +580,20 @@ NO_ACP_USAGE = "the adapter reported no usage"
 NOT_RECORDED = "not recorded"  # a Finding level beside error and warning: the check had no input (ADR-0028 s4)
 
 
-def _prompt_mode(plan: dict, harness: str) -> bool:
+def combo_transport(plan: dict, combo: str | None) -> str | None:
+    """Plan row A3: the frozen combo's `transport` (a launch its profile declares, e.g. Copilot `acp`); None when the
+    combo names none, so its cells ran the profile's own `command`. The same value `plan.Cell.transport` froze."""
+    combos = as_dict(plan.get("matrix")).get("combos")
+    return next((c.get("transport") for c in combos if isinstance(c, dict) and c.get("id") == combo),
+                None) if isinstance(combos, list) else None
+
+
+def _prompt_mode(plan: dict, harness: str, combo: str | None = None) -> bool:
     """ADR-0028 s1-s2: a Copilot cell runs `copilot -p` behind the pinned local adapter, which the plan's build record
-    names (`adapter_version`); an ACP-era Copilot build has none (`tools.LAYOUT`: no adapter)."""
-    return harness == "copilot" and as_dict(as_dict(plan.get("builds")).get(harness)).get("adapter_version") is not None
+    names (`adapter_version`); an ACP-era Copilot build has none (`tools.LAYOUT`: no adapter). A combo that names a
+    transport (plan row A3: Copilot `acp`) launched without the adapter, so its cells are judged as ACP cells."""
+    return (harness == "copilot" and combo_transport(plan, combo) is None
+            and as_dict(as_dict(plan.get("builds")).get(harness)).get("adapter_version") is not None)
 
 # R-24, R-26 c5: the ACP turn total cross-checks Σ of the current extraction's model_calls buckets.
 # simplify: a harness list in code. Ceiling: harnesses whose adapter `usage` is the turn total over every model.
@@ -847,7 +857,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls,
                                           [e for e in facts["events"] if e.get("cell_id") == cid
-                                           and e["kind"] == "cell.turn_ended"], _prompt_mode(plan, cell["harness"])))
+                                           and e["kind"] == "cell.turn_ended"],
+                                          _prompt_mode(plan, cell["harness"], cell.get("combo"))))
     served_rows = [r for r in facts.get("served", ()) if r["cell_id"] == cid and r["extraction_id"] == extraction]
     setting, setting_unrecorded = _served_settings(cell, prof, served_rows) if extraction is not None else (None, [])
     warnings += setting_unrecorded

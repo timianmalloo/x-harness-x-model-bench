@@ -136,6 +136,10 @@ def test_build_fills_each_combo_transport_from_the_plan(fixture_runs):
     _, _, vs = fixture_runs
     cc = cost_compare.build(vs)
     assert [(r.series.transport, r.cells) for r in cc.combos] == [("copilot -p (local adapter)", 2), ("acp", 2)]
+    # plan row A3: the adapter run's combo frozen with `transport: acp` ran without the adapter, so it joins the ACP series
+    acp = dataclasses.replace(vs[0], plan={**vs[0].plan, "matrix": {"combos": [{"id": cc.combos[0].series.combo,
+                                                                                 "transport": "acp"}]}})
+    assert [(r.series.transport, r.cells) for r in cost_compare.build([acp, vs[1]]).combos] == [("acp", 4)]
 
 
 def _measures(obj):

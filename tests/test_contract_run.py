@@ -42,14 +42,16 @@ PROFILE_RECORD_HASHES = {
     # tools outside scenario 6), turns plugins and remote_plugin off, and declares no default context (was 5770184..fe56)
     # instr/w10, deliberate: codex.yaml adds host_skill_roots (the operator's ~/.agents/skills is disabled in every cell)
     "codex": "cd36213bee96812b357776ae560ed0709f6af39a6c7186f6cbbafac419a4e9c6",
-    "copilot": "62a87c27b83a9c9ec291139e6b8301ee1f2528b5631ade7bec19138a47766eac",
+    # instr/w12, deliberate: copilot.yaml declares `transports.acp` (plan row A3, the ACP transport control); was 62a87c2..eac
+    "copilot": "7b5b5b339c75c201abc855c3cbac5eb9de18fdc57ed55b58d52e8e2b5cb58d30",
 }
 # The new fields each existing profile now sets (R-SETTINGS: settings, Claude's session_meta; Ruling 120: copilot -p
 # cannot answer a scripted user); every other new field is still at its default.
 SET_BY_WAVE_1 = {"claude-code": {"settings", "session_meta", "model_aliases"}, "codex": {"settings", "host_skill_roots"},
-                 "copilot": {"settings", "scripted_user"}}
+                 "copilot": {"settings", "scripted_user", "transports"}}
 NEW_FIELDS = {"settings": {}, "transport": "acp", "session_meta": {}, "user_home_vars": (), "seed_files": {},
-              "credential_home_env": None, "model_aliases": {}, "scripted_user": "supported", "host_skill_roots": ()}
+              "credential_home_env": None, "model_aliases": {}, "scripted_user": "supported", "host_skill_roots": (),
+              "transports": {}}
 FIXTURE_PROFILE = """\
 harness: codex
 vendor: xai
