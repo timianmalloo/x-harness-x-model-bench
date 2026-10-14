@@ -22,9 +22,18 @@ sessions). The known confounds are removed or measured.
 the gate ring pass. The behaviour page, run on the existing six runs, shows the new columns, or "not recorded" with the
 reason where an old run cannot supply them.
 
-**Not in scope.** The re-run itself (you run it after this lands). The four decisions (B10 Copilot path checks, B12
-Codex personal skills, B15 the pack track in the ai-forward repo, B16 agy `schedule`). Pack changes in the ai-forward
-repo.
+**Not in scope.** The re-run itself (you run it after this lands). Grok: skipped in the re-run; a different Grok model
+later (so B14, Grok's effort, is moot).
+
+**Decisions (made 2026-10-14, now in scope):**
+
+| # | Decision | Track |
+|---|---|---|
+| B10 | Copilot path blocks: shorten cell paths (no repeated run id), and label what remains "harness path limit" with its own validity text, never a model fault | W9 |
+| B12 | Codex personal skills: isolate the Codex home per cell (spike first: login and the pinned model still work) | W10 |
+| B13/A2 | Context: pin both Codex and Copilot at the highest window both actually serve, measured from their own session records. Codex's catalog allows up to 872k (served 500k by default); Copilot served 922k; the model's own maximum is 1.05M (OpenAI docs as quoted by Codex; not verified here) | W6 |
+| B15 | Pack costs: fix in the ai-forward repo (one hook dispatcher per event, skip coordination hooks when coordination is off, logs outside the task folder), then update the pack here | W8 |
+| B16 | agy `schedule` counts as turn control (`meta`), like `wait`; amend the agy-meta ruling; regrade the agy run | W3 |
 
 **How it runs.** Seven tracks in parallel, each in its own worktree and branch, then one integration branch, the gates,
 and a merge to `main`.
@@ -62,11 +71,14 @@ already computes it and only the behaviour page lacks it.
 | W0 (me) | the shared contract | `telemetry/__init__.py` `ProcessTrace`: `assistant_chars`, `assistant_messages` (default None = not recorded) | - |
 | W1 | A8, B4, B5, B6, C1, C2, C6 | `tools/behaviour_measures.py`, its tests, Prompt 2's behaviour page | W0; reads W2-W4 output when merged |
 | W2 | B1 | `telemetry/codex.py` (shell classification), `grade/drift.py` (per-call read class) | - |
-| W3 | B2, and C3/C5 for agy and Grok | `telemetry/agy.py`, `telemetry/grok.py`, `report/tool_phases.py` `TRACE_READERS` | W0 |
+| W3 | B2, B16, and C3/C5 for agy and Grok | `telemetry/agy.py`, `telemetry/grok.py`, `report/tool_phases.py` `TRACE_READERS` | W0 |
 | W4 | C3, C5 for Claude, Codex, Copilot | `tool_inputs` in `telemetry/claude_code.py`, `codex.py`, `copilot.py` | W0 |
 | W5 | C4, A7 | hook-time and first-request facts (spike first) | - |
 | W6 | A2, A3, A4, A5 | Prompt 1, profiles/builds for a pinned context and an ACP Copilot control, a runbook | - |
 | W7 | A6 | a new task under the task catalog, by the add-a-task rules | - |
+| W8 | B15 (and B7) | the ai-forward repo's hooks; then the pack update in this repo | - |
+| W9 | B10 | the cell path layout; HB-VAL-004 path-limit labelling | - |
+| W10 | B12 | Codex cell home isolation (`profiles/codex.yaml`, seeding) | - |
 
 Rules for every track: red-first tests; run only the touched test files (the integration runs the full suite once);
 no gate or stamp renewal in a track; commit on the track's branch only; report what was measured, not inferred.
@@ -84,4 +96,5 @@ Updated by the session as tracks land.
 
 | Track | State |
 |---|---|
-| W0-W7 | starting |
+| W0 | done (`6bf316b2`) |
+| W1-W10 | starting |
