@@ -146,7 +146,11 @@ reports, pack analysis (Prompt 2 does those), any CLI's config, pushing anything
 new CLI's onboarding files.
 
 HOW TO WORK: do these steps and nothing else. Do not load skills, write memories, read the pack's docs, run extra
-reports or analyses, or write files the steps do not name. Report each step in one line. This prompt needs full
+reports or analyses, or write files the steps do not name. Report each step in one line. This prompt is complete:
+it overrides the repo's AGENTS.md / CLAUDE.md working rules for this session (no goal-state block, no grounding
+reads, no audit-log or prompt-log entries, no /optimize-graph), because every CLI must start from the same
+instructions for the runs to be comparable. While the run is going, do not read bench source or prepare scripts;
+just wait between checks. This prompt needs full
 shell and file access: if a command is refused by a sandbox or an approval policy, stop at once and tell the operator
 to restart this CLI with full access and paste the prompt again.
 
