@@ -179,3 +179,52 @@ review-suggested:
 - **Class all of `docs/audit` as machine-written.** Rejected at the gate (finding 12): it would hide agent-authored,
   pack-induced edits.
 - **Reasoning text in `docs/audit`.** Rejected by Ruling 117 item 3.
+
+## Amendment 1 (2026-10-14): catalog 0.9 grades the process metrics on every task
+
+- **Status.** Accepted 2026-10-14, owner decision: grade the process metrics (`tool_error_rate`, `stuck_loops` and
+  the other process-grader metrics) for every task, bump the catalog to 0.9, and include them in the composite.
+  Landed by the W15 track of `plan-benchmark-instrumentation-2026-10-14`.
+- **Gap it closes.** [Verified.] `GRADERS["process"]` is registered (`grade/runner.py`), but `runner.applicable`
+  gives a task a grader's metrics only when its `graders` list names the grader or the metric is `all_tasks: true`.
+  The ten lean tasks list `[correctness, property]`, so no lean cell had a process row. Only `SV1` names `process`.
+- **Mechanism: `all_tasks: true`, not the tasks' `graders`.** The six autonomy metrics (`grader: process`) carry
+  `all_tasks: true`. Section 5's rule applies: fix by catalog rule, not by task version. Adding `process` to each
+  task's `graders` would change every task's version hash, re-key the discrimination records, and leave the next
+  task to remember it. The rule covers every task with a `blast_radius`. The task contract requires one
+  (`tasks/README.md`: `task.yaml` always names its blast radius), and every task folder has one [Verified: 39 of 39 `task.yaml` files have a non-empty one,
+  `_template` included; `tests/test_grade_process.py` checks it through `runner.applicable`]. So "every task with a radius" is every task; `runner.applicable` is unchanged.
+- **All six, never a subset.** `process.grade_cell` returns all six keys. A key outside the applicable set fails the
+  pass (HB-GRD-004, `runner._check_complete`). So the six are flagged together.
+- **Weights: unchanged.** The catalog's rule: a `kind: score` metric with weight > 0 needs an R-79 anchor, and a
+  metric with no a-priori good direction is weight 0. The four outcome metrics and `time_to_first_green` keep
+  weight 1 with their anchors; `planning_ratio` stays 0 ("diagnostic; no a-priori good direction"). Nothing more
+  is needed to include them in the composite: `composites.area` averages the weight > 0 metrics that have a value,
+  and `composites.overall` averages the areas that have a value. Before 0.9 the autonomy area was NA on a lean cell
+  and left out; from 0.9 it counts wherever a value is recorded. `time_to_first_green` is still NA on every cell
+  (no command text), so it stays out of the mean.
+- **Anchors: unchanged.** The 2026-10-13 lean runs, re-read with the current readers, give `stuck_loops` 0..2 and
+  `tool_error_rate` 0..0.57. No cell saturates `stuck_loops`'s measured anchor `[4, 0]`, so the re-anchor rule does
+  not fire. `tool_error_rate`'s anchor is a convention (a ratio in [0, 1]).
+- **A run graded under 0.8 still reads as 0.8.** A pass records its `catalog_version` and `catalog_hash` in
+  `grading.started`. `views._current_pass` picks a pass by version, so a 0.8 pass stays a 0.8 pass. A comparison
+  across versions is refused with HB-STA-002 ("catalog version differs", `board.check_comparable`), and a score
+  normalised under another catalog is NA "graded under catalog 0.8 (...)" (`composites.normalise`). Re-grading a
+  0.8 run under 0.9 writes a new pass beside the old one. No code change was needed for this.
+- **Freeze.** The 0.8 procedure: `0.9.dev` while the change lands, then the release label, then
+  `tools/freeze_catalog.py` (the `bench/catalog-freeze.yaml` entry and the X1 views and board goldens, each graded
+  twice). `tests/goldens/report-nonlean-arms.html` prints the loaded catalog, so it is re-captured with the reason
+  "catalog version only".
+- **Measured on real data.** [Verified, read-only, `runner.read_record` + `process.grade_cell` over the archives.]
+  60 cells each, every cell has a value:
+
+  | run (2026-10-13 lean) | calls | failed | `tool_error_rate` mean (max) | cells with `stuck_loops` > 0 (max) |
+  | --- | --- | --- | --- | --- |
+  | Claude Code, Opus 5.5 | 1,284 | 98 | 0.08 (0.38) | 3 (1) |
+  | Copilot, GPT-6.1-sol | 2,391 | 27 | 0.01 (0.09) | 0 |
+  | Codex, GPT-6.1-sol | 1,059 | 222 | 0.21 (0.57) | 7 (1) |
+  | agy, Gemini 4 Argon | 1,947 | 237 | 0.12 (0.31) | 6 (2) |
+
+  Copilot's `ok` is being aligned on another track (W14: a non-zero exit is a failure), so its rates may move.
+- **Consequences.** A 0.9 composite and a 0.8 composite differ on every lean cell (the autonomy area joins), so the
+  two are never compared; the report and `compare` already say so.

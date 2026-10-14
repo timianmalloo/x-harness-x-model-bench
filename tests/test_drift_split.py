@@ -113,7 +113,8 @@ def test_the_machine_written_list_names_the_caches_and_the_exact_audit_files_nev
 # --- 2. a lean task (graders [correctness, property]) yields all four drift scores: the point of `all_tasks` ---------
 
 def test_the_four_drift_metrics_apply_to_every_task_with_a_radius_and_a_lean_task_yields_all_four(tmp_path):
-    flagged = {m["id"] for area in CATALOG["areas"].values() for m in area["metrics"] if m.get("all_tasks") is True}
+    flagged = {m["id"] for area in CATALOG["areas"].values() for m in area["metrics"]
+               if m.get("all_tasks") is True and m["grader"] == "drift"}  # 0.9 also flags the six process metrics
     assert flagged == set(SPLIT)
     lean = runner.applicable(CATALOG, ["correctness", "property"], "no-guessing", has_radius=True)
     assert set(lean["drift"]) == set(SPLIT)

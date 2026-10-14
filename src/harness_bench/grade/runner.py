@@ -197,7 +197,8 @@ def applicable(catalog: dict, graders: list[str], prop: str | None = None, *,
     (the task's `property.name`; None for a task with none, or one that changed, so only untagged metrics apply). The
     owner of a metric is the first of [grader, *also_graded_by] the task names; it is in that grader's set and no
     other's. A metric marked `all_tasks: true` also applies to a task the graders omit when the task has a
-    `blast_radius` (`has_radius`), owned by its own `grader`: catalog 0.8's drift metrics, with no task-version bump."""
+    `blast_radius` (`has_radius`), owned by its own `grader`: catalog 0.8's drift metrics and 0.9's process metrics,
+    with no task-version bump."""
     out: dict[str, dict[str, dict]] = {}
     for area in catalog["areas"].values():
         for m in area.get("metrics") or []:

@@ -11,7 +11,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from harness_bench import config
-from harness_bench.grade import CellInput, Score
+from harness_bench.grade import CellInput, Score, runner
 from harness_bench.grade.process import grade_cell
 
 FIXTURES = Path(__file__).parent / "fixtures" / "grade" / "process"
@@ -219,3 +219,16 @@ def test_the_process_ratios_have_a_catalog_scale_of_4():
     catalog = config.load_yaml(Path(__file__).resolve().parents[1] / "bench" / "metrics.yaml")
     scales = {m["id"]: m.get("scale") for a in catalog["areas"].values() for m in a.get("metrics") or []}
     assert [scales[m] for m in ("tool_error_rate", "recovery_rate", "planning_ratio")] == [4, 4, 4]
+
+
+def test_every_task_gets_every_process_metric_whatever_its_graders():
+    # Catalog 0.9 (owner decision 2026-10-14, ADR-0026 Amendment 1): `all_tasks: true` on all six, so a lean task
+    # (graders [correctness, property]) is graded for process. All six, never a subset: the grader returns all six
+    # keys, and a key outside the applicable set is HB-GRD-004 (runner._check_complete).
+    root = Path(__file__).resolve().parents[1]
+    catalog = config.load_yaml(root / "bench" / "metrics.yaml")
+    for task_yaml in sorted((root / "tasks").glob("*/task.yaml")):
+        task = config.load_yaml(task_yaml)
+        prop = (task.get("property") or {}).get("name")
+        got = runner.applicable(catalog, task.get("graders") or [], prop, has_radius=bool(task.get("blast_radius")))
+        assert set(got.get("process", {})) == set(PROCESS), task_yaml.parent.name
