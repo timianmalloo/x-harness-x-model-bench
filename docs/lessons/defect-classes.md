@@ -2294,7 +2294,10 @@ registers both.*
   and `profiles.Profile` gained `transports`; `tests/test_contract_run.py` (the profile record hashes and the field list)
   was not in the track's runs and failed at the join. Also W12 left five mutation-register `find` strings unmatched,
   found by the coordinator's register check.
-- **Control:** the integration step runs `tests/test_contract_run.py` and a check that every mutation-register `find`
-  occurs exactly once after each merge (the coordinator's script; candidate for `tools/`). Rung: procedure. Upgrade
-  trigger: a second instance; then add the find check as a test and name `test_contract_run.py` in the track brief.
+- **Second instance (same join):** W11 renamed a lean-ring test that `tests/mutations/lean_ring.json` names; caught by
+  `test_mutate_check.py::test_every_named_test_in_the_mutation_sets_exists` at the join, re-pointed, mutant killed.
+- **Control:** the checks already exist as tests: `tests/test_contract_run.py` (the pins) and
+  `tests/test_mutate_check.py` (every `find` once; every named test exists). The gap is that a track's test subset leaves
+  them out. The integration step runs both after every merge; the track brief now names both files as always-run.
+  Rung: procedure plus brief.
 - **Status:** `candidate`
