@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from dataclasses import dataclass, field, fields
 from datetime import datetime
 from decimal import Decimal
@@ -282,7 +283,10 @@ def _ts(value) -> datetime | None:
 NO_MODEL_START = "the native record gives no model-call start time"
 
 
-def busy_ms(calls: list[dict], *, positive: bool = False, missing: str = "an interval has no start or end") -> Measure:
+NO_INTERVAL = "an interval has no start or end"
+
+
+def busy_ms(calls: list[dict], *, positive: bool = False, missing: str = NO_INTERVAL) -> Measure:
     """Milliseconds covered by the union of the calls' [start, end] spans (overlaps counted once).
 
     The one span rule: both ends recorded and the end not before the start; with `positive`, strictly after it
@@ -535,6 +539,13 @@ def _anchor(events: list[dict], cell_id: str) -> int | None:
     return None if epoch is None or not is_count(started.get("mono_ns")) else epoch - started["mono_ns"]
 
 
+def _hook_time_reason(harness: str) -> str:
+    """Why hook rows give no time: the harness reader module's own `HOOK_TIME_REASON` when it states one (Claude Code
+    keeps no start for a hook), else the generic interval reason."""
+    read = profiles.READERS.get(harness)
+    return getattr(sys.modules.get(getattr(read, "__module__", "")), "HOOK_TIME_REASON", None) or NO_INTERVAL
+
+
 def time_anatomy(view: RunView, cell: CellView) -> TimeAnatomy:
     """ADR-0026 s4 for one cell, from the view's rows and the cell's archived ACP timeline."""
     timeline = read_timeline(view.run_dir, cell.cell_id)
@@ -543,7 +554,8 @@ def time_anatomy(view: RunView, cell: CellView) -> TimeAnatomy:
                 else Measure(round(sum(e - s for s, e in acp) / 1_000_000)))
     hooks = [r for r in cell_rows(view, "harness_events", cell) or [] if r.get("event") == "hook"]
     reason = stream_reason(view, "harness_events", cell)
-    hook = (Measure(None, reason) if reason is not None else busy_ms(hooks) if hooks else Measure(None, NO_HOOKS))
+    hook = (Measure(None, reason) if reason is not None else busy_ms(hooks, missing=_hook_time_reason(cell.harness))
+            if hooks else Measure(None, NO_HOOKS))
     return TimeAnatomy(cell.model_ms, estimate, cell.tool_ms, hook, _anatomy_idle(view, cell, acp, hooks, hook))
 
 
