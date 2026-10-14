@@ -108,9 +108,10 @@
         key each value came from</td></tr>
     </table>
     </div>
-    <div class="note">Codex with no <code>model_context_window</code> runs at its default window (272k served).
-      Earlier runs pinned 872k: add <code>model_context_window = 872000</code> to <code>~\.codex\config.toml</code>
-      to match them. For a known CLI, a value the bench cannot pin stops the run before anything is created.</div>
+    <div class="note">Codex with no <code>model_context_window</code> runs at its model's default window (measured
+      2026-10-13: gpt-6.1-sol on Codex 0.160 serves 500k, not the 272k the profile assumed). Earlier runs pinned 872k:
+      add <code>model_context_window = 872000</code> to <code>~\.codex\config.toml</code> to match them. For a known CLI,
+      a value the bench cannot pin stops the run before anything is created.</div>
   </div>
 
   <div class="card">
@@ -140,8 +141,14 @@ FIXED (change these only by editing the prompt):
 
 GOAL: a completed, verified bench run of this CLI's combo in its own worktree, an HTML run summary open in Chrome,
 and one HANDOFF line the grading prompt can use. DONE WHEN: `bench verify` passes on the run, the summary is open,
-and the HANDOFF line is printed. NOT IN SCOPE: judging with model calls, comparison reports, pack analysis (Prompt 2
-does those), any CLI's config, pushing anything, and any bench change other than a new CLI's onboarding files.
+handoff.json is written, and the HANDOFF line is printed. NOT IN SCOPE: judging with model calls, comparison
+reports, pack analysis (Prompt 2 does those), any CLI's config, pushing anything, and any bench change other than a
+new CLI's onboarding files.
+
+HOW TO WORK: do these steps and nothing else. Do not load skills, write memories, read the pack's docs, run extra
+reports or analyses, or write files the steps do not name. Report each step in one line. This prompt needs full
+shell and file access: if a command is refused by a sandbox or an approval policy, stop at once and tell the operator
+to restart this CLI with full access and paste the prompt again.
 
 STEP 0 - who am I (read only: nothing is created until this step passes)
   - HARNESS: a short lower-case name for the CLI you are running in (claude-code, codex, copilot, grok, agy, muse, ...).
@@ -247,14 +254,18 @@ STEP 6 - plan, then confirm (inside WT, with the STEP 4 environment)
 
 STEP 7 - run (inside WT)
   - `BENCH run &lt;RUN_ID&gt;`, as a background job. It launches the cells and runs a deterministic grading pass at its
-    end. Watch it with `BENCH status &lt;RUN_ID&gt;` every 10 minutes; report each check in one line (cells ended /
-    running / validity counts).
-  - Early check: when the first 2 cells have ended, look at `BENCH status`. A cell with validity code HB-VAL-002
-    (model mismatch) or HB-VAL-010 (served effort or context differs from the pin) means the harness did not serve
-    what STEP 0 read: stop the run (`BENCH stop &lt;RUN_ID&gt;`) and report which. HB-VAL-011 (setting not recorded) is
-    a warning, expected for agy's context.
+    end. Check it with `BENCH status &lt;RUN_ID&gt;` every 10 minutes: one blocking wait of 10 minutes between checks
+    (a sleep, or your CLI's own scheduled wake-up), never a watcher that wakes you on every change. Report each
+    check in one line (cells ended / running).
+  - Early check, once, when the first 2 cells have ended: `BENCH status &lt;RUN_ID&gt; --check-ended`. It reads the
+    ended cells' own records now (validity in plain `status` reads "not graded" until the run's end). Any HB-VAL-002
+    (model mismatch), HB-VAL-010 (served effort or context differs from the pin) or HB-VAL-008 (a tool outside the
+    profile) means this run cannot count: stop it (`BENCH stop &lt;RUN_ID&gt;`), report the codes, then do STEPS 8-10
+    on what ran. HB-VAL-011 (setting not recorded) is a warning, expected for agy's context.
   - Stop rules: the engine reports it is down twice; the host becomes unstable (record the evidence first); an
     authentication failure pauses launches (HB-CELL-202) and the decision times out. Never edit a log or a run file.
+  - However the run ends (complete, stopped, or with invalid cells), always do STEPS 8-10. A problem found after the
+    run has ended is written into the summary and handoff.json; it is never a reason to skip them.
 
 STEP 8 - verify (inside WT)
   - `BENCH verify &lt;RUN_ID&gt;` must exit 0. Exit 5 is an integrity failure: report it, do not repair it.
@@ -267,7 +278,9 @@ STEP 9 - the run summary (inside WT)
     named); the served settings read back per arm (model, effort, context) with their source; tokens per cell by arm
     (mean, min, max; fresh input, cache read, cache write, output, reasoning); wall minutes per cell by arm; every
     warning code with its count; the run's start and end time and its total wall time. Every number comes from the
-    bench's output; label anything you computed (a mean) as computed.
+    bench's output; label anything you computed (a mean) as computed. If `BENCH report` refuses, quote the refusal,
+    write the summary from `status --json` alone, and list the refusal in handoff.json "issues"; never write your
+    own report generator.
   - `python docs/ai-forward-pack/scripts/render-markdown.py runs/&lt;RUN_ID&gt;/run-summary.md --open` (HTML beside it,
     opened in Chrome). If it prints "not opened: &lt;why&gt;", say why.
 
@@ -275,13 +288,18 @@ STEP 10 - the hand-off
   - NEW only: bring the onboarding commit into REPO's main, so the next paste into this CLI skips STEP 2. In REPO:
     `git merge --ff-only bench/&lt;RUN_ID&gt;`; if main has moved and that refuses, `git merge --no-edit bench/&lt;RUN_ID&gt;`.
     A conflict is `git merge --abort` and a report line, never a resolution by hand. Do not push.
+  - Find this session's own transcript: your CLI's session id, and the newest file in its session store (under
+    %USERPROFILE%\.claude, .codex, .copilot, .grok or .gemini) whose content names RUN_ID. "not found" if you
+    cannot; never guess a path.
   - Write runs/&lt;RUN_ID&gt;/handoff.json: {"run_id", "worktree": WT, "branch": "bench/&lt;RUN_ID&gt;", "base": BASE,
     "cells_root": CELLS, "combo": COMBO_ID, "harness", "model", "effort", "context", "pack": PACK, "cells",
-    "onboarded": true|false, "verify": "ok", "summary": "&lt;path to run-summary.html&gt;"}.
+    "valid_cells", "validity" (counts by code), "onboarded": true|false, "verify": "ok" | "&lt;the failure&gt;",
+    "summary": "&lt;path to run-summary.html&gt;", "session_id", "transcript", "issues": ["&lt;anything that did not go as
+    written, one line each&gt;"]}.
   - Leave the worktree in place (Prompt 2 reads the run from it). Do not commit the run (runs/ is git-ignored) and
     do not push.
-  - Report: one table (step, result, evidence) and anything that did not go as written. Then print, as the last
-    line of your reply:  HANDOFF: &lt;RUN_ID&gt;@&lt;WT&gt;</pre>
+  - Report: one table (step, result, evidence) and anything that did not go as written. Then, and only once
+    handoff.json exists, print as the last line of your reply:  HANDOFF: &lt;RUN_ID&gt;@&lt;WT&gt;</pre>
 </main>
 <script>
   document.getElementById("copy").addEventListener("click", function () {

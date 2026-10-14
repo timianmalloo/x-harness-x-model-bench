@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Grade and Report Prompt</title>
+<title>Lean Benchmark Analysis Prompt</title>
 <style>
   :root {
     --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1f23; --muted: #5d636e; --line: #e2e0da;
@@ -26,8 +26,13 @@
   h1 { font-size: 1.7rem; margin: 0 0 4px; }
   h2 { font-size: 1.15rem; margin: 32px 0 8px; }
   p.sub { color: var(--muted); margin: 0 0 24px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; }
-  .note { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px;
+          margin-bottom: 16px; }
+  .card h2 { margin-top: 0; }
+  .note { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; margin: 12px 0 0; }
+  ol { margin: 0; padding-left: 22px; }
+  ol li { margin: 4px 0; }
+  .table-wrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { color: var(--muted); font-weight: 600; }
@@ -43,139 +48,154 @@
 </head>
 <body>
 <main>
-  <h1>Prompt 2: grade, compare, analyse</h1>
-  <p class="sub">Run in Claude Code in the main checkout (<code>C:\Projects\x-harness-x-model-bench</code>) after every
-    Prompt 1 run has ended. Give it the <code>HANDOFF:</code> lines. It grades each run with the judges and writes three
-    HTML pages, each opened in Chrome.</p>
+  <h1>Prompt 2: analyse the lean runs</h1>
+  <p class="sub">Paste into one CLI session in <code>C:\Projects\x-harness-x-model-bench</code> (full permissions).
+    Nothing to fill in: it finds every finished lean run itself, checks it, and writes four pages: run health and
+    issues, behaviour (drift, ceremony, over-thinking), cost, and pack-on vs pack-off. Model judges are off unless you
+    switch them on.</p>
 
   <div class="card">
-    <h2 style="margin-top:0">Before you paste</h2>
+    <h2>How to use it</h2>
+    <ol>
+      <li>Paste it whenever you like. Runs still going are listed as pending and left out; paste again later to add
+        them. To limit it to some runs, paste their <code>HANDOFF:</code> lines under <code>RUNS</code>.</li>
+      <li>To also grade with the model judges, change <code>JUDGE = no</code> to <code>JUDGE = yes</code>. Judging
+        costs tokens and needs <code>BENCH_OPERATOR_EMAIL</code>.</li>
+      <li>It ends with the four pages open in Chrome and committed locally (not pushed).</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>The four pages</h2>
+    <div class="table-wrap">
     <table>
-      <tr><th>What</th><th>Why</th></tr>
-      <tr><td>Every Prompt 1 run has ended</td><td>Judge calls are refused while any run is live (HB-GRD-005).</td></tr>
-      <tr><td><code>BENCH_OPERATOR_EMAIL</code> set in the shell that starts Claude Code</td><td>Judge egress and the
-        two published pages are fail-closed without it (HB-USR-002). It is never written to a file.</td></tr>
-      <tr><td>The <code>HANDOFF</code> lines pasted into the <code>RUNS</code> block</td><td>One line per run:
-        <code>HANDOFF: &lt;RUN_ID&gt;@&lt;worktree&gt;</code>.</td></tr>
+      <tr><th>Page</th><th>Answers</th><th>From</th></tr>
+      <tr><td>1. Run health and issues</td><td>Which runs and cells count? What went wrong, and whose fault (prompt,
+        bench, harness, environment)?</td><td><code>bench status --json</code>, <code>verify</code>, each
+        <code>handoff.json</code> "issues", each CLI session transcript</td></tr>
+      <tr><td>2. Behaviour</td><td>Drift, ceremony, over-thinking per harness and arm; the same model in two
+        harnesses; the interactive CLI sessions</td><td><code>tools/behaviour_measures.py</code> over the runs' facts
+        and the session transcripts</td></tr>
+      <tr><td>3. Cost</td><td>What drives each harness's tokens and wall time</td>
+        <td><code>bench report --cost-compare</code></td></tr>
+      <tr><td>4. Pack on vs off</td><td>Where the pack's extra cost goes, where it pays off, tuning candidates</td>
+        <td><code>bench report --pack-cost</code> and the pack at its pinned revision</td></tr>
     </table>
-    <p>The three pages, for two audiences:</p>
-    <table>
-      <tr><th>Page</th><th>For</th><th>Built by</th></tr>
-      <tr><td>1. Grading completion report</td><td>You: did every run grade, and is it valid?</td><td>the prompt (Markdown, then <code>render-markdown.py</code>)</td></tr>
-      <tr><td>2. Benchmark comparison</td><td>Sharing with harness teams: cost and quality per harness, and why they differ</td><td><code>bench report --cost-compare</code> plus an analyst section</td></tr>
-      <tr><td>3. Pack-on vs pack-off analysis</td><td>Tuning the AI-Forward pack: where its extra tokens go, per harness</td><td><code>bench report --pack-cost</code> plus an analyst section</td></tr>
-    </table>
-    <div class="note">The analyst sections are number-checked: every number they cite must appear in the page's generated
-      tables, or the page is refused with the unmatched numbers listed. That keeps the prose honest.</div>
+    </div>
+    <div class="note">Runs are never copied. A run is reached through a directory junction in
+      <code>C:\Projects\bench-runs-index\&lt;REPORT_ID&gt;</code>. A junction is removed only with
+      <code>cmd /c rmdir</code>, never a recursive delete, which would delete the run it points to.</div>
   </div>
 
   <div class="bar"><h2 style="margin:0">The prompt</h2><button id="copy" type="button">Copy prompt</button></div>
-<pre id="prompt">You are grading, comparing and analysing lean benchmark runs that were run by the "lean benchmark run" prompt
-(Prompt 1). You work in the main checkout, C:\Projects\x-harness-x-model-bench, alone: no sub-agents, no
-coordination layer, no new worktree. Use `python`, never `python3` (Windows). Tokens are the only cost unit; never
-write USD. Never print a token or credential.
+<pre id="prompt">Analyse the lean benchmark runs made by Prompt 1 and write four pages. Work alone in the main checkout,
+C:\Projects\x-harness-x-model-bench: no sub-agents, no coordination layer, no new worktree. Use `python`, never
+`python3` (Windows). Tokens are the only cost unit; never write USD. Never print a token or credential. Do these
+steps and nothing else; report each step in one line.
 
-RUNS (the operator pastes the HANDOFF lines, one per line):
-  HANDOFF: &lt;RUN_ID&gt;@&lt;WORKTREE&gt;
-  HANDOFF: &lt;RUN_ID&gt;@&lt;WORKTREE&gt;
+SETTINGS (change only by editing the prompt):
+  JUDGE    = no    (yes: also grade with the model judges, STEP 3; costs tokens)
+  RUNS     = all   (or paste HANDOFF lines here, one per line, to limit the set)
+  PACK_GIT = C:/Projects/ai-forward
 
-GOAL: every listed run graded with the judges, and three HTML pages written and open in Chrome: (1) the grading
-completion report, (2) the benchmark comparison with root causes, (3) the pack-on vs pack-off analysis with tuning
-candidates. DONE WHEN: each run has a completed grading pass, `bench verify` passes on each copied run, the three
-pages exist under docs/benchmark-reports/&lt;REPORT_ID&gt;/ and are open, and they are committed locally. NOT IN SCOPE:
-running or re-running cells, editing bench code or the pack, changing a grade by hand, pushing.
+GOAL: four pages under docs/benchmark-reports/&lt;REPORT_ID&gt;/, open in Chrome and committed locally: (1) run health
+and issues, (2) behaviour, (3) cost, (4) pack on vs off. DONE WHEN: every ready run passes `bench verify`, the pages
+exist and are open, and they are committed. NOT IN SCOPE: running cells, editing bench code or the pack, changing a
+grade by hand, pushing, deleting any worktree or run.
 
-STEP 0 - start state (stop and report if any check fails)
+STEP 0 - start state (stop and report if a check fails)
   - `git pull --ff-only origin main` succeeds (local changes that block it are a stop; never stash or reset them).
     Record `git rev-parse HEAD` as BASE.
-  - BENCH_OPERATOR_EMAIL is set (check it is non-empty; never print it). If it is empty, stop and ask.
-  - HB_CLAUDE_OAUTH_TOKEN = the contents of C:\Users\malla\.harness-bench\claude-oauth-token.txt.txt, whitespace
-    stripped, in the environment of the `bench grade` commands only (the Claude judge uses it). Unset XAI_API_KEY.
   - REPORT_ID = report-&lt;UTC yyyymmddThhmm&gt;. OUT = docs/benchmark-reports/&lt;REPORT_ID&gt;.
-  - `uv run bench tools install` (the judges use the pinned claude-code and copilot builds).
+    INDEX = C:\Projects\bench-runs-index\&lt;REPORT_ID&gt; (a folder of junctions, one per run).
+  - Unset XAI_API_KEY. If JUDGE = yes: BENCH_OPERATOR_EMAIL is set (check non-empty; never print it), and
+    HB_CLAUDE_OAUTH_TOKEN = the contents of C:\Users\malla\.harness-bench\claude-oauth-token.txt.txt, whitespace
+    stripped, in the environment of `bench grade` only; then `uv run bench tools install`.
 
-STEP 1 - read and check each run (for every HANDOFF line)
-  - Read &lt;WORKTREE&gt;\runs\&lt;RUN_ID&gt;\handoff.json. Check run_id matches, "verify" is "ok", and note combo, harness,
-    model, effort, context, pack, cells, cells_root.
-  - `uv run bench --runs &lt;WORKTREE&gt;\runs status &lt;RUN_ID&gt;`: the run has ended (no cell running). A live run is a stop.
-  - `uv run bench --runs &lt;WORKTREE&gt;\runs verify &lt;RUN_ID&gt;` must exit 0.
+STEP 1 - find and check the runs
+  - Candidates: every C:\Projects\x-harness-x-model-bench-bench-lean-*\runs\&lt;RUN_ID&gt;\ folder (or only the pasted
+    HANDOFF lines). For each, with WT = its worktree and CELLS = C:\Projects\bench-cells\&lt;RUN_ID&gt;:
+      * `uv run bench --runs &lt;WT&gt;\runs --cells-root &lt;CELLS&gt; status &lt;RUN_ID&gt; --json`
+      * READY when it is not running, every cell has ended, and its grading pass completed (validity is not "not
+        graded"). LIVE when a cell is still running: list it as pending, leave it out. Anything else is BROKEN: say why.
+      * READY only: `uv run bench --runs &lt;WT&gt;\runs verify &lt;RUN_ID&gt;` exits 0 (exit 5 is an integrity failure: the
+        run becomes BROKEN; never repair it).
+      * Read &lt;WT&gt;\runs\&lt;RUN_ID&gt;\handoff.json if it exists (combo, settings, validity, issues, session_id,
+        transcript). A run with no handoff.json is still READY if the checks pass; note "no handoff.json".
+  - Print one table: run, harness, model, effort, context, state (READY / LIVE / BROKEN), cells ended, valid cells,
+    validity counts by code, handoff.json yes/no.
 
-STEP 2 - bring the runs into the main checkout (one runs folder, so the reports can read them together)
-  - `robocopy &lt;WORKTREE&gt;\runs\&lt;RUN_ID&gt; runs\&lt;RUN_ID&gt; /E /COPY:DAT /R:1 /W:1 /NP /NFL /NDL`. Robocopy exit codes 0-7
-    are success; 8 or more is a failure (stop). Use robocopy, not a Git Bash `cp` (it has altered copied run files
-    before, class MSYS-COPY-A).
-  - `uv run bench verify &lt;RUN_ID&gt;` in the main checkout must exit 0. If runs\&lt;RUN_ID&gt; already exists and differs,
-    stop and report; never overwrite a run.
+STEP 2 - the index (READY runs)
+  - For each: `New-Item -ItemType Junction -Path &lt;INDEX&gt;\&lt;RUN_ID&gt; -Target &lt;WT&gt;\runs\&lt;RUN_ID&gt;`, then
+    `uv run bench --runs &lt;INDEX&gt; verify &lt;RUN_ID&gt;` exits 0. If a bench command refuses a junction, use
+    `robocopy &lt;WT&gt;\runs\&lt;RUN_ID&gt; &lt;INDEX&gt;\&lt;RUN_ID&gt; /E /COPY:DAT /R:1 /W:1 /NP /NFL /NDL` for that run instead
+    (exit 0-7 is success) and say so. Every later bench command uses `--runs &lt;INDEX&gt;`.
 
-STEP 3 - grade (one run at a time)
-  - `uv run bench --cells-root C:\Projects\bench-cells\&lt;REPORT_ID&gt; grade &lt;RUN_ID&gt; --allow-model-calls`
-  - It prints "graded N cell(s) in pass &lt;grading_id&gt;". Record the grading_id and N. N must equal the run's cell
-    count. A refusal is reported verbatim (HB-GRD-005 means a run is live: wait and retry once; HB-USR-002 means the
-    email is missing).
-  - `uv run bench report &lt;RUN_ID&gt;` (writes runs\&lt;RUN_ID&gt;\report.html with the new pass).
-  - `uv run bench verify &lt;RUN_ID&gt;` again: exit 0.
+STEP 3 - judges (only if JUDGE = yes; otherwise print "not judged" and go on)
+  - Per READY run: `uv run bench --runs &lt;INDEX&gt; --cells-root C:\Projects\bench-cells\&lt;REPORT_ID&gt; grade &lt;RUN_ID&gt;
+    --allow-model-calls`. Record "graded N cell(s) in pass &lt;grading_id&gt;"; N must equal the run's cells. A refusal is
+    reported verbatim. Then `verify` again: exit 0.
 
-STEP 4 - page 1, the grading completion report
-  - Write &lt;OUT&gt;/grading-completion.md, from `uv run bench status &lt;RUN_ID&gt; --json` and each report.html, with:
-    one row per run (run id, combo, harness, model, worktree, cells, cells graded, grading_id, verify result,
-    validity counts by code); per run, the cells that are invalid or ungraded and why (code and text); the judge
-    calls made and missed per run; anything that did not grade, and what it would take to finish it.
-  - Every number comes from the bench output. Label any number you computed as computed.
-  - `python docs/ai-forward-pack/scripts/render-markdown.py &lt;OUT&gt;/grading-completion.md --open`
+STEP 4 - page 1, run health and issues
+  - Per READY run: `uv run bench --runs &lt;INDEX&gt; report &lt;RUN_ID&gt;` (writes its report.html); a refusal is quoted.
+  - The issues: every handoff.json "issues" line; every invalid cell (code and text, from status --json); every
+    LIVE or BROKEN run; and the CLI sessions' own problems: for each run's transcript (handoff.json "transcript";
+    if "not found", search the CLI's session store for the RUN_ID), list errors, refusals, retries, workarounds and
+    deviations from Prompt 1, each with a locator (line or timestamp).
+  - Write OUT/run-health.md: the STEP 1 table; then one row per issue: id, run, step, what happened (quote at most
+    25 words), locator, cause (prompt / bench / harness / environment / model), and the fix it needs. Every number
+    comes from bench output; label any number you computed as computed.
+  - `python docs/ai-forward-pack/scripts/render-markdown.py OUT/run-health.md --open`
 
-STEP 5 - page 2, the benchmark comparison (for the harness teams)
-  - Generate it first with no analysis:
-    `uv run bench report --cost-compare &lt;RUN_ID&gt; &lt;RUN_ID&gt; ... --out &lt;OUT&gt;/benchmark-comparison.html`
-  - Read the generated page's tables. Then read the evidence behind each difference: per-cell tokens by part
-    (fresh input, cache read, cache write, output, reasoning), requests per cell, prompt composition
-    (runs/&lt;RUN_ID&gt;/prompt_parts), the served settings read back (runs/&lt;RUN_ID&gt;/served), tool and harness events
-    (runs/&lt;RUN_ID&gt;/harness_events), wall time, and grade outcomes per task.
-  - Write &lt;OUT&gt;/benchmark-comparison-analysis.md: for each harness, what drives its cost and its quality relative to
-    the others, and the root cause where the evidence shows one (cache behaviour, request count, context re-sent per
-    request, reasoning tokens, tool loops, retries, the system prompt the harness adds). Label each cause Verified
-    (you observed it in the run's facts; cite the file) or Inferred (state the model and what would confirm it).
-    Cite only numbers that appear in the generated tables.
-  - Regenerate with the analysis, and open it:
-    `uv run bench report --cost-compare &lt;RUN_ID&gt; ... --out &lt;OUT&gt;/benchmark-comparison.html
-     --analysis &lt;OUT&gt;/benchmark-comparison-analysis.md --open`
-    A refusal lists the numbers that do not appear in the tables: fix the analysis, never the tables.
+STEP 5 - page 2, behaviour (drift, ceremony, over-thinking)
+  - `uv run python tools/behaviour_measures.py --run &lt;INDEX&gt;\&lt;RUN_ID&gt; [--run ...]
+     --session &lt;RUN_ID&gt;=&lt;harness&gt;:&lt;transcript&gt; [--session ...] --out OUT/behaviour`
+    (one --session per run whose transcript was found; the harness name is the run's.)
+  - Read OUT/behaviour/behaviour.md and the per-cell JSON. Write OUT/behaviour-analysis.md:
+      * Over-thinking: requests, reasoning tokens and reasoning characters per cell, per harness and arm.
+      * Ceremony: tool calls, calls before the first edit, reads, planning or to-do tool calls, files written outside
+        the task (lines outside, machine lines), and, for the interactive sessions, status messages and poll cadence.
+      * Drift: scope_creep, attention_drift, lines outside the blast radius, delegation tool calls.
+      * The same model in two harnesses (for example gpt-6.1-sol in Codex and in Copilot): compare them task by task
+        and arm by arm, and say whether the difference is in what was produced (output style) or in what was done
+        (actions), with the numbers.
+      * What the records cannot show, per harness (a measure the bench reports as "not recorded").
+    Label each claim Verified (seen in a file; cite it) or Inferred (state the model and what would confirm it).
+    Cells of a run with invalid cells are reported with that caveat, never silently pooled.
+  - `python docs/ai-forward-pack/scripts/render-markdown.py OUT/behaviour-analysis.md --open`
 
-STEP 6 - page 3, pack-on vs pack-off (for tuning the AI-Forward pack)
-  - Generate: `uv run bench report --pack-cost &lt;RUN_ID&gt; ... --out &lt;OUT&gt;/pack-on-vs-off.html`
-  - Read its tables: per harness, the extra tokens of the pack-on arm over the pack-off arm, split by where they go
-    (instructions and skills loaded into the prompt, extra requests, extra tool calls, extra reasoning, cache
-    misses), and the quality difference per task.
-  - Read the pack itself at the run's pack revision (C:/Projects/ai-forward at the commit in handoff.json; read
-    with `git -C C:/Projects/ai-forward show &lt;commit&gt;:&lt;path&gt;`, never check it out): the always-loaded files, the
-    skills the cells invoked (runs/&lt;RUN_ID&gt;/harness_events), and their sizes.
-  - Write &lt;OUT&gt;/pack-on-vs-off-analysis.md:
-    (a) per harness, where the extra tokens come from, largest first, with the pack file or behaviour that causes
-        each (Verified or Inferred, as in STEP 5);
-    (b) where the pack paid for itself (grade gains) and where it cost tokens with no grade gain;
-    (c) tuning candidates, ranked by expected token saving, each with: the change (a file, a section, a load rule),
-        the evidence, the expected effect, the risk to quality, and how a next run would measure it.
-    Cite only numbers that appear in the generated tables.
-  - Regenerate with the analysis, and open it:
-    `uv run bench report --pack-cost &lt;RUN_ID&gt; ... --out &lt;OUT&gt;/pack-on-vs-off.html
-     --analysis &lt;OUT&gt;/pack-on-vs-off-analysis.md --open`
+STEP 6 - page 3, cost
+  - `uv run bench --runs &lt;INDEX&gt; report --cost-compare &lt;RUN_ID&gt; ... --out OUT/cost-compare.html` (it needs
+    BENCH_OPERATOR_EMAIL; if unset, say so and skip this page). Read its tables and the facts behind each difference
+    (tokens by part, requests, prompt_parts, served settings, harness_events, wall time). Write
+    OUT/cost-compare-analysis.md: per harness, what drives its cost, with root causes labelled Verified or Inferred,
+    citing only numbers in the generated tables. Regenerate with `--analysis OUT/cost-compare-analysis.md --open`;
+    a refusal lists numbers not in the tables: fix the analysis, never the tables.
 
-STEP 7 - close
-  - `git add &lt;OUT&gt;` and commit: "docs(benchmark): grading and reports &lt;REPORT_ID&gt;". Do not commit runs/ (it is
-    git-ignored). Do not push: the operator decides.
-  - Leave the worktrees in place; the operator removes them.
-  - Report: one table (run, combo, cells graded, grading_id, verify, valid cells), the three page paths, the commit,
-    and anything that did not go as written. If a page printed "not opened: &lt;why&gt;", say why.
+STEP 7 - page 4, pack on vs off
+  - `uv run bench --runs &lt;INDEX&gt; report --pack-cost &lt;RUN_ID&gt; ... --out OUT/pack-on-vs-off.html`. Read its tables
+    and the pack at the run's pinned revision (`git -C PACK_GIT show &lt;commit&gt;:&lt;path&gt;`, never a checkout): the
+    always-loaded files, the hooks each harness runs per tool call, the skills the cells invoked (harness_events).
+  - Write OUT/pack-on-vs-off-analysis.md: (a) per harness, where the extra tokens and wall time come from, largest
+    first, with the pack file or hook that causes each; (b) where the pack paid for itself and where it cost with no
+    gain; (c) tuning candidates ranked by expected saving, each with the change, the evidence, the expected effect,
+    the risk, and how a next run would measure it. Regenerate with `--analysis ... --open`.
+
+STEP 8 - close
+  - `git add OUT` and commit: "docs(benchmark): analysis &lt;REPORT_ID&gt;". Do not commit runs/. Do not push.
+  - Leave INDEX, the worktrees and the runs in place. Never delete a junction with a recursive delete.
+  - Report: the STEP 1 table, the four page paths, the commit, the pending (LIVE) runs, and anything that did not go
+    as written.
 
 Known caveats (say so in the pages where they apply):
-  - Grok runs one cell at a time and is slow; its wall time is not comparable to parallel harnesses per run, only
-    per cell.
-  - Antigravity (agy) does not report its context window; its served context is "not recorded".
-  - Copilot's per-request rows come from its debug log; where that is missing the page says "not recorded".
-  - Claude Code's 1M window is judged from the adapter's final usage update (Ruling 123); in-turn 200000 values are
-    a seed, not a measurement.
-  - The pack page converts prompt characters to tokens per cell (first-request input / prefix characters). For
-    Copilot this overstates the pack's share, because its tool catalogue is in the input but not in the counted
-    prefix. Keep that split labelled Inferred; the fix (use the off/on pair's first-request difference) is owed.
+  - Grok and agy run one cell at a time (a shared or rotating login); compare their wall time per cell, not per run.
+  - Codex runs its reads and edits through shell commands; its read / edit classes and attention_drift are "not
+    recorded" until its reader classifies shell commands.
+  - The pack's hooks run before every tool call (several processes each); in Grok this costs seconds per call. Claude
+    Code records only its Stop-hook time. Pack-on wall time includes this cost.
+  - Interactive Copilot sessions write token usage only at session shutdown; an open session's tokens are "not
+    recorded".
+  - agy does not report its context window: "not recorded".
   - A run with fewer than 2 repetitions per cell has no spread; say so rather than draw a conclusion from one cell.</pre>
 </main>
 <script>
