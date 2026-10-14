@@ -8408,7 +8408,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6553c325cd760fa0c60efc2e46d237ac8ed2c7ae2f9c46e42479470f987cf3dc"
+      "sourceSha256": "5e6d9dade9a8e02b4c9ac6cc78d205e0f9b8ae2b61ec409ee560274e01172550"
     },
     {
       "id": "runbook-resume-and-alarm",
@@ -12002,5 +12002,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "5c85f0ee730cc471ed13c97a6a1ac5addb1c31162159e1e0de4bff2eaa0be9b2"
+  "graphSha256": "5998fe549868dd2b41502ddde58711d0f212c806f7316a2dc89948c87e203999"
 };

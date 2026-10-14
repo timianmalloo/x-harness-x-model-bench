@@ -66,7 +66,7 @@ Prompt 1 asks the session to list the instruction files its own context shows as
 ## 3. Sessions per CLI (A5)
 
 Run Prompt 1 in 2 separate sessions per CLI (`SESSIONS_PER_CLI = 2` in the prompt). Each paste is its own run: its own
-`RUN_ID`, branch, worktree, cell folder and 60 cells. The session index is `1 +` the branches
+`RUN_ID`, branch, worktree, cell folder and 66 cells. The session index is `1 +` the branches
 `bench/lean-*-<COMBO_ID>` whose timestamp is at or after `SESSIONS_SINCE`; edit `SESSIONS_SINCE` in the prompt to start a
 new campaign. A session that stopped after STEP 1 still counts, because its branch exists. `handoff.json` carries
 `session_index`, `sessions_per_cli`, `session_id`, `transcript` (absolute path or `"not found"`), `launch_dir`,

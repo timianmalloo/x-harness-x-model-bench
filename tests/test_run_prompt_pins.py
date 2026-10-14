@@ -18,6 +18,20 @@ PAGE = (ROOT / "docs/benchmarkpromps/lean-benchmark-run-prompt.html").read_text(
 PROMPT = html.unescape(re.search(r'<pre id="prompt">(.*?)</pre>', PAGE, re.DOTALL).group(1))
 
 
+RAW_TAG = re.compile(r"<[A-Za-z/!]")  # in a <pre> the browser reads this as markup and "Copy prompt" drops it
+
+
+def raw_tags_in_pre(page: str) -> list[str]:
+    return [m.group(0) + body[m.end():m.end() + 30] for body in re.findall(r"<pre[^>]*>(.*?)</pre>", page, re.DOTALL)
+            for m in RAW_TAG.finditer(body)]
+
+
+def test_no_prompt_holds_a_raw_tag_inside_its_pre_blocks():
+    """2026-10-14: a raw `<absolute script>` in Prompt 1's <pre> was eaten by the browser, so the copy read `python `."""
+    for name in ("lean-benchmark-run-prompt.html", "grade-judge-report-prompt.html"):
+        assert raw_tags_in_pre((ROOT / "docs/benchmarkpromps" / name).read_text(encoding="utf-8")) == [], name
+
+
 def test_pinned_windows_are_values_the_profiles_accept():
     line = next(l for l in PROMPT.splitlines() if l.strip().startswith("PINNED_CONTEXT"))
     pins = dict(re.findall(r"(\w+) (\d+)", line.split("=", 1)[1].split("(")[0]))

@@ -157,7 +157,10 @@ STEP 3 - judges (only if JUDGE = yes; otherwise print "not judged" and go on)
 STEP 4 - page 1, run health and issues
   - Per READY run: `uv run bench --runs &lt;INDEX&gt; report &lt;RUN_ID&gt; --prereg docs/notes/lean-preregistration.md`
     (writes its report.html; the pre-registration check counts the run only if the note's commit precedes its first
-    cell); a refusal is quoted. Its title names the grading pass's catalog: "(catalog 0.9)" expected. A run graded
+    cell); a refusal is quoted. Where a combo has two READY sessions (session_index 1 and 2), also run
+    `uv run bench --runs &lt;INDEX&gt; report &lt;RUN_ID of session 2&gt; --prereg docs/notes/lean-preregistration.md
+    --pool &lt;RUN_ID of session 1&gt;` (both batches pooled, n = 6 per arm); a pool refusal names what differs and is
+    quoted, never worked around. Its title names the grading pass's catalog: "(catalog 0.9)" expected. A run graded
     under another catalog is marked OTHER CATALOG and kept out of every cross-run table: runs graded under different
     catalogs are not comparable (the bench refuses that comparison, HB-STA-002), and 0.9 also grades the six process
     metrics (tool_error_rate, stuck_loops, recovery_rate, completion_without_intervention, time_to_first_green,
