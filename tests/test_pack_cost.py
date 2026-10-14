@@ -335,8 +335,11 @@ def test_the_real_path_decomposes_a_graded_copilot_pair_with_no_fakes(tmp_path):
     assert terms["fixed_prefix"] == Measure(635600) and abs(terms["fixed_prefix"].value - hand) <= 12  # per-part rounding
     fixed = next(t for t in h.terms if t.name == "fixed_prefix")
     assert pack_cost.IDENTICAL_FINGERPRINT in fixed.label and pack_cost.IDENTICAL_FINGERPRINT in pack_cost.render(pc)
-    # Copilot's tool results carry no size, so the on-demand terms are not recorded, never a guess
-    assert terms["pack_reads"] == terms["skill_loads"] == Measure(None, "not recorded: bytes returned are not in the record")
+    # Copilot's `tool.execution_complete` carries the result content, so the on-demand terms are recorded. Inputs read
+    # from the record by hand: the two skill calls return 84 + 89 bytes; the three pack files read (the two instruction
+    # files and co-s0.md, not flow.md or definition-of-done.md, which `REAL_PACK` lacks) return 2018 + 2022 + 478.
+    # The token values are the term's own carry arithmetic over those bytes, pinned from the real path.
+    assert (terms["pack_reads"], terms["skill_loads"]) == (Measure(54747), Measure(2443))
     assert isinstance(terms["reasoning_output"].value, int)
     assert h.delta_total.value == sum(m.value for m in terms.values() if m.value is not None)
     assert {f.path: f.component for f in pc.components} == {

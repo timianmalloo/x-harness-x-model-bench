@@ -576,9 +576,12 @@ def tool_inputs(path: Path) -> ProcessTrace:
     """`ToolInput`s from `function_call`/`custom_tool_call`/`local_shell_call` payloads (`_open_call`,
     the walker `read()`'s `ToolCall`s also key off -- R-85 condition 1), in native order, plus this
     record's own first assistant text block (design section 4.3, slice S2). A shell call's paths also hold its
-    shell-read targets (`shell_read_paths`); `bytes_returned` is its output row's size (None with no output row)."""
+    shell-read targets (`shell_read_paths`); `bytes_returned` is its output row's size (None with no output row).
+    The assistant text count (I2) is every non-blank `output_text` of an assistant `message` item (commentary and the
+    final answer alike): reasoning items and tool input are not counted, and a record that lost a line reports none."""
     ex = Extraction()
     first_text: str | None = None
+    chars = messages = 0
     calls: list[ToolInput] = []
     call_ids: dict[str, int] = {}
     returned: dict[str, int | None] = {}
@@ -592,10 +595,13 @@ def tool_inputs(path: Path) -> ProcessTrace:
         if ptype in OUTPUT_TYPES and call_id is not None:
             returned.setdefault(call_id, _output_bytes(payload))
             continue
-        if ptype == "message" and payload.get("role") == "assistant" and first_text is None:
+        if ptype == "message" and payload.get("role") == "assistant":
             texts = [c.get("text") for c in as_list(payload.get("content")) if isinstance(c, dict) and isinstance(c.get("text"), str)]
-            if texts:
+            if first_text is None and texts:
                 first_text = "".join(texts)
+            visible = [t for t in texts if t.strip()]
+            chars += sum(len(t) for t in visible)
+            messages += bool(visible)
             continue
         if not _open_call(kind, ptype, call_id):
             continue
@@ -609,4 +615,5 @@ def tool_inputs(path: Path) -> ProcessTrace:
     for call_id, i in call_ids.items():
         if call_id in returned:
             calls[i] = replace(calls[i], bytes_returned=returned[call_id])
-    return ProcessTrace(first_text, tuple(calls))
+    lost = ex.truncated or ex.malformed_lines
+    return ProcessTrace(first_text, tuple(calls), None if lost else chars, None if lost else messages)

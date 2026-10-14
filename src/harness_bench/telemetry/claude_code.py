@@ -365,29 +365,58 @@ def read(path: Path, acp: Path | None = None) -> Extraction:
     return ex
 
 
+def _result_bytes(content: object) -> int | None:
+    """The UTF-8 size of one `tool_result` (ADR-0026 s4): a string, or the text parts of a list. A list holding a
+    non-text part (an image, a tool reference) is not recorded: the record gives no size for that part."""
+    if isinstance(content, str):
+        return len(content.encode("utf-8"))
+    parts = [p for p in as_list(content) if isinstance(p, dict)]
+    if parts and all(p.get("type") == "text" and isinstance(p.get("text"), str) for p in parts):
+        return sum(len(p["text"].encode("utf-8")) for p in parts)
+    return None
+
+
 def tool_inputs(path: Path) -> ProcessTrace:
     """`ToolInput`s from each `tool_use` block, in native order, plus this record's own first
     assistant text block (design pack-improvement-section.md section 4.3, slice S2). A row with
-    `isApiErrorMessage` is a provider error (module docstring), never a text block or a tool call."""
+    `isApiErrorMessage` is a provider error (module docstring), never a text block or a tool call.
+    `bytes_returned` is the paired `tool_result`'s size (None with no result row or a non-text part). The assistant
+    text count (I2) is every non-blank `text` block of a model row: thinking and tool input are not counted, and a
+    record that lost a line reports none."""
     ex = Extraction()
     first_text: str | None = None
     calls: list[ToolInput] = []
+    call_ids: dict[str, int] = {}
+    returned: dict[str, int | None] = {}
+    chars = messages = 0
     for n, row in rows(path, ex):
+        if row.get("type") == "user":
+            for block in as_list(as_dict(row.get("message")).get("content")):
+                if isinstance(block, dict) and block.get("type") == "tool_result" and isinstance(block.get("tool_use_id"), str):
+                    returned.setdefault(block["tool_use_id"], _result_bytes(block.get("content")))
+            continue
         if row.get("type") != "assistant" or row.get("isApiErrorMessage"):
             continue
         message = as_dict(row.get("message"))
         model = message.get("model")
         if not isinstance(model, str) or model == "<synthetic>":  # same gate read() applies (module docstring)
             continue
-        if first_text is None:
-            texts = [b.get("text") for b in as_list(message.get("content"))
-                     if isinstance(b, dict) and b.get("type") == "text" and isinstance(b.get("text"), str)]
-            if texts:
-                first_text = "".join(texts)
+        texts = [b.get("text") for b in as_list(message.get("content"))
+                 if isinstance(b, dict) and b.get("type") == "text" and isinstance(b.get("text"), str)]
+        if first_text is None and texts:
+            first_text = "".join(texts)
+        visible = [t for t in texts if t.strip()]
+        chars += sum(len(t) for t in visible)
+        messages += bool(visible)
         for _, block in _tool_use_blocks(n, message):
             name = as_str(block.get("name")) or "unknown"
             inp = as_dict(block.get("input"))
             paths = tuple(p for p in (as_str(inp.get("file_path")), as_str(inp.get("path")), as_str(inp.get("notebook_path"))) if p)
             command = as_str(inp.get("command"))
+            call_ids.setdefault(block["id"], len(calls))
             calls.append(ToolInput(n, name, paths, command, name in WRITE_TOOLS))
-    return ProcessTrace(first_text, tuple(calls))
+    for call_id, i in call_ids.items():
+        if returned.get(call_id) is not None:
+            calls[i] = replace(calls[i], bytes_returned=returned[call_id])
+    lost = ex.truncated or ex.malformed_lines
+    return ProcessTrace(first_text, tuple(calls), None if lost else chars, None if lost else messages)

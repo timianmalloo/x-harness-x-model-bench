@@ -200,3 +200,43 @@ def test_two_timeline_sizes_are_two_served_rows_and_the_disagreement_is_hb_val_0
 def test_model_call_reasoning_is_the_requests_thinking_tokens():  # usage.output_tokens_details.thinking_tokens
     assert [c.reasoning for c in claude_code.read(PACK_ON).model_calls] == [34, 0, 367, 0, 10, 31, 80]
     assert [c.reasoning for c in claude_code.read(ONE_M).model_calls] == [0, 98]
+
+
+# --- C3 / C5 (plan 2026-10-14): ceremony text and tool-result bytes in `tool_inputs` ----------------------------------
+
+def _assistant(mid, *blocks, model="claude-opus-5-5"):
+    return {"type": "assistant", "message": {"id": mid, "model": model, "usage": {}, "content": list(blocks)}}
+
+
+def _result(*results):
+    return {"type": "user", "message": {"role": "user", "content": [
+        {"type": "tool_result", "tool_use_id": tid, "content": content, **extra} for tid, content, extra in results]}}
+
+
+def test_tool_inputs_counts_visible_text_only_and_sizes_each_result_by_its_text(tmp_path):
+    use = lambda tid: {"type": "tool_use", "id": tid, "name": "Bash", "input": {"command": "x"}}
+    rows = [
+        _assistant("m1", {"type": "thinking", "thinking": "hidden hidden"}),
+        _assistant("m2", {"type": "text", "text": "Goal: é"}, use("t1")),  # 7 chars, 8 bytes
+        _result(("t1", "out é", {})),  # a string result: its UTF-8 size, 6 bytes
+        _assistant("m3", use("t2")),
+        _result(("t2", [{"type": "text", "text": "ab"}, {"type": "text", "text": "cd"}], {})),  # text parts summed: 4
+        _assistant("m4", use("t3")),
+        _result(("t3", [{"type": "tool_reference", "tool_name": "X"}], {})),  # no text to size: not recorded
+        _assistant("m5", {"type": "text", "text": "  "}),  # blank text is not a message
+        _assistant("m6", {"type": "text", "text": "synthetic"}, model="<synthetic>"),  # not the model's output
+        _assistant("m7", use("t4")),  # no result row (killed turn): not recorded
+        _assistant("m8", {"type": "text", "text": "Done."}),  # 5 chars
+    ]
+    record = tmp_path / "s.jsonl"
+    record.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    trace = claude_code.tool_inputs(record)
+    assert (trace.assistant_chars, trace.assistant_messages) == (7 + 5, 2)
+    assert [c.bytes_returned for c in trace.calls] == [6, 4, None, None]
+
+
+def test_tool_inputs_text_count_is_not_recorded_when_the_record_lost_lines(tmp_path):
+    record = tmp_path / "s.jsonl"
+    record.write_text(json.dumps(_assistant("m1", {"type": "text", "text": "hi"})) + "\n{not json\n", encoding="utf-8")
+    trace = claude_code.tool_inputs(record)
+    assert (trace.assistant_chars, trace.assistant_messages) == (None, None)

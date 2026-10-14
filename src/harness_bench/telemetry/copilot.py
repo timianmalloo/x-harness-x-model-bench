@@ -75,6 +75,7 @@ import hashlib
 import json
 import re
 from collections.abc import Iterator
+from dataclasses import replace
 from pathlib import Path
 
 from harness_bench.telemetry import (
@@ -516,18 +517,37 @@ def tool_inputs(path: Path) -> ProcessTrace:
     announces a tool call twice, as an `assistant.message` request (this reader's source) and as a
     paired `tool.execution_start`/`tool.execution_complete` (`read()`'s source), and the two streams
     are 1:1 by the harness's own construction (verified on the committed `off`/`on`/`fixed`
-    fixtures: 6/6, 17/17, 11/11) -- not by a shared predicate, because there is none to share."""
+    fixtures: 6/6, 17/17, 11/11) -- not by a shared predicate, because there is none to share.
+
+    `bytes_returned` is the UTF-8 size of the paired `tool.execution_complete`'s `result.content` (what the model
+    receives; `detailedContent` is the display copy). A failed call has no `result`: it takes the record's own
+    `toolTelemetry.metrics.resultForLlmLength` (characters, equal to the content length on 1,767 of 1,802 successful
+    calls checked) and is None without it. The assistant text count (I2) is every non-blank `assistant.message`
+    `content` (`reasoningText` is thinking and is not counted); a record that lost a line reports none."""
     ex = Extraction()
     first_text: str | None = None
     calls: list[ToolInput] = []
+    call_ids: dict[str, int] = {}
+    returned: dict[str, int] = {}
+    chars = messages = 0
     for n, row in rows(path, ex):
+        if row.get("type") == "tool.execution_complete":
+            data = as_dict(row.get("data"))
+            content = as_dict(data.get("result")).get("content")
+            sent = as_dict(as_dict(data.get("toolTelemetry")).get("metrics")).get("resultForLlmLength")
+            size = len(content.encode("utf-8")) if isinstance(content, str) else (sent if is_count(sent) else None)
+            if isinstance(data.get("toolCallId"), str) and size is not None:
+                returned.setdefault(data["toolCallId"], size)
+            continue
         if row.get("type") != "assistant.message":
             continue
         data = as_dict(row.get("data"))
-        if first_text is None:
-            text = as_str(data.get("content"))
-            if text:
-                first_text = text
+        text = as_str(data.get("content"))
+        if text:
+            first_text = first_text or text
+            if text.strip():
+                chars += len(text)
+                messages += 1
         for req in as_list(data.get("toolRequests")):
             if not isinstance(req, dict):
                 continue
@@ -541,8 +561,14 @@ def tool_inputs(path: Path) -> ProcessTrace:
                 command = None
             else:
                 paths, command = (), None
+            if isinstance(req.get("toolCallId"), str):
+                call_ids.setdefault(req["toolCallId"], len(calls))
             calls.append(ToolInput(n, name, paths, command, name in WRITE_TOOLS))
-    return ProcessTrace(first_text, tuple(calls))
+    for call_id, i in call_ids.items():
+        if call_id in returned:
+            calls[i] = replace(calls[i], bytes_returned=returned[call_id])
+    lost = ex.truncated or ex.malformed_lines
+    return ProcessTrace(first_text, tuple(calls), None if lost else chars, None if lost else messages)
 
 
 def us14_valid(tool_calls: list[dict]) -> bool:
