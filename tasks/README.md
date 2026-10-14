@@ -41,7 +41,8 @@ A matrix run refuses any task that is not `ready`.
 
 `SV1` measures how an agent supervises a long job: start it, check it no sooner than asked, let it finish, write the
 report file, stop. Its requirements are stated in the prompt, so it is **not** a property task: no `property` block, no
-discrimination record, no lean primary. It is `ready` by the general rules above.
+discrimination record, no lean primary. It is `ready` by the general rules above. The lean rings list it beside the
+ten property tasks, and the lean summary reports it in its own rows (ADR-0022 Amendment 1, ADR-0023 Amendment 2).
 
 - **The job is a clock, not a process.** `job.py start` records the start time; `job.py status` reads the elapsed wall
   time, appends one line to `job-run/status.log`, and writes `job-run/result.json` once 180 s have passed. Nothing runs
@@ -57,8 +58,9 @@ discrimination record, no lean primary. It is `ready` by the general rules above
   miscounter each fail exactly their own tests.
 - **What the tree cannot show.** A check that bypasses `job.py status` (for example reading `job-run/state.json` and
   computing the elapsed time) leaves no log line. So does an edit to `job-run/` by hand. Only the native record can show
-  these: the tool calls whose command names `job.py` or `job-run/`, with their start times. That reader belongs to the
-  behaviour measures (plan row B6), not to this task.
+  these. The lean summary counts them per cell (`report/supervision.py`, from `ToolInput`): the tool calls whose
+  command runs `job.py status`, and those whose command or paths name `job-run` directly. A harness with no tool-input
+  reader reads "not recorded". Their start times belong to the behaviour measures (plan row B6).
 
 ## Property tasks (enterprise evaluation, EV-1..EV-7)
 

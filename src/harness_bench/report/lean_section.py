@@ -140,6 +140,52 @@ def _per_property(summary: lean.LeanSummary) -> Html:
     return el("details", {"data-block": "per-property"}, el("summary", None, label), *children)
 
 
+SUPERVISION_CAPTION = ("Stated-requirement task (SV1, supervise a long job): not in the primary, the MDE or the property "
+                       "rows. Measures are per cell in rep order. The last two columns come from the native record: "
+                       "the working tree cannot show a check that reads job-run/ directly.")
+
+
+def _per_cell(cells: Sequence[lean.SupervisionCell], attr: str, why: str, shown=str) -> str:
+    """One measure over a row's cells, ` / `-joined in rep order; all missing reads `not recorded (<reason>)`."""
+    values = [getattr(c, attr) for c in cells]
+    if all(v is None for v in values):
+        reason = next((getattr(c, why) for c in cells if getattr(c, why)), None)
+        return f"{NOT_RECORDED} ({reason})" if reason else NOT_RECORDED
+    return " / ".join(NOT_RECORDED if v is None else shown(v) for v in values)
+
+
+def _supervision(summary: lean.LeanSummary) -> list[Html]:
+    """ADR-0023 Amendment 2: one row per stated-requirement task x combo x arm; nothing when the run has none."""
+    if not summary.supervision:
+        return []
+    rows = []
+    for r in summary.supervision:
+        excluded = [f"r{c.rep} excluded: {c.excluded}" for c in r.cells if c.excluded]
+        credit = f"{r.partial_credit:.2f}" if r.partial_credit is not None else f"{NOT_RECORDED} (no pass counted)"
+        cells = [
+            f"{r.passes[0]} of {r.passes[1]}" + (f" ({'; '.join(excluded)})" if excluded else ""), credit,
+            _per_cell(r.cells, "status_checks", "measures_reason"),
+            _per_cell(r.cells, "early_checks", "measures_reason"),
+            _per_cell(r.cells, "min_gap_s", "measures_reason"),
+            _per_cell(r.cells, "finished_seen", "measures_reason", lambda v: "yes" if v else "no"),
+            _per_cell(r.cells, "reported_checks", "measures_reason"),
+            _per_cell(r.cells, "status_calls", "calls_reason"),
+            _per_cell(r.cells, "job_run_calls", "calls_reason"),
+        ]
+        rows.append(el("tr", {"data-task": r.task, "data-combo": r.combo, "data-arm": r.arm},
+                       el("th", {"scope": "row"}, r.task), el("td", None, r.harness), el("td", None, r.arm),
+                       *(el("td", None, c) for c in cells)))
+    heads = ("Task", "Harness", "Arm", "pass@1 (passes of counted)", "Partial credit (mean)", "Status checks (job log)",
+             "Early checks", "Min gap (s)", "Finished seen", "Reported checks", "job.py status calls (record)",
+             "Direct job-run calls (record)")
+    return [el("div", {"data-block": "supervision", "class": "region", "role": "region", "tabindex": "0",
+                       "aria-label": "Supervision task"},
+               el("h3", None, "Supervision task (SV1)"),
+               el("table", {"data-table": "supervision"}, el("caption", None, SUPERVISION_CAPTION),
+                  el("thead", None, el("tr", None, *(el("th", {"scope": "col"}, h) for h in heads))),
+                  el("tbody", None, *rows)))]
+
+
 def _minutes(value: Decimal | None) -> str:
     return f"{value:.2f}" if value is not None else NOT_RECORDED
 
@@ -175,5 +221,5 @@ def build(summary: lean.LeanSummary, reported_run_id: str) -> model.Section:
     empty = [] if summary.rows else [el("p", None, "No per-harness row recorded.")]
     body = el("section", {"id": SECTION_ID}, el("h2", None, TITLE), _header(summary, reported_run_id), *empty,
               _table(summary), el("p", {"data-block": "ratio-note", "class": "small muted"}, RATIO_NOTE),
-              _per_property(summary), _limits(summary))
+              _per_property(summary), *_supervision(summary), _limits(summary))
     return model.Section(SECTION_ID, TITLE, body)

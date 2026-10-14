@@ -368,7 +368,7 @@ def test_the_plan_profile_record_freezes_a_non_empty_settings_block(tmp_path, mo
 
 # --- 13. the two lean re-run rings validate ------------------------------------------------------------------------
 
-@pytest.mark.parametrize(("name", "cells"), [("lean-rerun.yaml", 120), ("lean-rerun-probe.yaml", 12)])
+@pytest.mark.parametrize(("name", "cells"), [("lean-rerun.yaml", 132), ("lean-rerun-probe.yaml", 12)])
 def test_the_lean_rerun_rings_validate_as_v3(name, cells):
     m = config.load_yaml(RINGS / name)
     assert m["schema"] == "bench-matrix/3"

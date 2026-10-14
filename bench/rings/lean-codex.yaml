@@ -2,12 +2,12 @@
 # Why: lean batch 1 refused every Codex cell with HB-CELL-116 - pinned Codex 0.156.0 does not serve gpt-6.1-sol on a
 # ChatGPT account; 0.160.0 does. Codex was bumped to 0.160.0 and its 40 cells run as their own 2-batch lean pair;
 # Claude Code and Copilot keep their lean batches on the old build.
-# 10 property tasks x 2 arms (pack-off, pack-on; no arm Y) x 1 combo x 1 = 20 cells.
+# 10 property tasks + SV1 (ADR-0022 Amendment 1, accepted 2026-10-14) x 2 arms (pack-off, pack-on; no arm Y) x 1 combo x 1 = 22 cells.
 # Every combo pins its concrete model id. Tokens are the only cost axis.
 # The pack-on arm is a role arm: bind it at plan time with --arm on=SOURCE@COMMIT.
 schema: bench-matrix/2
 ring: {tag: lean}
-bom: {file: bench/bom.yaml, subset: [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2]}
+bom: {file: bench/bom.yaml, subset: [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2, SV1]}
 repetitions: 1
 arms:
   - {id: "off"}

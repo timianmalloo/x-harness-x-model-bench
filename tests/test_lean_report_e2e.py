@@ -26,6 +26,9 @@ TASKS = tuple(f"T{n:02d}" for n in range(1, 11))
 HARNESS, MODEL, COMBO = "claude-code", "claude-opus-5-5", "cc"
 STARTED = "2026-10-09T10:00:00.000Z"
 B1, B2 = "lean-b1", "lean-b2"
+SV1 = "SV1"
+SV1_MEASURES = {"status_checks": 4, "early_checks": 1, "min_gap_s": 12.5, "finished_seen": True, "report": "written",
+                "reported_checks": 4}
 
 
 def _setup(tmp_path: Path) -> tuple[Path, Path]:
@@ -33,10 +36,12 @@ def _setup(tmp_path: Path) -> tuple[Path, Path]:
 
 
 def _make_run(root: Path, runs: Path, run_id: str, *, tag: str | None = "lean", ring_hash: str = "ring-1",
-              tasks: tuple[str, ...] = TASKS, parameters: dict | None = None) -> Path:
-    """A completed, graded run: pack-off passes no task, the treatment passes the first six (a known effect)."""
+              tasks: tuple[str, ...] = TASKS, parameters: dict | None = None, sv1: bool = False) -> Path:
+    """A completed, graded run: pack-off passes no task, the treatment passes the first six (a known effect). With
+    `sv1`, the supervision task too: frozen graders without `property`, scored on pass_at_1 with an oracle.log."""
     run_dir = runs / run_id
     run_dir.mkdir(parents=True)
+    tasks = (*tasks, SV1) if sv1 else tasks
     cells = [{"cell_id": f"{task}-{arm}", "label": f"{task}.{COMBO}.{arm}.r1", "task": task, "task_version": "v1",
               "harness": HARNESS, "model": MODEL, "combo": COMBO, "arm": arm, "rep": 1, "budget_seconds": 300}
              for task in tasks for arm in ARMS]
@@ -46,6 +51,8 @@ def _make_run(root: Path, runs: Path, run_id: str, *, tag: str | None = "lean", 
             "profiles": {HARNESS: plan_mod.profile_record(root, HARNESS)},
             "matrix": {"combos": [{"id": COMBO, "harness": HARNESS, "model": MODEL}]},
             "comparisons": [list(ARMS)], "arms": {arm: {"pack": None} for arm in ARMS}, "cells": cells}
+    if sv1:
+        plan["tasks"] = {t: {"graders": ["correctness", "process" if t == SV1 else "property"]} for t in tasks}
     if tag is not None:
         plan["ring"] = {"tag": tag, "hash": ring_hash}
     plan["plan_hash"] = plan_mod.plan_hash(plan)
@@ -67,6 +74,15 @@ def _make_run(root: Path, runs: Path, run_id: str, *, tag: str | None = "lean", 
     gid = "grade-g1"
     with ledger.SegmentWriter.create(run_dir / "scores", gid) as sc:
         for cell in cells:
+            if cell["task"] == SV1:  # the correctness grader's two scores, whose evidence is the oracle.log
+                log = f"grading/{gid}/{cell['cell_id']}/correctness/oracle.log"
+                (run_dir / log).parent.mkdir(parents=True)
+                (run_dir / log).write_text(f"--- stderr\n{SV1}-MEASURES {json.dumps(SV1_MEASURES)}\nRan 6 tests\n",
+                                           encoding="utf-8")
+                for metric, value in (("pass_at_1", 1), ("partial_credit", "1")):
+                    sc.append({"grading_id": gid, "cell_id": cell["cell_id"], "metric_id": metric, "value": value,
+                               "reason": None, "evidence": log, "extraction_id": "x"})
+                continue
             passed = cell["arm"] == TREAT and cell["task"] in TASKS[:6]
             sc.append({"grading_id": gid, "cell_id": cell["cell_id"], "metric_id": verdicts.PRIMARY,
                        "value": 1 if passed else 0, "reason": None, "extraction_id": "x"})
@@ -200,3 +216,18 @@ def test_f_a_shown_difference_is_printed_and_does_not_refuse(tmp_path):
     assert shown is not None and "'parallelism': 2" in lines[shown] and "'parallelism': 4" in lines[shown]
     assert shown < next(n for n, line in enumerate(lines) if line.startswith("report: "))
     assert "Batches: 2 of 2" in _page(runs, B2)
+
+
+def test_g_sv1_cells_keep_the_primary_and_render_their_own_rows_through_the_cli(tmp_path):
+    """ADR-0023 Amendment 2 through `bench report`: the CLI reads each SV1 cell's oracle.log line into the lean
+    summary; the native-record counts read not recorded (this fixture archives no record), never 0."""
+    root, runs = _setup(tmp_path)
+    _make_run(root, runs, B1, sv1=True)
+    done = _bench(root, runs, "report", B1)
+    assert done.returncode == 0, done.stderr
+    page = _page(runs, B1)
+    assert "MDE 0.42" in page and "n 10 of 10" in page  # the primary: the ten tasks only
+    row = page[page.index('<tr data-task="SV1"'):]
+    row = row[:row.index("</tr>")]
+    assert ">1 of 1<" in row and ">4<" in row and ">12.5<" in row
+    assert "not recorded (no native record in the archive)" in row

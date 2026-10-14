@@ -128,11 +128,22 @@ Read on 2026-10-09 at `307ec787`:
 - **Refresh the ten readiness records** (about 1 h of Leader machine time, Inferred). Rejected. The lean path does
   not read them. The two trials cover the base trees that changed.
 
-## Amendment 1 (proposed 2026-10-14, not in force): the supervision task SV1 beside the ten
+## Amendment 1 (accepted 2026-10-14): the supervision task SV1 beside the ten
 
-- **Status.** Proposed by the W7 track of `plan-benchmark-instrumentation-2026-10-14` (row A6). It needs the Leader's
-  ruling and the `lean.py` change below. Until both land, the lean rings keep the ten property tasks and do not list
-  `SV1`.
+- **Status.** Accepted 2026-10-14, owner direction: no gaps before the re-run. Proposed by the W7 track of
+  `plan-benchmark-instrumentation-2026-10-14` (row A6); landed by the W11 track with the `lean.py` change, recorded in
+  ADR-0023 Amendment 2. Decision 1's ring is now the ten property tasks and `SV1`.
+- **Landed (W11, 2026-10-14).** [Verified: the tests named in ADR-0023 Amendment 2, run on the W11 branch.]
+  - `bench/rings/lean.yaml` (66 cells), `bench/rings/lean-rerun.yaml` (132 cells) and `bench/rings/lean-codex.yaml`
+    (22 cells, so it stays `lean.yaml` with one combo) list `SV1`. `lean-rerun-probe.yaml` is unchanged (one task).
+  - Change 2 is done without a new input. The frozen plan already carries each task's `graders` list
+    (`plan._graders`), and readiness requires a property task to name `property`. So `lean.build` reads the
+    stated-requirement tasks from the plan itself (`lean.stated_tasks`), and the CLI reads no `task.yaml`.
+  - Change 3 also carries `partial_credit`, `min_gap_s`, `finished_seen`, `reported_checks`, and two native-record
+    counts (plan row B6's gap), all per cell.
+  - Change 4: `docs/notes/lean-preregistration.md` is renewed in the same commit.
+  - The lean runs of the paste-in prompt (one run per combo, `REPETITIONS = 3`) go from 60 to 66 cells per combo:
+    11 tasks x 2 arms x 3.
 - **Why.** Row A6 moves the polling, early-stop and handoff-without-file behaviour seen in interactive sessions into
   scored headless cells. The next comparison run is a lean run. `SV1` (`tasks/SV1/`, `tasks/README.md`, "The
   supervision task") is ready. It is a stated-requirement task, so it has no `property` block.
@@ -143,7 +154,7 @@ Read on 2026-10-09 at `307ec787`:
   - `_planned` counts every planned pack-off cell, so the planned pairs per harness would grow from 20 to 22. The
     derived MDE (ADR-0023 decision 6) would then claim 22 pairs while at most 20 can be recorded.
   - `_properties` would add an `SV` family row with 0 recorded pairs.
-- **Proposed change.**
+- **Proposed change** (as proposed; see *Landed* for what differs).
   1. `bench/rings/lean.yaml` and `bench/rings/lean-rerun.yaml` add `SV1` to `bom.subset`. Cells per plan:
      `lean.yaml` 60 to 66 (11 tasks x 2 arms x 3 combos); `lean-rerun.yaml` 120 to 132 (11 x 2 x 6), 264 over two
      batches. Each `SV1` cell takes about 4-5 minutes (Inferred: the job is 180 s, plus turns; no cell run yet).

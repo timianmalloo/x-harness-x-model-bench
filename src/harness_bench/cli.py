@@ -53,7 +53,13 @@ from harness_bench import (
 from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gateway
 from harness_bench.grade import judge, runner
-from harness_bench.report import campaign_section, cli_table, html, summaries
+from harness_bench.report import (
+    campaign_section,
+    cli_table,
+    html,
+    summaries,
+    supervision,
+)
 from harness_bench.report import credentials as report_credentials
 
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
@@ -626,7 +632,8 @@ def _lean_summary(args, run_dir: Path, view: views.RunView) -> lean.LeanSummary 
         for shown in board.pool_check(pool_view, view):
             print(shown)
         batches.insert(0, (pool_dir, pool_view))  # batch order: the --pool run is batch 1
-    return lean.build([lean.BatchInput(v, views.run_wall_ns(d), *views.grading_duration(d), views.first_cell_started_at(d))
+    return lean.build([lean.BatchInput(v, views.run_wall_ns(d), *views.grading_duration(d), views.first_cell_started_at(d),
+                                       supervision.facts(v))
                        for d, v in batches], _prereg(getattr(args, "prereg", None)))
 
 
