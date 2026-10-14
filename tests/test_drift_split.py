@@ -17,7 +17,7 @@ from test_grade_correctness import git
 
 from harness_bench import config
 from harness_bench.grade import CellInput, _changes, drift, runner
-from harness_bench.telemetry import claude_code, normalize
+from harness_bench.telemetry import Extraction, claude_code, normalize
 
 CATALOG = config.load_yaml(ROOT / "bench" / "metrics.yaml")
 SPLIT = ("drift_machine_lines", "drift_task_implied_lines", "scope_creep", "attention_drift")
@@ -219,3 +219,19 @@ def test_codex_attention_drift_reads_each_shell_call_not_the_tool_name(tmp_path)
     log = (inp.out_dir / "attention.log").read_text(encoding="utf-8").splitlines()
     assert [line.split("\t")[-1] for line in log].count("no-path") == 1
     assert sorted(line.split("\t")[3] for line in log if line.endswith("\toutside")) == ["docs/guide.md", "src/other.py"]
+
+
+def test_attention_drift_uses_the_records_own_session_id_when_the_event_has_none(tmp_path):
+    """agy's `attempt.session_opened` carries `session_id: ""` (the conversation id arrives in the stream), as
+    `runner.read_record` already handles with `session_id or ex.session_id`; the same fallback is `_attention`'s."""
+    folder, cell, task = lean_cell(tmp_path, {})
+    cell["harness"] = "codex"
+    record = folder / "home" / "sessions" / f"rollout-{SESSION}.jsonl"
+    record.parent.mkdir(parents=True)
+    record.write_text(_exec(0, 'text(await tools.exec_command({cmd:"Get-Content src/other.py"}));') + "\n", encoding="utf-8")
+    events = ({"kind": "attempt.session_opened", "cell_id": CID, "session_id": ""},)
+    inp = lean_input(tmp_path, folder, cell, task, by_id("attention_drift"), events=events)
+    plan = {**inp.plan, "profiles": {"codex": {"record_glob": "sessions/rollout-{session_id}.jsonl", "subagent_glob": None}}}
+    inp = replace(inp, plan=plan, extraction=Extraction(session_id=SESSION))
+    assert drift.grade_cell(inp)["attention_drift"].value == Decimal(1)
+    assert drift.grade_cell(replace(inp, extraction=None))["attention_drift"].reason == drift.NO_SESSION

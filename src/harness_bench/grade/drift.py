@@ -254,6 +254,7 @@ def _attention(inp: CellInput, hood: _Hood) -> Score:
     of its read and list statements, whatever else it does, and a read that names no path is `no-path`.
     """
     session = next((e.get("session_id") for e in reversed(inp.events) if e.get("kind") == "attempt.session_opened"), "")
+    session = session or (inp.extraction.session_id if inp.extraction is not None else None) or ""  # agy: the record names it
     if not session:
         return Score(None, NO_SESSION)
     harness = inp.cell.get("harness")
