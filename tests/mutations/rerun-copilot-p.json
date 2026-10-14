@@ -75,8 +75,15 @@
   {
     "name": "the tool list is not last, so the scenario-6 ids land after --log-dir",
     "file": "bench/profiles/copilot.yaml",
-    "find": "\"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\"]",
-    "replace": "\"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\"]",
+    "find": "\"--no-ask-user\", \"--disable-builtin-mcps\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\"]",
+    "replace": "\"--no-ask-user\", \"--disable-builtin-mcps\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\"]",
     "tests": ["tests/test_profile_copilot_p.py::test_a_scenario6_launch_extends_the_tool_list"]
+  },
+  {
+    "name": "the ACP control launch's tool list is not last, so the scenario-6 ids land after --log-dir",
+    "file": "bench/profiles/copilot.yaml",
+    "find": "\"--allow-tool\", \"write\", \"--disable-builtin-mcps\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\"]",
+    "replace": "\"--allow-tool\", \"write\", \"--disable-builtin-mcps\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\"]",
+    "tests": ["tests/test_profiles.py::test_copilot_profile_has_r45_static_tool_flags[acp]"]
   }
 ]

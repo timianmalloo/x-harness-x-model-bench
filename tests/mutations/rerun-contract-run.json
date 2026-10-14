@@ -21,8 +21,8 @@
   {
     "name": "expand drops the combo effort",
     "file": "src/harness_bench/plan.py",
-    "find": "c.get(\"effort\", profiles.DEFAULT), c.get(\"context\", profiles.DEFAULT)))",
-    "replace": "profiles.DEFAULT, c.get(\"context\", profiles.DEFAULT)))",
+    "find": "c.get(\"effort\", profiles.DEFAULT), c.get(\"context\", profiles.DEFAULT),\n",
+    "replace": "profiles.DEFAULT, c.get(\"context\", profiles.DEFAULT),\n",
     "tests": [
       "tests/test_contract_run.py::test_expand_reads_combo_settings_and_a_v2_matrix_gives_default"
     ]

@@ -23,8 +23,8 @@
   {
     "name": "R-45 Copilot builtin MCP disable flag dropped",
     "file": "bench/profiles/copilot.yaml",
-    "find": "\"--disable-builtin-mcps\", ",
-    "replace": "",
+    "find": "\"--no-ask-user\", \"--disable-builtin-mcps\", ",
+    "replace": "\"--no-ask-user\", ",
     "tests": ["tests/test_profiles.py::test_copilot_profile_has_r45_static_tool_flags"]
   },
   {
@@ -47,5 +47,12 @@
     "find": "return set(argv[argv.index(\"--available-tools\") + 1:])",
     "replace": "return set(argv[argv.index(\"--available-tools\") + 1:]) | {\"web_search\"}",
     "tests": ["tests/test_allowlist_classes.py::test_copilot_allowlist_covers_every_in_class_id_and_nothing_outside_it"]
+  },
+  {
+    "name": "R-45 Copilot builtin MCP disable flag dropped from the ACP control launch",
+    "file": "bench/profiles/copilot.yaml",
+    "find": "\"--allow-tool\", \"write\", \"--disable-builtin-mcps\", \"--log-level\"",
+    "replace": "\"--allow-tool\", \"write\", \"--log-level\"",
+    "tests": ["tests/test_profiles.py::test_copilot_profile_has_r45_static_tool_flags[acp]"]
   }
 ]

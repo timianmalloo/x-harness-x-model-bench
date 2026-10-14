@@ -176,8 +176,9 @@ def test_copilot_argv_uses_the_pinned_exe_and_each_cells_model(tmp_path):
         assert argv[argv.index("--model") + 1] == model
 
 
-def test_copilot_profile_has_r45_static_tool_flags():
-    command = profiles.load(ROOT, "copilot").command
+@pytest.mark.parametrize("transport", [None, "acp"], ids=["p", "acp"])  # plan row A3: the ACP control launch too
+def test_copilot_profile_has_r45_static_tool_flags(transport):
+    command = profiles.load(ROOT, "copilot").for_transport(transport).command
     required = ("--disable-builtin-mcps", "--available-tools", "powershell", "list_powershell",
                 "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill")
     missing = [flag for flag in required if flag not in command]
