@@ -56,6 +56,11 @@ def test_the_wave_two_validity_codes_are_named():  # seam S1 (R-15, R-27)
                                               "build's recorded self-report)")  # R-47
 
 
+def test_the_harness_path_limit_code_is_named_apart_from_the_hook_denial():  # B10
+    assert errors.RUN_CODES["HB-VAL-012"].startswith("validity: harness path limit")
+    assert errors.RUN_CODES["HB-VAL-012"] != errors.RUN_CODES["HB-VAL-004"]
+
+
 def test_the_out_of_profile_codes_are_named():  # R-45 item 2, R-54 (b): one code for each level
     assert errors.RUN_CODES["HB-VAL-008"] == "validity: out-of-profile tool called (a class-other tool call executed)"
     assert errors.RUN_CODES["HB-VAL-009"] == ("warning: out-of-profile attempt refused (the driver counted a permission "

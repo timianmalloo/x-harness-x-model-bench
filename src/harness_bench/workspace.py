@@ -46,6 +46,22 @@ GIT_TIMEOUT = 120
 WRITE_ACTIONS = ("ADD", "UPDATE", "MERGE")
 
 
+def cell_dir(cells_root: Path, run_id: str, cell_id: str) -> Path:
+    """A cell's folder: `<cells_root>/<run id>/<cell id>`, except when the cells root is already named for the run
+    (the lean prompt's `C:\\Projects\\bench-cells\\<run id>`): then `<cells_root>/<cell id>`. The run id (up to 64
+    characters) otherwise repeats, and Copilot's own session-state files path went over MAX_PATH (260), where
+    its path verification denied the call (B10). A root that already holds a `<run id>` folder is a run begun
+    under the old layout and keeps it, so a resume finds its cells."""
+    if cells_root.name == run_id and not (cells_root / run_id).is_dir():
+        return cells_root / cell_id
+    return cells_root / run_id / cell_id
+
+
+def run_cells_dir(cells_root: Path, run_id: str) -> Path:
+    """The folder that holds a run's cell folders (the parent of `cell_dir`)."""
+    return cell_dir(cells_root, run_id, "x").parent
+
+
 def check_cells_root(root: Path) -> None:
     """Refuse a cells root with an agent instruction file in it or in any ancestor (HB-PRE-002)."""
     resolved = root.resolve()

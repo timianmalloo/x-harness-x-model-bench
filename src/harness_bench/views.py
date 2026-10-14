@@ -14,7 +14,9 @@ Rules, each defined once here:
 - Validity, tokens, the time split, leaderboard rows and exports are derived, never stored. A value that
   was not measured is a `Measure(None, reason)`, never 0 (US-27).
 - Validity, in order: an invalidating cause; `invalid (build mismatch)` (HB-VAL-007, R-47); not graded;
-  `invalid (tools denied by hook)` (HB-VAL-004, R-27); `invalid (out-of-profile tool called)` (HB-VAL-008, R-45 item
+  `invalid (tools denied by hook)` (HB-VAL-004, R-27); `invalid (harness path limit)` (HB-VAL-012, B10) for a call
+  the harness's own path verification denied (Copilot: a path outside the cell or over MAX_PATH; never a hook, the
+  pack or the model); `invalid (out-of-profile tool called)` (HB-VAL-008, R-45 item
   2, R-54) for a class-`other` tool call that executed; `invalid (model mismatch)` (HB-VAL-002) for a served model
   that is not the pin, a declared auxiliary model, an exact alias of the pin, or one the task's `model_map` names
   (US-11, ADR-0024 s5), read from `model_calls` and the `served` model, even in a partial record; `invalid (setting
@@ -789,7 +791,7 @@ def _model_served(rows: list[dict]) -> frozenset[str]:
 def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
               unrecorded: str | None = None, denials: int = 0, mapped: frozenset[str] = frozenset(),
               build: Finding | None = None, out_of_profile: Finding | None = None, settings: Finding | None = None,
-              model_served: frozenset[str] = frozenset()) -> tuple[str, str | None]:
+              model_served: frozenset[str] = frozenset(), path_limit: Finding | None = None) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
@@ -801,6 +803,8 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
         return "not graded", None
     if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable
         return "invalid (tools denied by hook)", "HB-VAL-004"
+    if path_limit is not None:  # B10: the harness's own path check, not a hook, the pack or the model; same slot, measured
+        return "invalid (harness path limit)", path_limit.code
     # R-45 item 2, R-54: the slot is this track's choice (the rulings leave it open). After HB-VAL-004: both are the tool
     # treatment (US-14), and a hook denial is the narrower, pack-specific finding, so R-27's negative control keeps its
     # code. Before the model mismatch and "not recorded": an executed call is measured even in a partial record (D&P).
@@ -876,11 +880,15 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         delegate = Measure(None, "not graded") if tools is None else Measure(sum(1 for r in tools if r.get("tool_class") == DELEGATE))
     state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
     # R-54 (b): a row outside the profile that a hook denied is a refused attempt (HB-VAL-009), not an R-27 treatment denial.
-    denials = normalize.hook_denials([r for r in tools or [] if not _outside(r.get("tool_class"), scenario)])
+    in_profile = [r for r in tools or [] if not _outside(r.get("tool_class"), scenario)]
+    denials = normalize.hook_denials(in_profile)
+    refused_paths = normalize.path_denials(in_profile)  # B10: Copilot's own path verification, never counted as a hook
+    path_limit = Finding("HB-VAL-012", "error", f"{refused_paths} call(s) denied by the harness's own path verification "
+                         "(a path outside the cell, or one over the path-length limit)") if refused_paths else None
     validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, denials, _mapped(plan, cell), build,
-                                        executed, setting, _model_served(served_rows))
+                                        executed, setting, _model_served(served_rows), path_limit)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
-    detail = next((f.message for f in (build, executed, setting) if f is not None and f.code == validity_code), None)
+    detail = next((f.message for f in (build, executed, setting, path_limit) if f is not None and f.code == validity_code), None)
     return CellView(
         cell_id=cid, task=cell["task"], rep=cell["rep"], label=cell.get("label", cid), combo=cell["combo"], arm=cell_arm(cell), harness=cell["harness"], model=cell["model"],
         outcome=state, cause=cause.label if cause else None,

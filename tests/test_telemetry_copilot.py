@@ -535,6 +535,56 @@ def test_us14_one_denial_among_successes_is_not_valid(tmp_path):  # TA1, TA9 (R-
     assert copilot.us14_valid(rows) is False
 
 
+# B10: a denial by Copilot's own path verification is not a hook denial -------------------------------------
+# Real shape (lean runs of 2026-10-13, 17 denials in 9 cells): `permission.requested` carries `data.promptRequest`
+# {kind: "path", accessKind: "shell", paths: [...]}, `permission.completed` has decisionSource "unattended_fallback",
+# and the tool call completes with error.code "denied". A preToolUse hook denial has no permission.* rows at all.
+
+def _denied_call(call_id: str, prompt_request: dict | None, request_id: str = "req-1", decision: str = "denied") -> list[dict]:
+    requested = {"requestId": request_id, "permissionRequest": {"kind": "shell", "toolCallId": call_id}}
+    if prompt_request is not None:
+        requested["promptRequest"] = prompt_request
+    return [
+        _row("tool.execution_start", {"toolCallId": call_id, "toolName": "powershell"}, ts="2026-01-01T00:00:01.000Z"),
+        _row("permission.requested", requested, ts="2026-01-01T00:00:02.000Z"),
+        _row("permission.completed", {"requestId": request_id, "toolCallId": call_id,
+                                       "result": {"kind": f"{decision}-no-approval-rule-and-could-not-request-from-user"},
+                                       "decisionSource": "unattended_fallback"}, ts="2026-01-01T00:00:03.000Z"),
+        _row("tool.execution_complete", {"toolCallId": call_id, "success": False,
+                                          "error": {"code": "denied", "message": "Permission denied"}},
+             ts="2026-01-01T00:00:04.000Z"),
+    ]
+
+
+def _denial_basis(tmp_path, call_events: list[dict]) -> list:
+    path = _write(tmp_path, [_start(), _user("prompt"), *call_events, _shutdown(_model_metrics())])
+    ex = copilot.read(path)
+    rows = normalize.tool_call_rows("r1", "c1", ex.session_id, ex, "x")
+    assert [r["outcome_code"] for r in rows] == ["denied"]
+    return [r["denial_basis"] for r in rows]
+
+
+def test_a_denied_call_whose_permission_request_was_a_path_check_carries_the_path_basis(tmp_path):
+    prompt = {"kind": "path", "accessKind": "shell", "paths": ["C:\\Users\\someone"], "toolCallId": "A"}
+    assert _denial_basis(tmp_path, _denied_call("A", prompt)) == ["path_verification"]
+
+
+def test_a_denied_call_with_no_permission_rows_is_a_hook_denial(tmp_path):  # the rev-92 shape
+    events = _denied_call("A", None)
+    assert _denial_basis(tmp_path, [events[0], events[3]]) == [None]
+
+
+def test_a_denied_call_whose_permission_request_was_not_a_path_check_has_no_path_basis(tmp_path):
+    assert _denial_basis(tmp_path, _denied_call("A", {"kind": "commands", "accessKind": "shell"})) == [None]
+    assert _denial_basis(tmp_path / "2", _denied_call("A", None)) == [None]
+
+
+def test_an_approved_path_request_does_not_mark_a_later_hook_denial(tmp_path):
+    prompt = {"kind": "path", "accessKind": "shell", "paths": ["C:\\Users\\someone"]}
+    events = _denied_call("A", prompt, decision="approved")
+    assert _denial_basis(tmp_path, events) == [None]
+
+
 # Bounds: the shared MAX_LINE/MAX_FILE caps apply unchanged to the Copilot reader -----------------------
 
 def test_a_newline_free_copilot_record_is_read_in_bounded_memory(tmp_path, monkeypatch):

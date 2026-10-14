@@ -57,6 +57,9 @@ class ModelCall:
     total_nano_aiu: int | None = None  # Copilot's native AI-unit billing measure, verbatim; null, never 0, when absent
 
 
+PATH_VERIFICATION = "path_verification"  # ToolCall.denial_basis: the harness's own path check denied the call (B10)
+
+
 @dataclass(frozen=True)
 class ToolCall:
     native_ordinal: int
@@ -66,6 +69,7 @@ class ToolCall:
     end: str | None
     ok: bool | None
     outcome_code: str | None = None  # the native error code of a failed call (e.g. "denied"); null on success
+    denial_basis: str | None = None  # "path_verification" when the harness's own path check denied it (B10); else null
 
 
 @dataclass(frozen=True)

@@ -733,8 +733,13 @@ def cmd_teardown(args) -> int:
     run_dir = _run_dir(args)
     if oslock.is_held(run_dir / ".lock"):
         raise BenchError("HB-RUN-003", f"run {args.run_id} is held by a live engine; teardown refused")
-    archived = {e["cell_id"] for e in views.rows(run_dir, "events") if e["kind"] == "cell.archived"}
-    removed, kept = archive.teardown(Path(args.cells_root) / args.run_id, archived)
+    events = views.rows(run_dir, "events")
+    archived = {e["cell_id"] for e in events if e["kind"] == "cell.archived"}
+    cells_root = Path(args.cells_root)
+    run_cells = workspace.run_cells_dir(cells_root, args.run_id)
+    # a cells root named for the run also holds `grading` and `.sources` (B10): only the run's own cells are judged
+    only = {e["cell_id"] for e in events if e.get("cell_id")} if run_cells == cells_root else None
+    removed, kept = archive.teardown(run_cells, archived, only)
     for cid in removed:
         print(f"removed {cid}")
     for cid in kept:

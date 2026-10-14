@@ -93,6 +93,7 @@ from pathlib import Path
 from harness_bench.telemetry import (
     MAX_FILE,
     MAX_LINE,
+    PATH_VERIFICATION,
     Extraction,
     HarnessEvent,
     MissingField,
@@ -140,6 +141,8 @@ def read(path: Path) -> Extraction:
     version_ok = False
     last_shutdown: tuple[int, str | None, dict] | None = None  # (native_ordinal, row timestamp, data)
     open_tools: dict[str, dict] = {}
+    path_requests: set[str] = set()  # requestId of a permission request whose `promptRequest.kind` is "path" (B10)
+    path_denied: set[str] = set()  # toolCallId of a call that request was denied for
     hook_starts = 0
     hook_failures = 0
     saw_main_user = False
@@ -186,8 +189,20 @@ def read(path: Path) -> Extraction:
                 ok = success if isinstance(success, bool) else None
                 error = as_dict(data.get("error"))
                 outcome_code = None if ok is True else as_str(error.get("code"))
+                basis = PATH_VERIFICATION if outcome_code == "denied" and tool_call_id in path_denied else None
                 ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], stamp, ok,
-                                              outcome_code))
+                                              outcome_code, basis))
+        elif kind == "permission.requested":
+            # Verified on the lean runs of 2026-10-13: `data.promptRequest` {kind: "path", accessKind, paths} beside
+            # `permissionRequest` (kind "shell"). A preToolUse hook denial writes no permission.* row.
+            request_id = as_str(data.get("requestId"))
+            if request_id is not None and as_dict(data.get("promptRequest")).get("kind") == "path":
+                path_requests.add(request_id)
+        elif kind == "permission.completed":
+            denied = (as_str(as_dict(data.get("result")).get("kind")) or "").startswith("denied")
+            call_id = as_str(data.get("toolCallId"))
+            if denied and call_id is not None and as_str(data.get("requestId")) in path_requests:
+                path_denied.add(call_id)
         elif kind == "hook.start":
             hook_starts += 1
             hook_id = as_str(data.get("hookInvocationId"))
