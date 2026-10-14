@@ -307,6 +307,10 @@ class ProcessTrace:
     job -- this module reads one record at a time)."""
     first_assistant_text: str | None
     calls: tuple[ToolInput, ...] = ()
+    # Ceremony (I2): user-visible assistant text in this record, thinking excluded. None = the reader does not count it
+    # (not recorded), never 0 for unknown. A reader that counts it sets both.
+    assistant_chars: int | None = None
+    assistant_messages: int | None = None
 
 
 def patch_header_paths(text: str) -> tuple[str, ...]:

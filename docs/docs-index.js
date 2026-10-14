@@ -10560,6 +10560,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "b0dfc4a36341adc1f4b1772a4d4f8933e89f36ada5fd9a50332f73d7fa0939f6"
     },
     {
+      "id": "plan-benchmark-instrumentation-2026-10-14",
+      "path": "docs/plans/benchmark-instrumentation-2026-10-14.md",
+      "title": "Benchmark instrumentation for drift, tool use and the Codex/Copilot contradiction",
+      "type": "plan",
+      "status": "in-progress",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-28",
+      "reviewSuggested": [],
+      "summary": "Every new and owed improvement from the 2026-10-13 lean-run analysis, as seven parallel work tracks, built before the next comparison run. Goal: the next run answers 'does GPT drift more in Copilot than in Codex' from measured facts at both layers, with the confounds removed or measured.",
+      "tags": [
+        "lean-benchmark",
+        "instrumentation",
+        "drift",
+        "tool-use",
+        "codex",
+        "copilot",
+        "plan"
+      ],
+      "links": [
+        {
+          "to": "plan-lean-runs-2026-10-13-findings-and-repair",
+          "rel": "derives-from"
+        },
+        {
+          "to": "runbook-add-a-harness",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "cfac6b01c4517b2810d900bd4b4fb4e96f6ad78dd7d031e6db04dde3132179a0"
+    },
+    {
       "id": "plan-lean-runs-2026-10-13-findings-and-repair",
       "path": "docs/plans/lean-runs-2026-10-13-findings-and-repair.md",
       "title": "Lean runs of 2026-10-13: what they show, what broke, what changed",
@@ -11548,6 +11581,14 @@ window.DOCS_INDEX = {
       "artifactId": "arch-evaluation-campaign"
     },
     {
+      "id": "surface-plans-benchmark-instrumentation-2026-10-14",
+      "path": "docs/plans/benchmark-instrumentation-2026-10-14.html",
+      "title": "Benchmark Instrumentation 2026 10 14",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-benchmark-instrumentation-2026-10-14"
+    },
+    {
       "id": "surface-proposals-benchmark-state-and-target",
       "path": "docs/proposals/benchmark-state-and-target.html",
       "title": "Benchmark: state and target",
@@ -11902,5 +11943,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "ad4fd2c6e41f993f34408774f401d9ce54805aa7ea0ea25fcb06cf3e2a213e83"
+  "graphSha256": "46d812ced11bc85d69365957ee0251b2f149f92e2a051936cf960b3f76438174"
 };
