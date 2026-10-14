@@ -849,7 +849,7 @@ Red-first tests for `check_regrade.py`:
 | F11 | history rewritten, so the builder commit cannot be found | **mitigate:** NA `pre-turn commit not found…` | `_changes`: a rebased history → NA |
 | F12 | a tool missing or changed | **detect:** `tool_versions`; **mitigate:** NA `mutation tool not available` | `test_mutation_tool_missing_is_na` |
 | F13 | offline restore fails | **mitigate:** NA `infrastructure failure before build: restore`, never 0 (DR-G4 decides by cause) | seeded empty `NUGET_PACKAGES` |
-| F14 | Codex has no per-call `ok` | **accept** in wave 3, disclosed (DR-G3) | the Codex NA fixtures |
+| F14 | Codex has no per-call `ok` (closed 2026-10-14, W13) | **accept** in wave 3, disclosed (DR-G3) | the Codex NA fixtures |
 | F15 | a slow D1 pass | **detect:** `grade.grader_done` durations; **accept** ≤ 2 h per gate pass | measured on the first D1 re-grade |
 | F16 | a judged miss in pass B calls the backend | **detect:** gate criterion 6 | GW-I's seeded miss |
 | F17 | a hostile working copy: a huge file, a symlink, a build target | **transfer:** ADR-0010 and ADR-0013 (Job Object, deadline); **mitigate:** bounded reads; `symlinks=True` | `_changes`: a symlink and a 300 MB file are not read past the bounds |
@@ -974,8 +974,8 @@ Directives: **D0 + D1 + D2 + D4 + D6 + D7.** A1, A3 and A5 apply to the judge (G
   - The gap: `verification_before_done`, `time_to_first_green` and `instruction_reread_rate` need command or read-target text, and no reader extracts it (G10).
   - **Recommended:** NA in wave 3. A later row adds `ToolCall.intent`, which creates a new `extraction_id` and leaves the 0.3 export unchanged.
   - Alternative: a wave-3 slice across all three readers.
-- **DR-G3 — Codex has no per-call outcome.**
-  - The gap: every Codex row has `ok = null` (G10). So `tool_error_rate`, `stuck_loops`, `recovery_rate` and, through the NA rule, `completion_without_intervention` are NA for every Codex cell.
+- **DR-G3 — Codex has no per-call outcome.** *Closed 2026-10-14 (W13, W14):* the Codex and agy readers now set `ok` and `outcome_code` on every call they can attribute (`script_failed`, `exit_<N>`, `patch_<status>`), and Copilot's reader counts a non-zero shell exit as a failed call (`exit_<N>`, W14). The text below is the wave-3 decision as it stood.
+  - The gap: every Codex row had `ok = null` (G10). So `tool_error_rate`, `stuck_loops`, `recovery_rate` and, through the NA rule, `completion_without_intervention` are NA for every Codex cell.
   - **Recommended:** accept and disclose in wave 3, then add a Codex reader row for exec exit codes.
   - Alternative: leave the process area out of cross-harness comparisons until then.
 - **DR-G4 — a compile failure is 0, decided by cause.**

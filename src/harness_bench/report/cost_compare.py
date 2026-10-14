@@ -83,10 +83,13 @@ class ContextCurve:
 
 @dataclass(frozen=True)
 class PromptComposition:
-    """Prompt composition from `prompt_parts`: characters per part kind, and the instruction files sent."""
+    """Prompt composition from `prompt_parts`: characters per part kind, and the instruction files sent. A part kind
+    whose rows lack a character count is not recorded in `chars_by_part` (never a partial sum or 0); where its rows
+    state a size in tokens (Copilot's `tools`, ADR-0026 amendment 2026-10-14) `tokens_by_part` holds it."""
     series: SeriesKey
     chars_by_part: Mapping[str, Measure]
     instruction_files: Measure
+    tokens_by_part: Mapping[str, Measure] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -190,6 +193,7 @@ class _Cell:
     dropped: int
     series: context_growth.RequestSeries
     paths: tuple[str, ...]
+    part_tokens: dict[str, Measure]  # per part kind, where its rows state a size in tokens
 
 
 def _served_value(view: RunView, cell: CellView, name: str) -> Measure:
@@ -253,9 +257,16 @@ def _cell(view: RunView, cell: CellView) -> _Cell:
     rows = views_mod.cell_rows(view, "prompt_parts", cell) or []
     p_reason = views_mod.stream_reason(view, "prompt_parts", cell) or (None if rows else NO_ROWS)
     chars: dict[str, int] = {}
+    uncounted: dict[str, int] = {}
+    tokens: dict[str, int] = {}
     for r in rows:
-        chars[r["part"]] = chars.get(r["part"], 0) + (r.get("chars") or 0)
-    parts = {p: Measure(v) for p, v in chars.items()}
+        part = r["part"]
+        chars[part] = chars.get(part, 0) + (r.get("chars") or 0)
+        uncounted[part] = uncounted.get(part, 0) + (r.get("chars") is None)
+        if r.get("tokens") is not None:
+            tokens[part] = tokens.get(part, 0) + r["tokens"]
+    parts = {p: Measure(None, "a row of this part has no character count") if uncounted[p] else Measure(v)
+             for p, v in chars.items()}
     m["instruction_files"] = Measure(None, p_reason) if p_reason else Measure(
         sum(1 for r in rows if r.get("part") == "instruction_file"))
     # tool phases, bytes and re-reads, from the native record's ToolInput sequence
@@ -278,7 +289,8 @@ def _cell(view: RunView, cell: CellView) -> _Cell:
     m["clean"] = Measure(1 if cell.validity == "valid" else 0)
     return _Cell(view, cell, m, buckets, parts, tuple(sorted({r["source_kind"] for r in items})),
                  tuple(kept[:EXCERPT_CAP]), len(texts) - len(kept),
-                 context_growth.request_series(view, cell.cell_id), _outside_paths(view, cell))
+                 context_growth.request_series(view, cell.cell_id), _outside_paths(view, cell),
+                 {p: Measure(v) for p, v in tokens.items()})
 
 
 def _key(view: RunView, cell: CellView) -> SeriesKey:
@@ -369,8 +381,11 @@ def build(views: Sequence[RunView]) -> CostCompare:
                                       sum(c.dropped for c in cells)))
         context.append(_curve(k, cells, mean["window"]))
         part_names = list(dict.fromkeys(p for c in cells for p in c.parts))
+        token_parts = list(dict.fromkeys(p for c in cells for p in c.part_tokens))
         prompts.append(PromptComposition(k, {p: _mean([_part(c, p) for c in cells], whole=True)
-                                             for p in part_names}, mean["instruction_files"]))
+                                             for p in part_names}, mean["instruction_files"],
+                                         {p: _mean([c.part_tokens[p] for c in cells if p in c.part_tokens], whole=True)
+                                          for p in token_parts}))
         phases.append(ToolPhaseRow(k, mean["explore"], mean["edit"], mean["verify"], mean["other"], mean["bytes"]))
         anatomy.append(TimeAnatomyRow(k, mean["model_ms"], mean["acp_ms"], mean["tool_ms"], mean["hook_ms"],
                                       mean["idle_ms"]))
@@ -654,6 +669,11 @@ def _prompt(cc: CostCompare, pg: _Page) -> model.Section:
     parts = _keys([p.chars_by_part for p in cc.prompt_composition])
     if parts:
         cells = _mapped([p.chars_by_part for p in cc.prompt_composition], parts, "part absent")
+        for row, p in zip(cells, cc.prompt_composition, strict=True):  # a part sized only in tokens shows them
+            for i, name in enumerate(parts):
+                tokens = p.tokens_by_part.get(name)
+                if tokens is not None and tokens.value is not None and p.chars_by_part.get(name, Measure(None)).value is None:
+                    row[i] = f"{_fmt(tokens)} tokens (chars not recorded)"
         headers = [f"Characters: {p}" for p in parts]
     else:
         cells = [[_fmt(Measure(None, p.instruction_files.reason or "no prompt parts recorded"))]

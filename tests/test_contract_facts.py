@@ -309,7 +309,7 @@ def test_cost_compare_dataclasses_fields_and_order():
     assert names(cost_compare.ReasoningRow) == ["series", "tokens_per_cell", "tokens_per_request", "visible_chars",
                                                 "source_kinds", "excerpts", "excerpts_dropped"]
     assert names(cost_compare.ContextCurve) == ["series", "served_window", "median", "low", "high", "reason"]
-    assert names(cost_compare.PromptComposition) == ["series", "chars_by_part", "instruction_files"]
+    assert names(cost_compare.PromptComposition) == ["series", "chars_by_part", "instruction_files", "tokens_by_part"]
     assert names(cost_compare.ToolPhaseRow) == ["series", "explore", "edit", "verify", "other", "bytes_returned"]
     assert names(cost_compare.TimeAnatomyRow) == ["series", "model_ms", "model_ms_acp_estimate", "tool_ms", "hook_ms", "idle_ms"]
     assert names(cost_compare.DriftRow) == ["series", "machine_lines", "task_implied_lines", "discretionary_lines",

@@ -223,6 +223,29 @@ def test_a_cell_with_no_prompt_part_rows_and_no_reason_is_not_recorded_never_zer
     assert p.instruction_files == views.Measure(None, cost_compare.NO_ROWS) and p.chars_by_part == {}
 
 
+def test_a_part_with_no_character_count_shows_its_tokens_never_a_zero(fixture_runs):
+    """W14 follow-up: Copilot's `tools` part has `chars` None and `tokens` 2187. It read as 0 characters. Now its chars
+    are not recorded and the table shows the tokens; a part with a count is summed as before, and a part where one row
+    lacks a count is not a partial sum."""
+    _, _, (v1, _) = fixture_runs
+    done = next(e for e in v1.facts["events"] if e.get("kind") == "grading.completed" and e["grading_id"] == v1.grading_id)
+    done["streams_not_recorded"] = {}
+    a, b = v1.cells
+    v1.cells = [a]
+    key = {"cell_id": a.cell_id, "extraction_id": a.extraction_id}
+    v1.facts["prompt_parts"] = [key | {"native_ordinal": 0, "part": "system", "chars": 40},
+                                key | {"native_ordinal": 1, "part": "tools", "chars": None, "tokens": 2187},
+                                key | {"native_ordinal": 2, "part": "skills", "chars": 10},
+                                key | {"native_ordinal": 3, "part": "skills", "chars": None}]
+    cc = cost_compare.build([v1])
+    p = cc.prompt_composition[0]
+    assert p.chars_by_part["system"] == views.Measure(40)
+    assert p.chars_by_part["tools"].value is None and p.tokens_by_part == {"tools": views.Measure(2187)}
+    assert p.chars_by_part["skills"].value is None  # 10 of 2 rows is not the part's size
+    page = cost_compare.render(cc)
+    assert "2,187 tokens (chars not recorded)" in page and "Characters: tools</th>" in page
+
+
 def test_an_excerpt_shaped_like_an_email_or_uuid_is_dropped_and_counted(fixture_runs):
     _, _, (v1, _) = fixture_runs
     cell = v1.cells[0]
