@@ -7,7 +7,7 @@ owner: "@timianmalloo"
 summary: "Every new and owed improvement from the 2026-10-13 lean-run analysis, as seven parallel work tracks, built before the next comparison run. Goal: the next run answers 'does GPT drift more in Copilot than in Codex' from measured facts at both layers, with the confounds removed or measured."
 tags: [lean-benchmark, instrumentation, drift, tool-use, codex, copilot, plan]
 links:
-  - { to: plan-lean-runs-2026-10-13-findings-and-repair, rel: derives-from }
+  - { to: plan-lean-runs-2026-10-13-findings-and-repair, rel: relates-to }
   - { to: runbook-add-a-harness, rel: relates-to }
 review-by: "2026-10-28"
 ---

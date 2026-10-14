@@ -10582,7 +10582,7 @@ window.DOCS_INDEX = {
       "links": [
         {
           "to": "plan-lean-runs-2026-10-13-findings-and-repair",
-          "rel": "derives-from"
+          "rel": "relates-to"
         },
         {
           "to": "runbook-add-a-harness",
@@ -10590,7 +10590,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "cfac6b01c4517b2810d900bd4b4fb4e96f6ad78dd7d031e6db04dde3132179a0"
+      "sourceSha256": "9519fc5e62bae1f4e9da6ebd88198dfae89dfb6813b4c041c8979f5f2042acf2"
     },
     {
       "id": "plan-lean-runs-2026-10-13-findings-and-repair",
@@ -11943,5 +11943,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "46d812ced11bc85d69365957ee0251b2f149f92e2a051936cf960b3f76438174"
+  "graphSha256": "4f74ec3473d88c0033ec9a3181538bf643929ea0e2b748df7711ced285ff01e1"
 };
