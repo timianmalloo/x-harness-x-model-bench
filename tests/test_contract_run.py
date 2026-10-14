@@ -45,12 +45,15 @@ PROFILE_RECORD_HASHES = {
     # instr/w12, deliberate: copilot.yaml declares `transports.acp` (plan row A3, the ACP transport control); was 62a87c2..eac
     # instr/w16, deliberate (owner decision 2026-10-14): copilot.yaml sets user_home_vars [HOME, USERPROFILE] and adds
     # `--add-dir {home}` to both launches, so a command naming $env:USERPROFILE stays in the cell; was 7b5b5b33..58d30
-    "copilot": "eb69a867622b910991de7a292434cddeee8ea3b5b7634a68f09a7b132bce7d7a",
+    # instr/w17, deliberate (coordinator decision 2026-10-14): copilot.yaml seeds config.json with the cell worktree as a
+    # trustedFolder (both arms, both transports; `copilot -p` runs repo hooks only for a trusted folder) and adds the
+    # host's uv Python store as an allowed directory ({uv_python_arg}); was eb69a867..7d7a
+    "copilot": "319d2e7589db5b2a4886a4c3cc8ea62a98f1b48bc1d429de0633e76950ba2bb3",
 }
 # The new fields each existing profile now sets (R-SETTINGS: settings, Claude's session_meta; Ruling 120: copilot -p
 # cannot answer a scripted user); every other new field is still at its default.
 SET_BY_WAVE_1 = {"claude-code": {"settings", "session_meta", "model_aliases"}, "codex": {"settings", "host_skill_roots"},
-                 "copilot": {"settings", "scripted_user", "transports", "user_home_vars"}}
+                 "copilot": {"settings", "scripted_user", "transports", "user_home_vars", "seed_files"}}
 NEW_FIELDS = {"settings": {}, "transport": "acp", "session_meta": {}, "user_home_vars": (), "seed_files": {},
               "credential_home_env": None, "model_aliases": {}, "scripted_user": "supported", "host_skill_roots": (),
               "transports": {}}

@@ -75,7 +75,7 @@
    "find": "        for name, template in self.seed_files.items():\n", "replace": "        for name, template in {}.items():\n",
    "tests": ["tests/test_isolation_env.py::test_seed_files_are_written_with_the_home_and_the_worktree"]},
   {"name": "a seed file naming the worktree is written without one", "file": "src/harness_bench/profiles.py",
-   "find": "            if WORKTREE in template and worktree is None:\n", "replace": "            if False:\n",
+   "find": "            if (WORKTREE in template or WORKTREE_JSON in template) and worktree is None:\n", "replace": "            if False:\n",
    "tests": ["tests/test_isolation_env.py::test_a_seed_file_naming_the_worktree_needs_one"]},
   {"name": "the launcher seeds no worktree", "file": "src/harness_bench/profiles.py",
    "find": "                          worktree=home.parent / CELL_WORKTREE_BESIDE_HOME)", "replace": "                          worktree=home)",

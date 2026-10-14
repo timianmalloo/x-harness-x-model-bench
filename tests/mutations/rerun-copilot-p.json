@@ -82,8 +82,29 @@
   {
     "name": "the ACP control launch's tool list is not last, so the scenario-6 ids land after --log-dir",
     "file": "bench/profiles/copilot.yaml",
-    "find": "\"--add-dir\", \"{home}\", \"--disable-builtin-mcps\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\"]",
-    "replace": "\"--add-dir\", \"{home}\", \"--disable-builtin-mcps\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\"]",
+    "find": "\"{uv_python_arg}\", \"--disable-builtin-mcps\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\"]",
+    "replace": "\"{uv_python_arg}\", \"--disable-builtin-mcps\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\"]",
     "tests": ["tests/test_profiles.py::test_copilot_profile_has_r45_static_tool_flags[acp]"]
+  },
+  {
+    "name": "instr/w17: the trusted folder's backslashes are not JSON-escaped",
+    "file": "src/harness_bench/profiles.py",
+    "find": "template.replace(WORKTREE_JSON, json.dumps(str(worktree))[1:-1])",
+    "replace": "template.replace(WORKTREE_JSON, str(worktree))",
+    "tests": ["tests/test_profile_copilot_p.py::test_the_seeded_config_trusts_the_cell_worktree_in_both_arms_and_transports"]
+  },
+  {
+    "name": "instr/w17: the Copilot config seeds no trusted folder",
+    "file": "bench/profiles/copilot.yaml",
+    "find": "{\"trustedFolders\": [\"{worktree_json}\"]}",
+    "replace": "{}",
+    "tests": ["tests/test_profile_copilot_p.py::test_the_seeded_config_trusts_the_cell_worktree_in_both_arms_and_transports"]
+  },
+  {
+    "name": "instr/w17: the uv Python store is never an allowed directory",
+    "file": "src/harness_bench/profiles.py",
+    "find": "    return [\"--add-dir\", named] if named and Path(named).is_dir() else []",
+    "replace": "    return []",
+    "tests": ["tests/test_profile_copilot_p.py::test_the_hosts_uv_python_store_is_an_allowed_directory_when_it_exists"]
   }
 ]

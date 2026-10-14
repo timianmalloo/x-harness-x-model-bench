@@ -72,6 +72,8 @@ ADR-0001 put each cell in a Linux container, mostly for security (US-48, US-49),
 
 *Note 2026-10-14 (instr/w16, owner decision): Copilot's cell environment no longer matches Claude's and Codex's. Its profile sets `user_home_vars: [HOME, USERPROFILE]` (the cell home, as for Grok and agy) and passes `--add-dir {home}`, so a model command naming `$env:USERPROFILE` or `~` stays inside the cell and Copilot's own path verification does not deny it (HB-VAL-012: 7 of 9 cells in the W9 sample). Claude and Codex keep the operator's HOME. `APPDATA` and `LOCALAPPDATA` stay the operator's, because uv's Python store lives there. Spike: `docs/notes/spike-copilot-home-vars.md`.*
 
+*Note 2026-10-14 (instr/w17, coordinator decision): a Copilot cell's working copy is a trusted folder, in both arms and both transports. The profile seeds `config.json` in the cell home with `trustedFolders` naming the worktree (`seed_files`, the new `{worktree_json}` placeholder), as Grok seeds `trusted_folders.toml`. Why: `copilot -p` runs repo hooks (`.github/hooks`) only for a trusted folder, so every earlier pack-on `-p` cell ran none of the pack's hooks, while `copilot --acp` runs them without trust. Measured on a real bench run (4 cells, task X1): the pack-on cells' Copilot records hold 79 `hook.start`/`hook.end` pairs with success (the pack-off cells hold 0). The profile also adds the host's uv Python store as an allowed directory (`{uv_python_arg}`), because a command listing it was denied (HB-VAL-012). Evidence: `docs/notes/spike-copilot-home-vars.md`, section "Trusted folder and the uv store (instr/w17)".*
+
 **3. Dropped for authored tasks.** None of these is replaced:
 - containers and images;
 - the per-cell network and egress proxy;

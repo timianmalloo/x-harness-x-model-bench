@@ -30,7 +30,8 @@ def test_context_922000_puts_long_context_in_the_child_argv_and_default_puts_not
     assert long[:i] + long[i + 2:] == default
 
 
-def test_the_child_argv_is_adr_0028s_with_the_tool_list_last(tmp_path):
+def test_the_child_argv_is_adr_0028s_with_the_tool_list_last(tmp_path, monkeypatch):
+    monkeypatch.setenv("UV_PYTHON_INSTALL_DIR", str(tmp_path / "no-uv-store"))  # the host's own store is not this test's subject
     assert _child(tmp_path) == [
         "--output-format", "json", "--model", "gpt-6.1-sol", "--reasoning-effort", "high",
         "--allow-tool", "shell", "--allow-tool", "write", "--add-dir", str(tmp_path), "--no-ask-user",
@@ -70,3 +71,36 @@ def test_the_cell_home_is_HOME_USERPROFILE_and_an_allowed_directory_in_both_tran
 def test_an_unmapped_context_is_refused(tmp_path):
     with pytest.raises(BenchError, match="HB-USR-002"):
         _child(tmp_path, "1000000")
+
+
+@pytest.mark.parametrize("transport", [None, "acp"])
+@pytest.mark.parametrize("pack", ["on", "off"])
+def test_the_seeded_config_trusts_the_cell_worktree_in_both_arms_and_transports(tmp_path, pack, transport):
+    """instr/w17 (coordinator decision 2026-10-14): `copilot -p` runs repo hooks only for a folder in the home's
+    trustedFolders, so every cell seeds its worktree there, whatever the arm and the transport (Grok's precedent)."""
+    import json
+
+    profile = profiles.load(ROOT, "copilot")
+    profile = profile if transport is None else profile.for_transport(transport)
+    home, ws = tmp_path / pack / "home", tmp_path / pack / "ws"
+    profile.seed_home(home, "gpt-6.1-sol", worktree=ws)
+    config = json.loads((home / "config.json").read_text(encoding="utf-8"))
+    assert config["trustedFolders"] == [str(ws)], "the backslashes of a Windows path are JSON-escaped"
+
+
+@pytest.mark.parametrize("transport", [None, "acp"])
+def test_the_hosts_uv_python_store_is_an_allowed_directory_when_it_exists(tmp_path, monkeypatch, transport):
+    """instr/w17: a command listing the uv store under APPDATA was denied by Copilot's path verification (spike 2026-10-14),
+    which makes the cell invalid (HB-VAL-012); the store is added as an allowed directory, resolved from the host."""
+    store = tmp_path / "AppData" / "uv" / "python"
+    store.mkdir(parents=True)
+    monkeypatch.delenv("UV_PYTHON_INSTALL_DIR", raising=False)
+    monkeypatch.setenv("APPDATA", str(tmp_path / "AppData"))
+    profile = profiles.load(ROOT, "copilot")
+    profile = profile if transport is None else profile.for_transport(transport)
+    argv = profile.argv(BUILD, "gpt-6.1-sol", effort="high", home=tmp_path / "home")
+    dirs = [argv[i + 1] for i, a in enumerate(argv) if a == "--add-dir"]
+    assert dirs == [str(tmp_path / "home"), str(store)]
+    assert max(i for i, a in enumerate(argv) if a == "--add-dir") < argv.index("--available-tools")
+    monkeypatch.setenv("UV_PYTHON_INSTALL_DIR", str(tmp_path / "elsewhere"))  # named but absent: no flag, no guess
+    assert profile.argv(BUILD, "gpt-6.1-sol", effort="high", home=tmp_path / "home").count("--add-dir") == 1
