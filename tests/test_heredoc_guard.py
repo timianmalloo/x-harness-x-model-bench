@@ -147,6 +147,30 @@ def test_a_kill_by_pid_passes(command):
     assert _run(command).returncode == 0
 
 
+@pytest.mark.parametrize("command", [
+    "Set-Location C:\\wt; [IO.File]::WriteAllText('bench/metrics.yaml', $s)",  # the 2026-10-14 W15 instance
+    "[System.IO.File]::ReadAllText(\"tests/test_x.py\")",
+    "[IO.File]::WriteAllLines('out.txt', $lines)",
+    "[IO.Directory]::CreateDirectory('scratch')",
+])
+def test_a_dotnet_file_call_on_a_relative_literal_path_is_blocked(command):  # PATH-A: .NET resolves it in the process folder
+    result = _run_as("PowerShell", command)
+    assert result.returncode == 2
+    assert result.stderr.startswith("PATH-A:")
+
+
+@pytest.mark.parametrize("command", [
+    "[IO.File]::WriteAllText('C:\\Projects\\wt\\bench\\metrics.yaml', $s)",
+    "[IO.File]::ReadAllText(\"C:/Projects/wt/x.py\")",
+    "[IO.File]::WriteAllText($f, $s, [Text.UTF8Encoding]::new($false))",
+    "[IO.File]::ReadAllText((Resolve-Path x.py).Path)",
+    "[IO.File]::WriteAllText(\"$w\\docs\\audit\\audit-log.jsonl\", $t)",
+    "[IO.File]::Exists('\\\\server\\share\\f')",
+])
+def test_a_dotnet_file_call_on_a_rooted_or_computed_path_passes(command):
+    assert _run_as("PowerShell", command).returncode == 0
+
+
 def test_a_powershell_payload_is_read():  # confirms tool_input.command is where the guard looks for the PowerShell tool
     result = _run_as("PowerShell", "Stop-Process -Name notepad -WhatIf")
     assert result.returncode == 2

@@ -49,6 +49,11 @@ KILL_SHAPES = tuple(re.compile(shape, re.IGNORECASE) for shape in (
     # a filter on CommandLine/Name feeding a ForEach-Object that stops: a pattern kill through a PID
     rf"\bWhere(?:-Object)?\b[^\n;|]*\b(?:CommandLine|ProcessName|Name)\b[^\n;]*\|\s*(?:ForEach(?:-Object)?\b|%)[^\n]*\b{STOP}\b",
 ))
+# PATH-A: a .NET file call whose path is a relative string literal. .NET resolves it against the process folder, not
+# PowerShell's Set-Location, so it reads or writes another checkout (2026-10-13 and 2026-10-14 instances). A variable,
+# a subexpression or a rooted literal (drive, UNC, /) passes.
+DOTNET_RELATIVE = re.compile(r"\[(?:System\.)?IO\.(?:File|Directory)\]::\w+\(\s*['\"](?![A-Za-z]:[\\/]|[\\/]|\$)",
+                             re.IGNORECASE)
 PIPED_STOP = re.compile(rf"\|\s*{STOP}\b", re.IGNORECASE)
 BY_ID_SOURCE = re.compile(r"\s*(?:Get-Process|gps)\s+-Id\b[^|]*$", re.IGNORECASE)  # the only pipe source that names PIDs
 
@@ -73,6 +78,8 @@ MESSAGES = {
               "coord worktree cleanup --remove)."),
     "kill": ("PROC-A: a kill by process name, pattern or command line reaches other sessions' processes. Kill only "
              "PIDs you started: Stop-Process -Id <pid>, taskkill /PID <pid>, kill <pid>."),
+    "dotnet-path": ("PATH-A: a .NET [IO.File]/[IO.Directory] call on a relative path resolves against the process folder, "
+                    "not Set-Location, and can write into another checkout. Pass a rooted path (Join-Path, Resolve-Path)."),
 }
 
 
@@ -86,6 +93,8 @@ def verdict(command: str) -> str | None:
         return "force"
     if _pattern_kill(unquoted):
         return "kill"
+    if DOTNET_RELATIVE.search(command):
+        return "dotnet-path"
     return None
 
 
