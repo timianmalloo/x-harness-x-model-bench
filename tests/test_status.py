@@ -192,6 +192,21 @@ def test_status_names_each_resume_with_its_time_and_segment(root, tmp_path):  # 
     assert "Resumed 1 times: 2026-09-23T10:00:00.000Z (engine-2-r001)." in status.text(s).splitlines()
 
 
+def test_a_cell_the_resume_closed_without_a_process_end_is_ended_not_running_and_is_counted(root, tmp_path):  # W18
+    # lean-20261013T222527 (Grok): the engine was killed mid-cell; resume wrote cell.outcome failed HB-CELL-118 (rule C2)
+    # and no attempt.process_ended. Status reported the cell "killing (unconfirmed, 22671 s)" after the run completed and
+    # counted 59 outcomes of 60. Resume records only after confirming the old process gone (D-K2), as lifecycle.replay reads it.
+    run_dir = _live_run(root, tmp_path)
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-3-r001") as ev:
+        ev.append({"kind": "run.resumed", "run_id": "r1", "segment_id": "engine-3-r001", "recorded_at": "2026-09-23T11:59:30.000Z"})
+        ev.append({"kind": "cell.outcome", "cell_id": "b", "outcome": "failed", "cause": "coordinator_crash", "code": "HB-CELL-118",
+                   "resume": {"segment_id": "engine-3-r001", "turn": 1, "phase": "mid-turn", "rule": "C2"}})
+    s = status.build(run_dir, now=NOW)
+    assert s.running == []
+    assert s.outcomes.get("failed") == 1 and sum(s.outcomes.values()) == s.cells_total
+    assert "killing" not in status.text(s)
+
+
 def test_status_shows_stopping_while_a_launched_cell_has_no_outcome(root, tmp_path):  # R10-3 (design 4.6)
     run_dir = _live_run(root, tmp_path)
     with ledger.SegmentWriter.create(run_dir / "events", "engine-3") as ev:
