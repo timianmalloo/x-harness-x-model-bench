@@ -44,6 +44,7 @@ WORKTREE = "{worktree}"  # a seed_files placeholder: the cell's working copy (Gr
 # assume: the engine lays a cell out as <cell>/home and <cell>/ws (engine._run_cell); confirm: the test that reads that
 # line; breaks: a seeded trusted folder names a path the agent never works in, and Grok loads no project instructions.
 CELL_WORKTREE_BESIDE_HOME = "ws"
+HOST_SKILLS_CONFIG = "config.toml"  # the Codex config file host_skill_roots writes its disabled-skill entries to
 CONTEXT_ARG = "{context_arg}"  # ADR-0028 s3: a whole argv element, replaced by the context setting's argv map
 TRANSPORTS = ("acp", "agy-stream")  # ADR-0025 s1: the module engine._attempt drives the cell with
 SCRIPTED_USER = ("supported", "unsupported")  # ADR-0028 s7: the plan refuses a scripted-user task when unsupported
@@ -182,6 +183,10 @@ class Profile:
     credential_home_env: str | None = None
     model_aliases: dict[str, tuple[str, ...]] = field(default_factory=dict)
     scripted_user: str = "supported"
+    # instr/w10 (owner decision B12): operator skill folders the cell must not see. Codex lists the skills under
+    # ~/.agents/skills, a path it takes from the Windows known folder, so moving HOME and USERPROFILE does not hide them
+    # (spike 2026-10-14); its config can disable a skill file by path. seed_home names every SKILL.md below each root.
+    host_skill_roots: tuple[str, ...] = ()
 
     def expand_settings(self, text: str, where: str, effort=DEFAULT, context=DEFAULT) -> str:
         """`{effort}` and `{context_tokens}` become the cell's values; "default" expands nothing. A placeholder left in
@@ -246,6 +251,7 @@ class Profile:
             (home / name).parent.mkdir(parents=True, exist_ok=True)  # ADR-0025 s8: nested seeds (.grok/, .gemini/)
             (home / name).write_text(text.replace("{model}", model).replace("{delegate}", delegate)
                                      .replace("{multi_agent}", multi_agent) + "\n", encoding="utf-8")
+        self._disable_host_skills(home)
         if (not oauth_token and self.credential_source is not None and self.credential_name is not None
                 and self.credential_source.is_file()):
             (home / self.credential_name).parent.mkdir(parents=True, exist_ok=True)
@@ -257,6 +263,18 @@ class Profile:
             (home / name).parent.mkdir(parents=True, exist_ok=True)
             text = template.replace(WORKTREE, str(worktree)).replace("{home}", str(home)).replace("{model}", model)
             (home / name).write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8")
+
+    def _disable_host_skills(self, home: Path) -> None:
+        """Append a `[[skills.config]] enabled = false` entry to the cell's config.toml for each SKILL.md under a
+        host_skill_roots folder (a root that does not exist adds none). An array of tables closes the file, so it
+        follows any table the template ends in."""
+        paths = [skill.as_posix() for root in self.host_skill_roots
+                 for skill in sorted(Path(root).expanduser().rglob("SKILL.md"))]
+        if not paths:
+            return
+        config_file = home / HOST_SKILLS_CONFIG
+        entries = "".join(f"\n[[skills.config]]\npath = {json.dumps(path)}\nenabled = false\n" for path in paths)
+        config_file.write_text(config_file.read_text(encoding="utf-8") + entries, encoding="utf-8")
 
     def clean_home(self, home: Path) -> None:
         """Delete the credential copy (the native records stay for the archive)."""
@@ -476,6 +494,7 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         model_aliases={str(k): _str_tuple(harness, f"model_aliases.{k}", v)
                        for k, v in _mapping(harness, "model_aliases", data.get("model_aliases") or {}).items()},
         scripted_user=scripted_user,
+        host_skill_roots=_str_tuple(harness, "host_skill_roots", data.get("host_skill_roots") or []),
     )
 
 

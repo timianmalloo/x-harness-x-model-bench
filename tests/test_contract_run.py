@@ -40,14 +40,16 @@ PROFILE_RECORD_HASHES = {
     "claude-code": "48a8adf21c80e74725c5c31e7821ef3d5c3ec7d11430ad6ee23e1f969cd439a0",  # PROBE-FIX-2 A: model_aliases
     # fix/codex-profile-0160, deliberate: codex.yaml now names the frozen 0.160.0 catalog (sha256-pinned, no collaboration
     # tools outside scenario 6), turns plugins and remote_plugin off, and declares no default context (was 5770184..fe56)
-    "codex": "b3bca6d16523d366716c3c19d457b7aea3b3bafeea9aa37ad55d821156248e57",
+    # instr/w10, deliberate: codex.yaml adds host_skill_roots (the operator's ~/.agents/skills is disabled in every cell)
+    "codex": "cd36213bee96812b357776ae560ed0709f6af39a6c7186f6cbbafac419a4e9c6",
     "copilot": "62a87c27b83a9c9ec291139e6b8301ee1f2528b5631ade7bec19138a47766eac",
 }
 # The new fields each existing profile now sets (R-SETTINGS: settings, Claude's session_meta; Ruling 120: copilot -p
 # cannot answer a scripted user); every other new field is still at its default.
-SET_BY_WAVE_1 = {"claude-code": {"settings", "session_meta", "model_aliases"}, "codex": {"settings"}, "copilot": {"settings", "scripted_user"}}
+SET_BY_WAVE_1 = {"claude-code": {"settings", "session_meta", "model_aliases"}, "codex": {"settings", "host_skill_roots"},
+                 "copilot": {"settings", "scripted_user"}}
 NEW_FIELDS = {"settings": {}, "transport": "acp", "session_meta": {}, "user_home_vars": (), "seed_files": {},
-              "credential_home_env": None, "model_aliases": {}, "scripted_user": "supported"}
+              "credential_home_env": None, "model_aliases": {}, "scripted_user": "supported", "host_skill_roots": ()}
 FIXTURE_PROFILE = """\
 harness: codex
 vendor: xai
