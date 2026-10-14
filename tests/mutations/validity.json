@@ -105,8 +105,8 @@
  {
   "name": "R-15: the pass records only a missing record, not an unreadable one",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "        unreadable = missing if ex is None else (normalize.record_unreadable(ex) or missing)\n",
-  "replace": "        unreadable = missing\n",
+  "find": "        return self.reason if self.ex is None else (normalize.record_unreadable(self.ex) or self.reason)\n",
+  "replace": "        return self.reason\n",
   "tests": [
    "tests/test_views.py::test_a_killed_copilot_cell_with_no_shutdown_is_not_recorded"
   ]

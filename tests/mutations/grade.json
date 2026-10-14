@@ -9,8 +9,8 @@
  {
   "name": "extraction written on every pass",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "        if (cid, self.extraction) not in held:\n",
-  "replace": "        if True:\n",
+  "find": "        if read.ex is not None and (cid, self.extraction) not in held:\n",
+  "replace": "        if read.ex is not None:\n",
   "tests": ["tests/test_grade.py::test_a_regrade_with_the_same_normaliser_writes_no_new_calls"]
  },
  {

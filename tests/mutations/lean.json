@@ -2,7 +2,7 @@
  {
   "name": "the batch index not written into rep (two batches collide in collect)",
   "file": "src/harness_bench/lean.py",
-  "find": "dataclasses.replace(cell, rep=index, cell_id=",
+  "find": "dataclasses.replace(cell, rep=(index - 1) * width + cell.rep, cell_id=",
   "replace": "dataclasses.replace(cell, cell_id=",
   "tests": ["tests/test_lean.py::test_a_row_is_stats_paired_delta_on_the_same_obs"]
  },

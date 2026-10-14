@@ -324,8 +324,8 @@
  {
   "name": "R-73/R-74 (W3-S6): a sub-agent's rows take the main session id",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "            sid = profiles.subagent_session_id(path)\n",
-  "replace": "            sid = session_id\n",
+  "find": "        sid = profiles.subagent_session_id(path)\n",
+  "replace": "        sid = session_id\n",
   "tests": [
    "tests/test_views.py::test_a_sub_agents_served_model_and_calls_reach_the_ledger"
   ]
@@ -333,8 +333,8 @@
  {
   "name": "R-73/R-74 (W3-S6): an unreadable sub-agent record is ignored",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "        return ex, sub_reason, model_rows, tool_rows\n",
-  "replace": "        return ex, None, model_rows, tool_rows\n",
+  "find": "    return RecordRead(ex, sub_reason, model_rows, tool_rows, streams, reasons)\n",
+  "replace": "    return RecordRead(ex, None, model_rows, tool_rows, streams, reasons)\n",
   "tests": [
    "tests/test_views.py::test_an_unreadable_sub_agent_record_makes_the_cell_not_recorded"
   ]
@@ -369,8 +369,8 @@
  {
   "name": "R-74 Codex: the parent rollout is read again as a sub-agent",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "            if path == main:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once\n                continue\n",
-  "replace": "            if False:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once\n                continue\n",
+  "find": "        if path == main:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once\n            continue\n",
+  "replace": "        if False:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once\n            continue\n",
   "tests": [
    "tests/test_views.py::test_a_two_rollout_codex_home_records_model_calls_on_both_served_models"
   ]
@@ -378,8 +378,8 @@
  {
   "name": "R-74 Codex: a sub-agent rollout is keyed by its filename",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "            if cell[\"harness\"] == \"codex\" and sub.session_id:  # R-74 item 5: the rollout's own session, not an agent- filename\n                sid = sub.session_id\n",
-  "replace": "            if False:  # R-74 item 5: the rollout's own session, not an agent- filename\n                sid = sub.session_id\n",
+  "find": "        if cell[\"harness\"] == \"codex\" and sub.session_id:  # R-74 item 5: the rollout's own session, not an agent- filename\n            sid = sub.session_id\n",
+  "replace": "        if False:  # R-74 item 5: the rollout's own session, not an agent- filename\n            sid = sub.session_id\n",
   "tests": [
    "tests/test_views.py::test_a_two_rollout_codex_home_records_model_calls_on_both_served_models",
    "tests/test_views.py::test_an_unreadable_codex_sub_agent_rollout_makes_the_cell_not_recorded"
