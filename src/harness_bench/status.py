@@ -4,7 +4,8 @@
   `stalled` (held, heartbeat stale), `not running` (free). Completion: `complete` iff a `run.completed` row
   follows the last `run.resumed` row (or there is none; D-K5, `views.load`'s `completed`), `in progress` while the
   lock is held, otherwise `incomplete`.
-- A running cell is one with `attempt.process_started` and no `attempt.process_ended`. Its budget
+- A running cell is one with `attempt.process_started` and neither `attempt.process_ended` nor `cell.outcome`
+  (`lifecycle.ended_cells`: a resume closes a killed engine's cell with an outcome alone). Its budget
   clock starts at `cell.prompt_sent` (matching the engine's own kill check), so a cell still
   handshaking shows `elapsed_s` 0 and is never `killing`. One past its budget is being killed (the
   engine kills at the budget and records the end only once the kill is confirmed), shown as
@@ -23,7 +24,7 @@ from dataclasses import asdict, dataclass, fields
 from datetime import UTC, datetime
 from pathlib import Path
 
-from harness_bench import oslock, views
+from harness_bench import lifecycle, oslock, views
 from harness_bench.config import CELL_ID, LABEL
 from harness_bench.errors import BenchError, Cause
 from harness_bench.lifecycle import DECISION_KINDS, DECISION_STATES, is_cell_start
@@ -178,7 +179,7 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
     liveness = "not running" if not held else ("alive" if age <= staleness else "stalled")
     completion = "complete" if view.completed else ("in progress" if held else "incomplete")
     started = {e["cell_id"]: e for e in events if e["kind"] == "attempt.process_started"}
-    ended = {e["cell_id"] for e in events if e["kind"] == "attempt.process_ended"}
+    ended = lifecycle.ended_cells(events)
     prompt_sent = {}
     for e in events:
         if e["kind"] == "cell.prompt_sent" and is_cell_start(e):

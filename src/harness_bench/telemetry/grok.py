@@ -50,6 +50,7 @@ from harness_bench.telemetry import (
     as_list,
     as_str,
     is_count,
+    normalize,
     not_recorded,
     rows,
 )
@@ -139,16 +140,20 @@ def _reasoning_items(row: dict) -> list[tuple[str, str | None, str | None]]:
     return [("encrypted-only", None, sha)] if sha else [("omitted", None, None)]
 
 
-def _chat(d: Path, ex: Extraction, served: list[str], effort: list[str]) -> dict[str, str]:
-    """Reasoning items and the calls each assistant row made, in native order; the requested calls by id."""
+def _chat(d: Path, ex: Extraction, served: list[str], effort: list[str]) -> tuple[dict[str, str], set[str]]:
+    """Reasoning items and the calls each assistant row made, in native order; the requested calls by id, and the ids
+    Grok's own permission policy refused (their `tool_result` says so)."""
     ex.reasoning = []
     calls: dict[str, str] = {}
+    denied: set[str] = set()
     request = None  # the line that opened the current model response (its first reasoning or assistant row)
     items = 0
     for n, row in rows(d / CHAT, ex):
         kind = row.get("type")
         if kind not in ("reasoning", "assistant"):
             request = None
+            if kind == "tool_result" and (call_id := as_str(row.get("tool_call_id"))) and _is_denied(row.get("content")):
+                denied.add(call_id)
             if kind == "user" and ex.first_user_text is None and "prompt_index" in row:
                 parts = [as_str(p.get("text")) for p in as_list(row.get("content")) if isinstance(p, dict)]
                 ex.first_user_text = "".join(p for p in parts if p) or None
@@ -168,10 +173,17 @@ def _chat(d: Path, ex: Extraction, served: list[str], effort: list[str]) -> dict
             call = as_dict(call)
             if (call_id := as_str(call.get("id"))) is not None:
                 calls[call_id] = as_str(call.get("name")) or "unknown"
-    return calls
+    return calls, denied
 
 
-def _tool_calls(d: Path, ex: Extraction, calls: dict[str, str]) -> None:
+def _is_denied(content) -> bool:
+    """W18: Grok's refusal of a call is a `tool_result` "Tool `<name>` was not executed: Denied by permission policy: ..."
+    (Verified, lean-20261013T222527 cell 73736ff8707daf12, web_fetch against the profile's deny rule). Its `events.jsonl`
+    has `permission_resolved` "deny" and no `tool_completed`, so the call has no outcome there."""
+    return isinstance(content, str) and content.startswith("Tool `") and "` was not executed: Denied by permission policy" in content
+
+
+def _tool_calls(d: Path, ex: Extraction, calls: dict[str, str], denied: set[str]) -> None:
     """A requested call's times and outcome from `events.jsonl`: `tool_completed` names its call id; its start is the
     earliest open `tool_started` of the same tool (events carry no id on start). A call with no completion has
     neither (a killed turn). `native_ordinal` is the call's position among the record's requested calls, 1-based, in
@@ -190,6 +202,8 @@ def _tool_calls(d: Path, ex: Extraction, calls: dict[str, str]) -> None:
     for position, (call_id, name) in enumerate(calls.items(), 1):
         start, end, outcome = done.get(call_id, (None, None, None))
         ok = None if outcome is None else outcome == "success"
+        if call_id in denied:  # refused before it ran: a refused attempt (views HB-VAL-009), not an executed call
+            ok, outcome = False, normalize.HOOK_DENIED
         ex.tool_calls.append(ToolCall(position, name, tool_class(name), start, end, ok, None if ok in (None, True) else outcome))
 
 
@@ -330,7 +344,7 @@ def read(path: Path) -> Extraction:
     served: list[str] = []
     effort: list[str] = []
     if (d / CHAT).is_file():
-        _tool_calls(d, ex, _chat(d, ex, served, effort))
+        _tool_calls(d, ex, *_chat(d, ex, served, effort))
     else:
         ex.missing.append(MissingField(0, CHAT))
         ex.reasoning = not_recorded(f"{CHAT} absent")[1]

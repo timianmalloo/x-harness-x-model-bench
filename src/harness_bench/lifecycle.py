@@ -121,6 +121,14 @@ def completed(events: list[dict]) -> bool:
     return False
 
 
+def ended_cells(events: list[dict]) -> set[str]:
+    """The cells whose attempt is over: a recorded `attempt.process_ended`, or a `cell.outcome`. A cell the engine killed
+    with its process never recorded as ended (the engine itself died) gets a resume-written outcome and no process end;
+    `replay` reads that outcome as the end too (resume records only after confirming the old process gone, D-K2). Resume
+    writes no `attempt.process_ended` of its own: it has no exit status, peak memory or time to put in one (W18)."""
+    return {e["cell_id"] for e in events if e["kind"] in ("attempt.process_ended", "cell.outcome")}
+
+
 def is_cell_start(row: dict) -> bool:
     """The first prompt starts the cell clock; legacy rows have turn 1."""
     return row.get("turn", 1) == 1

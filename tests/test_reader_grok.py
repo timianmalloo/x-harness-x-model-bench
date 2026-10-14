@@ -152,6 +152,26 @@ def test_a_web_fetch_call_is_class_other_and_a_read_file_call_is_read_with_its_o
         ("read_file", "read", "2026-10-11T20:12:25.167Z", "2026-10-11T20:12:25.172Z", 1)]
 
 
+def test_a_call_grok_denied_by_its_permission_policy_is_ok_0_denied_and_views_reads_it_as_refused(tmp_path):
+    # W18, lean-20261013T222527 cell 73736ff8707daf12: Grok's own deny rule refused web_fetch. The record has a
+    # `tool_result` "Tool `web_fetch` was not executed: Denied by permission policy: deny rule on web_fetch" and, in
+    # events.jsonl, permission_resolved "deny" with NO tool_completed row. ok stayed null, so views read it as executed
+    # (a false HB-VAL-008). A refused attempt is HB-VAL-009 (warning).
+    d = shutil.copytree(WEB, tmp_path / "s")
+    chat = [json.loads(line) for line in (d / "chat_history.jsonl").read_text(encoding="utf-8").splitlines()]
+    result = next(r for r in chat if r.get("type") == "tool_result")
+    result["content"] = "Tool `web_fetch` was not executed: Denied by permission policy: deny rule on web_fetch"
+    (d / "chat_history.jsonl").write_text("".join(json.dumps(r) + "\n" for r in chat), encoding="utf-8")
+    events = [json.loads(line) for line in (d / "events.jsonl").read_text(encoding="utf-8").splitlines()]
+    events = [e for e in events if e["type"] != "tool_completed"]
+    next(e for e in events if e["type"] == "permission_resolved")["decision"] = "deny"
+    (d / "events.jsonl").write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
+    rows = normalize.tool_call_rows(*ARGS, grok.read(d), "x1")
+    assert [(r["name"], r["ok"], r["outcome_code"]) for r in rows] == [("web_fetch", 0, "denied")]
+    executed, refused = views._out_of_profile(rows, 0)
+    assert executed is None and refused is not None and refused.code == "HB-VAL-009"
+
+
 def test_two_tool_calls_in_one_assistant_line_get_distinct_native_ordinals_in_native_order(tmp_path):
     # PROBE-FIX: the 1.0.41 build writes parallel calls as one assistant row (devprobe-rerun-1: list_dir + grep on
     # one line); two rows sharing (session, native_ordinal) made HB-LED-003 refuse the run's view.

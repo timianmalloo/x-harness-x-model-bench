@@ -2314,3 +2314,37 @@ registers both.*
   on the real repository (seen red: "catalog 0.7 is frozen at 9a96bbe75cb1 but the tree's catalog is a5c41e5af36d").
   Rung: test on the real tree. **Sweep:** literal catalog versions in `src/` (search `"0\.[5-9]"`): none; the one hit, `pack_improvement.PROCESS_ONLY_ON = Decimal("0.8")`, is a threshold.
 - **Status:** `controlled`
+
+### END-A: two definitions of "a cell has ended", one of them misses the resume's close (candidate)
+- **Signature:** a surface decides "ended" from one row kind (`attempt.process_ended`), while another path ends a cell
+  with a different row (a resume-written `cell.outcome`, no process end). The surface keeps the cell "running" for ever
+  and drops it from its counts, though the graded view is right.
+- **Instance:** `2026-10-14` (track W18; the 2026-10-13 Grok lean run): the engine was killed mid-cell; `resume.py` wrote
+  `cell.outcome failed HB-CELL-118` and no `attempt.process_ended`. `status.build` still listed the cell as "killing
+  (unconfirmed, 22671 s)" after `run.completed` and counted 59 outcomes and validities of 60. `lifecycle.replay` already
+  read a resume outcome as the end (D-K2); `status` did not.
+- **Fix:** one definition, `lifecycle.ended_cells` (a process end or an outcome), used by `status`. Resume writes no
+  fabricated `process_ended` (it has no exit status, memory or time; `views._wall` stays "no process start or end recorded").
+- **Sweep:** readers of `attempt.process_ended`: `views._wall` and `tools/behaviour_measures.py` (honest not-recorded on a
+  missing end), `resume._live_pid` (runs before the outcome, correct), `html.py` context tag (a field of the row), `lifecycle.replay`
+  (reads the resume outcome). Only `status` counted "running" from it.
+- **Control:** `tests/test_status.py::test_a_cell_the_resume_closed_without_a_process_end_is_ended_not_running_and_is_counted`
+  (seen red). Rung: test. Upgrade trigger: a new surface that counts running cells must call `lifecycle.ended_cells`.
+- **Status:** `controlled`
+
+### REFUSED-NULL-A: a reader leaves `ok` null for a call the harness refused, and the validity view reads null as executed (candidate)
+- **Signature:** a harness refuses a tool call under its own permission policy and records the refusal only in the
+  conversation text (no completion event), so the reader emits `ok` null. `views._out_of_profile` treats null as executed,
+  so a refused out-of-profile attempt (HB-VAL-009 warning) becomes an executed one (HB-VAL-008, cell invalid).
+- **Instance:** `2026-10-14` (track W18; Grok lean run, cell 73736ff8707daf12, S2 arm-on r1): `web_fetch` was denied by
+  Grok's deny rule. `chat_history.jsonl` has the `tool_result` "Tool `web_fetch` was not executed: Denied by permission
+  policy: deny rule on web_fetch"; `events.jsonl` has `permission_resolved` "deny" and no `tool_completed`. The cell was
+  judged `invalid (out-of-profile tool called)` falsely.
+- **Fix:** `telemetry/grok.py` marks such a call `ok` 0, `outcome_code` "denied" (`normalize.HOOK_DENIED`); the cell now
+  reads valid with an HB-VAL-009 warning (`bench status --check-ended` on the real run).
+- **Sweep:** other readers: Copilot sets the denial envelope, agy maps status 6 to `ok` False, Claude Code relies on the driver's
+  permission count, Codex `exec` rows are null by design (the connector failure case is documented in `_out_of_profile`).
+  Grok's other not-executed wordings (not Denied by permission policy) are unobserved and stay null (Inferred).
+- **Control:** `tests/test_reader_grok.py::test_a_call_grok_denied_by_its_permission_policy_is_ok_0_denied_and_views_reads_it_as_refused`
+  (seen red). Rung: test. Upgrade trigger: a Grok record showing another refusal wording.
+- **Status:** `controlled`
