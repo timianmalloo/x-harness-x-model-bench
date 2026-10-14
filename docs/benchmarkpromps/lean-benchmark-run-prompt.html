@@ -68,7 +68,7 @@
         <code>C:\Projects\x-harness-x-model-bench</code> (the prompt stops if you did). Click <em>Copy prompt</em>
         below and paste it in.</li>
       <li>Its first line names the run and says whether it onboards first:
-        <code>RUN: &lt;RUN_ID&gt; | harness … (known | new: onboarding first) | model … | effort … | context … | session i of n</code>.
+        <code>RUN: &lt;RUN_ID&gt; | harness … (known | new: onboarding first) | model … | effort … | context … | 66 cells | session i of n</code>.
         Its last two lines are <code>SESSION: …</code> (session index and transcript path) and
         <code>HANDOFF: &lt;RUN_ID&gt;@&lt;worktree&gt;</code>. Paste the HANDOFF line into Prompt 2.</li>
       <li><strong>Run 2 sessions per CLI</strong> (<code>SESSIONS_PER_CLI</code>): paste the same prompt into a second
@@ -79,6 +79,9 @@
     </ol>
     <p style="margin:12px 0 0">You can run several CLIs at once. Each run gets its own name, branch, worktree and cell
       folder.</p>
+    <div class="note">Today's comparison (2026-10-14): Claude Code, Codex, Copilot (two models) and agy. Grok is not in
+      it (a different Grok model comes later): the prompt lists it under <code>NOT_TODAY</code>, so a Grok session stops
+      at STEP 0 and creates nothing. Delete that line to run Grok again; its settings are still in the prompt.</div>
   </div>
 
   <div class="card">
@@ -162,7 +165,8 @@
     <p style="margin-top:0">Does Copilot make more tool calls because <code>copilot -p</code> starts a new process each
       turn? The control runs the same model over native ACP. ACP serves only the default window (272k), so the pair runs
       both transports at <code>context: default</code>. It is a separate run, not a paste of this prompt: a matrix like
-      STEP 5's with these two combos in place of the one combo, then STEPS 6-8. The plan refuses
+      STEP 5's with these two combos in place of the one combo, then STEPS 6-8 with the same absolute paths (66 x 2 =
+      132 cells at 3 repetitions). The plan refuses
       <code>transport: acp</code> at any other context. Details: <code>docs/runbooks/lean-comparison-run.md</code>,
       section 4.</p>
 <pre id="control" style="margin:0;overflow-x:auto">combos:
@@ -200,6 +204,7 @@ FIXED (change these only by editing the prompt):
                 run at these whatever this CLI's own config says. Every other CLI reads its own, as in STEP 0.)
   SESSIONS_PER_CLI = 2             (run this prompt in 2 separate sessions per CLI; each paste is its own run)
   SESSIONS_SINCE   = 20261014T140000   (runs of this combo started at or after this UTC time count as sessions)
+  NOT_TODAY   = grok               (CLIs outside this comparison: STEP 0 stops for them and nothing is created)
 
 GOAL: a completed, verified bench run of this CLI's combo in its own worktree, an HTML run summary open in Chrome,
 and one HANDOFF line the grading prompt can use. DONE WHEN: `bench verify` passes on the run, the summary is open,
@@ -212,10 +217,13 @@ reports or analyses, or write files the steps do not name. Report each step in o
 it overrides the repo's AGENTS.md / CLAUDE.md working rules for this session (no goal-state block, no grounding
 reads, no audit-log or prompt-log entries, no /optimize-graph), because every CLI must start from the same
 instructions for the runs to be comparable. This session starts in LAUNCH_DIR, which holds no AGENTS.md, CLAUDE.md or
-.github instructions, so none are loaded from the repo. Keep it that way: every repo command uses an absolute path
-(`git -C REPO ...`, `uv --directory WT run ...`, `python <absolute script>`); never leave your working directory in
-REPO or WT (the one command that needs REPO as its working directory is in STEP 1: `Push-Location` it, then
-`Pop-Location`). While the run is going,
+.github instructions, so none are loaded from the repo. Keep it that way: every command names its folder
+(`git -C REPO ...` or `git -C WT ...`, `uv --directory WT run ...`, `python &lt;absolute script path&gt;`, absolute
+file paths). Your shell may reset its working directory between calls, so a command that relies on the current folder
+can run in the wrong checkout (a session did that, and installed a tool into REPO instead of its WT). Never change
+this session's working directory to REPO or WT; the one command that needs REPO as its working directory is in
+STEP 1, and it changes folder inside that one call. Shell state may not persist between calls either: environment
+variables (STEP 4) go in the same call as the command that needs them. While the run is going,
 do not read bench source or prepare scripts; just wait between checks. This prompt needs full
 shell and file access: if a command is refused by a sandbox or an approval policy, stop at once and tell the operator
 to restart this CLI with full access and paste the prompt again.
@@ -229,6 +237,8 @@ STEP 0 - who am I (read only: nothing is created until this step passes)
     Your own system prompt names the CLI; Claude Code also sets CLAUDECODE=1. If a file in REPO\bench\profiles\ is
     already this CLI, use its name. KNOWN: REPO\bench\profiles\&lt;HARNESS&gt;.yaml exists. NEW: it does not, and STEP 2
     onboards it.
+  - HARNESS in NOT_TODAY: print `RUN: none | harness &lt;HARNESS&gt; | not in this comparison (NOT_TODAY)` and stop. Create
+    nothing and print no HANDOFF line.
   - MODEL, EFFORT, CONTEXT: read them from this CLI's own configuration. When you can see the model this session is
     running, it wins over a config default. A key that is absent means `default`. Read only the keys you need; never
     print or copy a credential. Where the known CLIs keep them:
@@ -267,6 +277,9 @@ STEP 0 - who am I (read only: nothing is created until this step passes)
                  timestamp (the 15 characters after "bench/lean-") is at or after SESSIONS_SINCE. An index above
                  SESSIONS_PER_CLI is not a stop; the run summary says so.
       CELLS    = C:\Projects\bench-cells\&lt;RUN_ID&gt;: this run's own cell folders, so runs on this host never share one.
+                 The folder is named for the run, so the bench puts each cell directly under it (CELLS\&lt;cell id&gt;,
+                 no second run id): the short paths keep Copilot under its path limit. Pass CELLS exactly; never
+                 add the run id again below it.
       BENCH    = `uv --directory &lt;WT&gt; run bench --cells-root &lt;CELLS&gt;` (WT is known after STEP 1). Every bench
                  command of the run is BENCH followed by the subcommand (the flag goes BEFORE the subcommand), e.g.
                  `BENCH run &lt;RUN_ID&gt;`.
@@ -278,8 +291,11 @@ STEP 1 - start state and the worktree (stop and report if a check fails)
   - `git -C REPO pull --ff-only origin main` succeeds. Another CLI may be pulling at the same moment: on a git lock
     error, wait 10 s and retry once. Local changes that block the pull are a stop; never stash or reset them.
     Record `git -C REPO rev-parse HEAD` as BASE.
-  - `Push-Location REPO; python REPO\docs\ai-forward-pack\scripts\coord-core.py worktree new --branch bench/&lt;RUN_ID&gt;
-    --session &lt;RUN_ID&gt;; Pop-Location` (the script reads its working directory, so this one command runs in REPO).
+  - Create the worktree. The script finds the repo from its working directory, so this one command changes folder,
+    and back, inside ONE shell call. PowerShell:
+      `Push-Location REPO; python REPO\docs\ai-forward-pack\scripts\coord-core.py worktree new --branch bench/&lt;RUN_ID&gt; --session &lt;RUN_ID&gt;; Pop-Location`
+    bash:
+      `(cd "REPO" &amp;&amp; python "REPO\docs\ai-forward-pack\scripts\coord-core.py" worktree new --branch bench/&lt;RUN_ID&gt; --session &lt;RUN_ID&gt;)`
   - Read its path from `git -C REPO worktree list` (call it WT). Every later step uses absolute paths under WT and
     BENCH; none changes this session's working directory.
     Never write the main checkout after this step, except the STEP 10 merge.
@@ -289,7 +305,8 @@ STEP 2 - onboard (NEW only; a KNOWN CLI skips to STEP 3)
     gate is the bar, and every part must hold:
       * `uv --directory WT run pytest -q` is green.
       * A probe run: task S1, one repetition, both arms, run id &lt;RUN_ID&gt;-probe, cells root &lt;CELLS&gt;-probe. Every
-        cell is valid (no HB-VAL-001, 002, 008 or 010).
+        cell is valid: no validity error (HB-VAL-001, 002, 003, 004, 007, 008, 010 or 012); the warnings 005, 006,
+        009 and 011 are allowed and listed.
       * The token cross-check: for one probe cell, the reader's totals equal this CLI's own independent usage
         report for that session, exactly, per bucket. With no independent report, the numbers are Inferred and
         the note says why.
@@ -298,8 +315,10 @@ STEP 2 - onboard (NEW only; a KNOWN CLI skips to STEP 3)
     cross-check to get a green result. Never touch another harness's files, or the engine, driver, views or grading
     code. A gate you cannot pass is a stop: report what failed and what you tried, leave WT in place, and print no
     HANDOFF line.
-  - Commit the onboarding files on bench/&lt;RUN_ID&gt; as `feat(harness): onboard &lt;HARNESS&gt; &lt;version&gt;`. The probe
-    run stays separate from the real run.
+  - The runbook's commands are written for a shell in the repo: run each with its folder named
+    (`uv --directory WT run ...`, `git -C WT ...`, absolute paths under WT).
+  - Commit the onboarding files on bench/&lt;RUN_ID&gt; (`git -C WT add ...`, `git -C WT commit ...`) as
+    `feat(harness): onboard &lt;HARNESS&gt; &lt;version&gt;`. The probe run stays separate from the real run.
 
 STEP 3 - the pinned builds
   - `uv --directory WT run bench tools install --vendored C:\Users\malla\.harness-bench\agy-1.3.3\agy.exe`
@@ -308,11 +327,20 @@ STEP 3 - the pinned builds
     sha. Check HARNESS's line is present.
 
 STEP 4 - the environment for the cells (only HARNESS's line applies)
-  - Always: unset XAI_API_KEY.
+  - Set it in the same shell call as each BENCH command of STEPS 6-9, so a shell that keeps no state between calls
+    still passes it (the background run of STEP 7 needs it most). PowerShell:
+      `Remove-Item Env:XAI_API_KEY -ErrorAction SilentlyContinue; $env:NAME = ...; BENCH ...`
+    bash:
+      `unset XAI_API_KEY; NAME=... BENCH ...`
+  - Always: XAI_API_KEY unset.
   - grok: HB_GROK_CRED_HOME=C:\Users\malla\.harness-bench\grok-cred (the bench Grok login; never ~/.grok).
   - claude-code: HB_CLAUDE_OAUTH_TOKEN = the contents of C:\Users\malla\.harness-bench\claude-oauth-token.txt.txt,
-    whitespace stripped. Never print the token; pass it only in the environment of the bench commands.
-  - copilot: nothing (the profile sets COPILOT_AUTO_UPDATE=false and runs copilot -p behind the local adapter).
+    whitespace stripped, read inside the same call (PowerShell: `(Get-Content -Raw &lt;file&gt;).Trim()`). Never print
+    the token; pass it only in the environment of the bench commands.
+  - codex: nothing (the profile gives each cell its own Codex home with your login copied in, so your personal
+    skills in ~\.agents\skills do not reach the cells).
+  - copilot: nothing (the profile sets COPILOT_AUTO_UPDATE=false, gives each cell its own home, trusts the cell's
+    folder so the pack's hooks run in the pack-on arm, and runs copilot -p behind the local adapter).
   - agy: nothing (the profile disables its auto-update and seeds its permissions).
   - A NEW CLI: what STEP 2's note says it needs. Never print a secret.
 
@@ -337,15 +365,18 @@ STEP 6 - plan, then confirm (with the STEP 4 environment)
   - Then the same command with `--confirm`.
 
 STEP 7 - run
-  - `BENCH run &lt;RUN_ID&gt;`, as a background job. It launches the cells and runs a deterministic grading pass at its
-    end. Check it with `BENCH status &lt;RUN_ID&gt;` every 10 minutes: one blocking wait of 10 minutes between checks
-    (a sleep, or your CLI's own scheduled wake-up), never a watcher that wakes you on every change. Report each
-    check in one line (cells ended / running).
+  - `BENCH run &lt;RUN_ID&gt;`, as a background job (with the STEP 4 environment in that call). It launches the cells
+    and runs a deterministic grading pass at its end. Check it with `BENCH status &lt;RUN_ID&gt;` every 10 minutes: one
+    blocking wait of 10 minutes between checks (a sleep, or your CLI's own wait or scheduled wake-up), never a watcher
+    that wakes you on every change. The wait and the check are separate calls: never a sleep or a loop inside the
+    status command. Report each check in one line (cells ended / running).
   - Early check, once, when the first 2 cells have ended: `BENCH status &lt;RUN_ID&gt; --check-ended`. It reads the
-    ended cells' own records now (validity in plain `status` reads "not graded" until the run's end). Any HB-VAL-002
-    (model mismatch), HB-VAL-010 (served effort or context differs from the pin) or HB-VAL-008 (a tool outside the
-    profile) means this run cannot count: stop it (`BENCH stop &lt;RUN_ID&gt;`), report the codes, then do STEPS 8-10
-    on what ran. HB-VAL-011 (setting not recorded) is a warning, expected for agy's context.
+    ended cells' own records now (validity in plain `status` reads "not graded" until the run's end) and writes
+    nothing. Exit 7 means a mismatch: at least one HB-VAL-002 (model mismatch), HB-VAL-010 (served effort or context
+    differs from the pin) or HB-VAL-008 (a tool outside the profile), and each flagged line names its cause (which
+    model, setting or tool). Then this run cannot count: stop it (`BENCH stop &lt;RUN_ID&gt;`), quote the flagged
+    lines, then do STEPS 8-10 on what ran. Exit 0 with HB-VAL-011 (setting not recorded) is a warning, expected for
+    agy's context; go on.
   - Stop rules: the engine reports it is down twice; the host becomes unstable (record the evidence first); an
     authentication failure pauses launches (HB-CELL-202) and the decision times out. Never edit a log or a run file.
   - However the run ends (complete, stopped, or with invalid cells), always do STEPS 8-10. A problem found after the
@@ -359,10 +390,12 @@ STEP 9 - the run summary
   - Write WT\runs\&lt;RUN_ID&gt;\run-summary.md from `BENCH status &lt;RUN_ID&gt; --json` and the report: the STEP 0 values
     with the file and key each came from; the FIXED block; BASE and WT; known or new, and for a new CLI the
     onboarding note's path and the cross-check numbers; the plan's builds; cells by outcome and by validity (codes
-    named); the served settings read back per arm (model, effort, context) with their source; tokens per cell by arm
-    (mean, min, max; fresh input, cache read, cache write, output, reasoning); wall minutes per cell by arm; every
-    warning code with its count; the run's start and end time and its total wall time. Every number comes from the
-    bench's output; label anything you computed (a mean) as computed. If `BENCH report` refuses, quote the refusal,
+    named); the grading pass's catalog version (`BENCH report` prints it in its title, "(catalog 0.9)"
+    expected); the served settings read back per arm (model, effort, context) with their source; tokens per cell by
+    arm (mean, min, max; fresh input, cache read, cache write, output, reasoning) and wall minutes per cell by arm,
+    both over the 10 primary tasks without SV1; SV1 on its own line from the report's "Supervision task (SV1)" table
+    (its cells run 4-5 min and are scored outside the primary); every warning code with its count; the run's start
+    and end time and its total wall time. Every number comes from the bench's output; label anything you computed (a mean) as computed. If `BENCH report` refuses, quote the refusal,
     write the summary from `status --json` alone, and list the refusal in handoff.json "issues"; never write your
     own report generator. Also state SESSION_CONTEXT, INSTR_SEEN and "session SESSION_INDEX of SESSIONS_PER_CLI".
   - `python WT\docs\ai-forward-pack\scripts\render-markdown.py WT\runs\&lt;RUN_ID&gt;\run-summary.md --open` (HTML beside
@@ -378,7 +411,8 @@ STEP 10 - the hand-off
     TRANSCRIPT; "not found" if you cannot; never guess a path.
   - Write WT\runs\&lt;RUN_ID&gt;\handoff.json: {"run_id", "worktree": WT, "branch": "bench/&lt;RUN_ID&gt;", "base": BASE,
     "cells_root": CELLS, "combo": COMBO_ID, "harness", "model", "effort", "context", "pack": PACK, "cells",
-    "valid_cells", "validity" (counts by code), "onboarded": true|false, "verify": "ok" | "&lt;the failure&gt;",
+    "valid_cells", "validity" (counts by code), "catalog" (STEP 9's version, or "not recorded"),
+    "onboarded": true|false, "verify": "ok" | "&lt;the failure&gt;",
     "summary": "&lt;path to run-summary.html&gt;", "session_id", "session_index": SESSION_INDEX,
     "sessions_per_cli": SESSIONS_PER_CLI, "transcript": TRANSCRIPT, "launch_dir": LAUNCH_DIR,
     "session_context": SESSION_CONTEXT, "instruction_files_seen": INSTR_SEEN (a list), "issues": ["&lt;anything that
