@@ -1,4 +1,4 @@
 # Stamped-tier stamp. Renew via: python tools/gate_stamp.py --renew-stamped
 schema: bench-stamped-stamp/1
-digest: 5c04de5fa947d13de7ccdc8892298f7724ff6bdec2fb40eb4062624bc343ad32
-renewed: 2026-10-12T20:36:26+00:00
+digest: dbd7bfd1c77d31130554d3f571dd405bb50953b7833bfe2807f9cd4a04b2debf
+renewed: 2026-10-14T01:39:43+00:00

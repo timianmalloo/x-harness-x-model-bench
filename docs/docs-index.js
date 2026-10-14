@@ -1030,7 +1030,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3617c2a865f8737a25549b8271cecae24c07e232d60f952eb24fab22b80c6972"
+      "sourceSha256": "20d0a5952b44f11ba014777cffad36a901ab5851e5951fac92a767f6cadff50a"
     },
     {
       "id": "adr-0024-combo-settings-and-served-read-back",
@@ -5783,7 +5783,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "68fea02bfb9bb323233ac89052b4d242934edb08b0a873b9a4cffa2b186835d7"
+      "sourceSha256": "3e046b0cd1522ea51af2b8ed798f83b04a6850f9cd58517faa47273e418fa9fd"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -10560,6 +10560,50 @@ window.DOCS_INDEX = {
       "sourceSha256": "b0dfc4a36341adc1f4b1772a4d4f8933e89f36ada5fd9a50332f73d7fa0939f6"
     },
     {
+      "id": "plan-lean-runs-2026-10-13-findings-and-repair",
+      "path": "docs/plans/lean-runs-2026-10-13-findings-and-repair.md",
+      "title": "Lean runs of 2026-10-13: what they show, what broke, what changed",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-28",
+      "reviewSuggested": [],
+      "summary": "Six CLIs ran the any-CLI lean prompt. This plan answers four questions: does GPT drift more in Copilot than in Codex (cells say yes, the interactive sessions say the opposite, and two confounds remain); what broke (18 issues, 12 fixed in this change, 6 need a decision); whether bench and grading belong together (capture and deterministic checks yes, judging and analysis no); and how the analysis prompt changed.",
+      "tags": [
+        "lean-benchmark",
+        "analysis",
+        "drift",
+        "ceremony",
+        "over-thinking",
+        "repair-plan",
+        "copilot",
+        "codex",
+        "grok",
+        "prompts"
+      ],
+      "links": [
+        {
+          "to": "plan-strategy-lean-benchmark",
+          "rel": "relates-to"
+        },
+        {
+          "to": "runbook-add-a-harness",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0023-lean-summary-over-verdicts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0025-transport-seam-grok-and-agy-cells",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "ea81a397d03024b524d57354f0ffde367ebf20674b40f5b53821b9a9074f55b7"
+    },
+    {
       "id": "plan-spec-backlog",
       "path": "docs/specs/README.md",
       "title": "Spec backlog: from proposal to a running benchmark",
@@ -11727,13 +11771,6 @@ window.DOCS_INDEX = {
       "description": "Open an interactive knowledge artifact."
     },
     {
-      "id": "surface-benchmarkpromps-grade-judge-report-prompt",
-      "path": "docs/benchmarkpromps/grade-judge-report-prompt.html",
-      "title": "Grade and Report Prompt",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact."
-    },
-    {
       "id": "surface-coordination-harness-cost-comparison",
       "path": "docs/coordination/harness-cost-comparison.html",
       "title": "Harness Cost Comparison",
@@ -11762,6 +11799,13 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "spec-harness-bench"
+    },
+    {
+      "id": "surface-benchmarkpromps-grade-judge-report-prompt",
+      "path": "docs/benchmarkpromps/grade-judge-report-prompt.html",
+      "title": "Lean Benchmark Analysis Prompt",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
     },
     {
       "id": "surface-coordination-lean-benchmark-prompt",
@@ -11810,6 +11854,14 @@ window.DOCS_INDEX = {
       "artifactId": "prompt-lean-rerun-equal-reasoning"
     },
     {
+      "id": "surface-plans-lean-runs-2026-10-13-findings-and-repair",
+      "path": "docs/plans/lean-runs-2026-10-13-findings-and-repair.html",
+      "title": "Lean Runs 2026 10 13 Findings And Repair",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-lean-runs-2026-10-13-findings-and-repair"
+    },
+    {
       "id": "surface-coordination-eval-wave2-e1-overnight-2026-10-05",
       "path": "docs/coordination/eval-wave2-e1/overnight-2026-10-05.html",
       "title": "Overnight 2026 10 05",
@@ -11850,5 +11902,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "b66664e3654ce0e2265622a5157d186a2de97fc15745cc0c0a7b6d493a350a95"
+  "graphSha256": "933db3b123cc76ea23a7a98b31ebd8bed0c58ebf2063b790938d91fc206013b9"
 };
