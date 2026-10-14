@@ -684,10 +684,15 @@ def test_baseline_refuses_unfrozen_catalog_c7(tmp_path, capsys, freeze):
     created(root)
     set_freeze(root, None if freeze == "absent" else "f" * 64)
     commit_all(root, "freeze")
-    assert any("catalog 0.7" in item for item in campaign.baseline_unmet(root, ["T1"]))
+    assert any(re.match(r"catalog \S+ is (?:not frozen|frozen at)", item) for item in campaign.baseline_unmet(root, ["T1"]))
     capsys.readouterr()
     assert bench(root, "campaign", "baseline", CID, "--tasks", "T1") == 1
     assert "HB-CMP-006" in err_of(capsys)
+
+
+def test_baseline_checks_the_live_catalog_version_of_the_real_tree():
+    """W15 finding (2026-10-14): the check named catalog 0.7, so the real tree (0.8, now 0.9) always read as unfrozen."""
+    assert campaign._catalog_unmet(Path(__file__).resolve().parents[1]) is None
 
 
 def test_baseline_refuses_unaccepted_spike_c8(tmp_path, capsys):

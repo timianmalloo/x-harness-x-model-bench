@@ -2302,3 +2302,15 @@ registers both.*
   them out. The integration step runs both after every merge; the track brief now names both files as always-run.
   Rung: procedure plus brief.
 - **Status:** `candidate`
+
+### PIN-D: a check names a literal version the live data has moved past, and its fixture names the same literal (candidate)
+- **Signature:** a precondition compares against a hard-coded version ("0.7"). The test fixture writes that same literal,
+  so the tests stay green while the real tree, which has moved on, always fails the check.
+- **Instance:** `2026-10-14` (found by track W15, confirmed by the coordinator): `campaign._catalog_unmet` checked that
+  catalog **0.7** was frozen at the tree's catalog hash. Since 0.8 (2026-10-12) the real tree could never pass, so
+  `bench campaign baseline` refused on every real tree; `tests/test_cli_campaign.set_freeze` keyed its freeze "0.7" too.
+- **Fix:** the check reads the tree's own version from `bench/metrics.yaml`; the fixture keys by the same.
+- **Control:** `tests/test_campaign.py::test_baseline_checks_the_live_catalog_version_of_the_real_tree` runs the check
+  on the real repository (seen red: "catalog 0.7 is frozen at 9a96bbe75cb1 but the tree's catalog is a5c41e5af36d").
+  Rung: test on the real tree. **Sweep:** literal catalog versions in `src/` (search `"0\.[5-9]"`): none; the one hit, `pack_improvement.PROCESS_ONLY_ON = Decimal("0.8")`, is a threshold.
+- **Status:** `controlled`

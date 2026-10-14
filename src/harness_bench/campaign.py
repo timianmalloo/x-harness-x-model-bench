@@ -953,14 +953,17 @@ def _spike_status(root: Path) -> str:
 
 
 def _catalog_unmet(root: Path) -> str | None:
-    path = root / "bench" / "catalog-freeze.yaml"
+    """The tree's own catalog version (bench/metrics.yaml) must be frozen at the tree's catalog hash. It named 0.7 until
+    2026-10-14, so every tree from 0.8 on read as unfrozen (W15 finding)."""
+    metrics, path = root / "bench" / "metrics.yaml", root / "bench" / "catalog-freeze.yaml"
+    version = str(config.load_yaml(metrics).get("version")) if metrics.is_file() else "absent"
     versions = config.load_yaml(path).get("versions") or {} if path.is_file() else {}
-    entry = {str(k): v for k, v in versions.items()}.get("0.7")
+    entry = {str(k): v for k, v in versions.items()}.get(version)
     if not isinstance(entry, dict):
-        return "catalog 0.7 is not frozen in bench/catalog-freeze.yaml. Run the catalog freeze."
+        return f"catalog {version} is not frozen in bench/catalog-freeze.yaml. Run the catalog freeze."
     frozen, now = str(entry.get("catalog_hash")), identity.catalog_hash(root)
     if frozen != now:
-        return f"catalog 0.7 is frozen at {frozen[:12]} but the tree's catalog is {now[:12]}. Run the catalog freeze again."
+        return f"catalog {version} is frozen at {frozen[:12]} but the tree's catalog is {now[:12]}. Run the catalog freeze again."
     return None
 
 

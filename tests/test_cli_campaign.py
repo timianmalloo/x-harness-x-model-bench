@@ -280,7 +280,9 @@ def make_tree(root: Path, tasks: tuple[str, ...] = ("T1", "T2")) -> None:
 
 
 def set_freeze(root: Path, catalog_hash: str | None) -> None:
-    versions = {} if catalog_hash is None else {"0.7": {"catalog_hash": catalog_hash}}
+    # keyed by the tree's own catalog version, the one `campaign._catalog_unmet` checks (it named 0.7 until 2026-10-14)
+    version = str(yaml.safe_load((root / "bench" / "metrics.yaml").read_text(encoding="utf-8"))["version"])
+    versions = {} if catalog_hash is None else {version: {"catalog_hash": catalog_hash}}
     write_text(root / "bench" / "catalog-freeze.yaml", yaml.safe_dump({"schema": "bench-catalog-freeze/1", "versions": versions}))
 
 
