@@ -66,6 +66,8 @@ def test_a_cell_not_serving_its_pin_is_provisionally_invalid_as_grading_finds(ro
     assert [(c.cell_id, c.validity, c.code) for c in result.cells] == [("a", "valid", None), ("b", validity, code)]
     assert result.mismatch is True and result.totals == {code: 1, "ok": 1}
     assert {c.cell_id: c.code for c in result.cells} == _graded_codes(run_dir, root)
+    # The operator must see what to fix: a setting mismatch names the setting (the model one has no separate finding).
+    assert (key in (result.cells[1].detail or "")) == (code == "HB-VAL-010")
 
 
 def _status(tmp_path: Path, root: Path, *extra: str) -> int:

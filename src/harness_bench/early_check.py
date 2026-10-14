@@ -41,6 +41,7 @@ class CellCheck:
     validity: str
     code: str | None
     warnings: tuple[tuple[str, str], ...]  # (code, message), WARNING_CODES only
+    detail: str | None = None  # the finding behind `code`: which tool, which setting (the view's validity_detail)
 
 
 @dataclass(frozen=True)
@@ -90,12 +91,13 @@ def check(run_dir: Path) -> EarlyCheck:
         view = _judge(plan, cell, [e for e in events if e.get("cell_id") == cid], [r for r in usage if r["cell_id"] == cid],
                       run_dir / "archive" / cid / f"attempt-{archived[cid]}", sessions.get(cid, ""), extraction)
         out.append(CellCheck(cid, view.label, view.validity, view.validity_code,
-                             tuple((w.code, w.message) for w in view.warnings if w.code in WARNING_CODES)))
+                             tuple((w.code, w.message) for w in view.warnings if w.code in WARNING_CODES), view.validity_detail))
     return EarlyCheck(plan["run_id"], len(plan["cells"]), tuple(out))
 
 
 def _line(c: CellCheck) -> str:
-    parts = [f"{c.code} {c.validity}"] if c.code else ([] if c.validity == "valid" else [c.validity])
+    head = f"{c.code} {c.validity}" + (f" - {c.detail}" if c.detail else "")
+    parts = [head] if c.code else ([] if c.validity == "valid" else [c.validity])
     parts += [f"{code} {message}" for code, message in c.warnings]
     return f"{c.label}: {'; '.join(parts) or 'ok'}"
 
@@ -110,6 +112,6 @@ def text(result: EarlyCheck) -> str:
 def to_json(result: EarlyCheck) -> str:
     return json.dumps({"schema": SCHEMA, "run_id": result.run_id, "planned": result.planned, "ended": len(result.cells),
                        "cells": [{"cell_id": c.cell_id, "label": c.label, "validity": c.validity, "code": c.code,
-                                  "warnings": [{"code": code, "message": m} for code, m in c.warnings]}
+                                  "detail": c.detail, "warnings": [{"code": code, "message": m} for code, m in c.warnings]}
                                  for c in result.cells],
                        "totals": result.totals, "mismatch": result.mismatch}, sort_keys=True, separators=(",", ":"))

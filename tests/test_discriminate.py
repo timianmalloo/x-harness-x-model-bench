@@ -344,10 +344,14 @@ def test_a_crash_variant_is_rejected_not_counted_as_a_flip(base):
     assert all(f.code == "HB-RDY-003" and f.item == "crash" for f in failures)
     assert any("hidden tests" in f.detail for f in failures)
 
+# The naive role sleeps 3 s on p-1 (mt.handle_slow_first), so any bound under 3 s times it out. At 1 s the reference role
+# timed out too under full-suite load (2026-10-13, "reference: case p-1 timed out"; TIME-B); 2 s leaves 1 s of margin.
+SLOW_BOUND_MS = 2000
+
 
 def test_a_timeout_trial_writes_no_record_and_the_clean_retry_succeeds(base):
     """T-E13 / R2-1: a load-driven `timeout` is HB-RDY-011, never a record; the retry is `written`, never HB-RDY-010."""
-    cases = mt._cases(["p-1", "p-2"], bound_ms={"p-1": 1000})
+    cases = mt._cases(["p-1", "p-2"], bound_ms={"p-1": SLOW_BOUND_MS})
     root = new_root(base, "disc_p", naive={"src/app.py": mt.handle_slow_first(base / "slow.txt")}, cases=cases)
     with pytest.raises(BenchError) as err:
         trial(base, root, "DISC-P")
@@ -360,7 +364,7 @@ def test_a_timeout_trial_writes_no_record_and_the_clean_retry_succeeds(base):
 
 def test_a_declared_case_timeout_on_the_naive_role_is_not_an_item(base):
     """CR47-7: `expected.naive.timeouts` naming the case that timed out lets the trial write; undeclared (the test above) it is HB-RDY-011."""
-    cases = mt._cases(["p-1", "p-2"], bound_ms={"p-1": 1000})
+    cases = mt._cases(["p-1", "p-2"], bound_ms={"p-1": SLOW_BOUND_MS})
     expected = {"reference": mt.P_EXPECTED["reference"], "naive": {**mt.P_EXPECTED["naive"], "timeouts": ["p-1"]}}
     root = new_root(base, "disc_p", naive={"src/app.py": mt.handle_slow_first(base / "slow.txt")}, cases=cases, expected=expected)
     assert trial(base, root, "DISC-P").outcome == "written"

@@ -184,6 +184,7 @@ class CellView:
     delegate_calls: Measure = field(default_factory=lambda: Measure(None, "not graded"))  # R-74 c2: a cost axis, never scored
     served: tuple[str, ...] | None = None  # the served models validity reads (base ids); None = not recorded (R-73 c6 header)
     scenario: int | None = None  # the cell's frozen task scenario (R-74 item 2); None when the plan froze none
+    validity_detail: str | None = None  # the finding behind `validity_code` (which tool, which setting); None when none
 
 
 @dataclass
@@ -867,6 +868,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, denials, _mapped(plan, cell), build,
                                         executed, setting, _model_served(served_rows))
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
+    detail = next((f.message for f in (build, executed, setting) if f is not None and f.code == validity_code), None)
     return CellView(
         cell_id=cid, task=cell["task"], rep=cell["rep"], label=cell.get("label", cid), combo=cell["combo"], arm=cell_arm(cell), harness=cell["harness"], model=cell["model"],
         outcome=state, cause=cause.label if cause else None,
@@ -876,7 +878,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
         evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction,
         warnings=[w for w in warnings if w is not None], meta_calls=meta, delegate_calls=delegate,
-        served=tuple(sorted(served)) if served is not None else None, scenario=scenario)
+        served=tuple(sorted(served)) if served is not None else None, scenario=scenario, validity_detail=detail)
 
 
 def load(run_dir: Path, catalog_version: str | None = None, *, any_kind: bool = False) -> RunView:
