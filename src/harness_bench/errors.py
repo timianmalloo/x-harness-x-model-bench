@@ -98,7 +98,8 @@ RUN_CODES: dict[str, str] = {
     "HB-PRE-009": "a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES, a *.instructions.md under INSTRUCTION_DIRS, or any file under INSTRUCTION_TREES) after the upstream removal",
     # The lean re-run's plan-time refusals (ADR-0024 s3, ADR-0025 s5, ADR-0028 s7); each names the combo or task.
     "HB-PRE-010": "combo setting not supported by its profile (names the combo, the setting and the supported values)",
-    "HB-PRE-011": "per-harness parallelism cap missing or above 1 for a grok or agy combo (names the harness and the cap)",
+    "HB-PRE-011": "per-harness parallelism cap missing or above 1 for a grok or agy combo, or above the number of bench "
+                  "credential homes its variable names for a pooled grok combo (names the harness, the cap and the count)",
     "HB-PRE-012": "scripted-user task refused: the profile declares `scripted_user: unsupported` (names the task and the harness)",
     "HB-RUN-001": "ledger append failed: launching stopped, run incomplete",
     "HB-RUN-002": "a kill unconfirmed after 5 minutes (retries continue; the slot stays held)",

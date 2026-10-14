@@ -71,10 +71,13 @@ def credential_files(root: Path) -> dict[str, tuple[Path, str]]:
         if source and name:
             out[data.get("harness", p.stem)] = (Path(source).expanduser(), name)
         # ADR-0025 s7: a dedicated bench credential home (Grok's HB_GROK_CRED_HOME) holds a token family of its own;
-        # its auth.json is scanned like a credential file, and its name finds a leftover copy in an archived home.
+        # its auth.json is scanned like a credential file, and its name finds a leftover copy in an archived home. A pool
+        # (several homes, Am. 2026-10-13) scans every home: `<harness>:bench-home`, then `-2`, `-3`, ...
         home_env = data.get("credential_home_env")
-        if isinstance(home_env, str) and (home := os.environ.get(home_env, "").strip()):
-            out[f"{data.get('harness', p.stem)}:bench-home"] = (Path(home).expanduser() / BENCH_HOME_FILE, BENCH_HOME_FILE)
+        homes = profiles.credential_homes(os.environ.get(home_env)) if isinstance(home_env, str) else ()
+        for n, home in enumerate(homes, start=1):
+            out[f"{data.get('harness', p.stem)}:bench-home{'' if n == 1 else f'-{n}'}"] = (home / BENCH_HOME_FILE,
+                                                                                            BENCH_HOME_FILE)
     return out
 
 

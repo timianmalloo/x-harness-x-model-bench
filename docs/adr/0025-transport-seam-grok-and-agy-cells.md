@@ -135,7 +135,8 @@ review-suggested:
      workers, so **no agy coordination worker runs while a probe or batch runs** (the build tracks join before
      the run).
    - **Per-harness cap, mandatory.** The plan carries `harness_parallelism`, frozen with it. `bench plan` refuses a
-     matrix with a `grok` or `agy` combo unless the cap for that harness is 1. The engine scheduler
+     matrix with a `grok` or `agy` combo unless the cap for that harness is 1 (Grok: up to its pool size, Amendment
+     2026-10-13 below). The engine scheduler
      (`engine.py:478-481`) is built to `models/run_lifecycle.tla` (`engine.py:1`), so the cap is added to that
      model and checked by its existing model-check test (`tests/test_check_models.py`) in the same track.
    - **Credential scan.** `report/credentials.py` also reads the bench home's `auth.json`, so that token is among
@@ -146,6 +147,32 @@ review-suggested:
      authentication failure still ends the cell as infrastructure; it then pauses only that harness until the
      decision is answered, and other harnesses keep launching. No new stop path is built. The resume write-back
      above stands. Recorded in `docs/coordination/coordination-lean-rerun.md`, *Errata* E4.
+   - **Amendment (2026-10-13): a pool of Grok credential homes.** Measured: with one home, Grok cells run one at a
+     time, at 14-22 min each, so a 60-cell Grok run takes about 18 h. Change:
+     - `HB_GROK_CRED_HOME` may name several bench credential homes joined by `os.pathsep` (`;` on Windows). The
+       operator logs in once into each (`docs/runbooks/grok-credential-pool.md`). One home is the rule above,
+       unchanged. `profiles.credential_homes` is the one parser; the launcher, the credential scan
+       (`report/credentials.py`: `grok:bench-home`, then `grok:bench-home-2`, ...) and `tools/served_check.py` use it.
+     - A cell tries each home's `oslock` in the listed order without waiting, and takes the first free one. When every
+       home is held, it waits as before (`CRED_LOCK_WAIT_SECONDS`, then HB-CELL-202). It seeds from that home, and
+       `clean` writes back to the **same** home (the atomic write-back), then releases that home's lock. So two
+       concurrent cells never share a token family, and no more cells are live than there are homes.
+     - **The cap rule.** For a profile with `credential_home_env`, `bench plan` accepts a cap from 1 up to the number
+       of homes the variable names at plan time (at least 1). A larger cap is refused with HB-PRE-011, and the message
+       names the count. agy keeps a cap of exactly 1, because its keyring login is shared. The plan freezes the cap
+       only. It records no home path and no count, because the paths are the operator's. If the pool shrinks before
+       the run, extra cells wait on a lock; they never share a home.
+     - The refresh-proving readiness gate reads the **first** home. Sequential gate cells take it, because it is the
+       first free home in the list.
+     - Each home is a separate `grok login`, so each holds a separate token family. This is Inferred, like the
+       single home above. `assume:` a later login of the same account does not revoke an earlier home's session.
+       Confirm: run `grok models` against every home after the last login (the runbook step). Breaks: the earlier
+       home's cells fail authentication (HB-CELL-202 pauses Grok).
+     - **Open (resume).** The resume write-back above uses the profile's `credential_source`. The launcher resolves
+       that against a home only at seed (`ProfileLauncher._take_credential_home`). Unchanged by this amendment and
+       not built here: a resumed leftover copy has no record of which pool home it came from. Also, the shipped
+       profile's `credential_source` is the relative `auth.json` (`profiles.load`). So `resume.write_back_credentials`
+       targets `<cwd>/auth.json` even with one home. That is a finding for the resume owner (R-CAP).
 8. **Isolation and builds.**
    - `DROP_PREFIXES` (`profiles.py:41`) gains `GROK_`, `AGY_`, `GEMINI_`, `GOOGLE_`; each profile re-adds only its
      own values. `GIT_CONFIG_GLOBAL` is seeded to one bench file for every harness, because a relocated `HOME`

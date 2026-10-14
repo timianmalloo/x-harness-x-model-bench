@@ -53,6 +53,8 @@ logger = logging.getLogger(__name__)
 INSTRUCTION_IDENTITY_FIELDS = ("sourcePath", "id", "label", "location", "type")
 PHASE1_MAX_PARALLELISM = 4
 # ADR-0025 s7: harnesses whose cells run one at a time (Grok's rotating bench credential; agy's shared keyring login).
+# A profile with `credential_home_env` (Grok) may run one cell per bench credential home that variable names at plan
+# time (the pool, ADR-0025 s7 Am. 2026-10-13); the count is checked, never frozen (the paths are the operator's).
 CAPPED_HARNESSES = ("grok", "agy")
 # ADR-0024 s3: the model-id suffix of a `model_id` context setting (Claude Code `[1m]` = 1,000,000 tokens).
 CONTEXT_MODEL_MARKERS = {"1000000": "[1m]"}
@@ -190,14 +192,25 @@ def _model_id_marker(name: str, value: str) -> str | None:
 
 def require_combo_settings(root: Path, matrix: dict, tasks: list[dict]) -> None:
     """Plan-time refusals, before any cell exists (ADR-0024 s3, ADR-0025 s7, ADR-0028 s7): a grok or agy combo without
-    a frozen cap of 1 (HB-PRE-011); a setting the combo's profile does not support, or a model id that disagrees with
-    it (HB-PRE-010); a scripted-user task for a profile that declares `scripted_user: unsupported` (HB-PRE-012)."""
+    a frozen cap within its limit (HB-PRE-011); a setting the combo's profile does not support, or a model id that
+    disagrees with it (HB-PRE-010); a scripted-user task for a profile that declares `scripted_user: unsupported`
+    (HB-PRE-012)."""
     caps = frozen_harness_parallelism(matrix)
     for combo in matrix["combos"]:
-        harness = combo["harness"]
-        if harness in CAPPED_HARNESSES and caps.get(harness) != 1:
-            raise BenchError("HB-PRE-011", f"combo {combo['id']}: harness {harness} runs one cell at a time: the matrix "
-                                           f"needs harness_parallelism {{{harness}: 1}}, has {caps.get(harness)}")
+        harness, cap = combo["harness"], caps.get(combo["harness"])
+        if harness not in CAPPED_HARNESSES:
+            continue
+        env = profiles.load(root, harness).credential_home_env
+        homes = len(profiles.credential_homes(os.environ.get(env))) if env else 0
+        limit = max(1, homes)
+        if cap is None or cap > limit:
+            if env is None:
+                raise BenchError("HB-PRE-011", f"combo {combo['id']}: harness {harness} runs one cell at a time: the "
+                                               f"matrix needs harness_parallelism {{{harness}: 1}}, has {cap}")
+            raise BenchError("HB-PRE-011", f"combo {combo['id']}: harness {harness} runs at most one cell per bench "
+                                           f"credential home, and {env} names {homes} credential "
+                                           f"home{'' if homes == 1 else 's'}: the matrix needs harness_parallelism "
+                                           f"{{{harness}: 1..{limit}}}, has {cap}")
     scripted = sorted(t["id"] for t in tasks
                       if config.load_yaml(root / "tasks" / t["id"] / "task.yaml").get("scripted_user") is True)
     for combo in (c for c in matrix["combos"] if c["harness"] != "synthetic"):  # a synthetic combo has no profile

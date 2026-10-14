@@ -1121,7 +1121,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8385d3da7f9f986da2122fa21f6a2c60f7a587b1acc0fa259a39a7f104a80a45"
+      "sourceSha256": "2034c239a77990db4f7e9cd448ed518fa9d9977036f469cc3c510aebc8554c20"
     },
     {
       "id": "adr-0026-per-cell-anatomy-facts-catalog-0-8",
@@ -8325,6 +8325,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "5132997249281b5ad78eeede103fe5d625279c221c20cb05d2a4f7c550a5a8a1"
     },
     {
+      "id": "runbook-grok-credential-pool",
+      "path": "docs/runbooks/grok-credential-pool.md",
+      "title": "Runbook: add Grok bench credential homes (the credential pool)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-13",
+      "reviewSuggested": [],
+      "summary": "Each Grok bench credential home lets one more Grok cell run at once. The operator logs in once into each new home, checks every home still authenticates, lists all of them in HB_GROK_CRED_HOME (separated by ';' on Windows), and sets harness_parallelism {grok: N} with N no more than the number of homes.",
+      "tags": [
+        "runbook",
+        "grok",
+        "credentials",
+        "parallelism",
+        "lean-benchmark"
+      ],
+      "links": [
+        {
+          "to": "adr-0025-transport-seam-grok-and-agy-cells",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "931849eb9d46f67ae130a9bd39983c1ac5cd5db78af94f6831e2c483e033e436"
+    },
+    {
       "id": "runbook-resume-and-alarm",
       "path": "docs/runbooks/resume-and-alarm.md",
       "title": "Runbook: resume a crashed run and wire the alarm channel",
@@ -11823,5 +11850,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "63f2ec5d0483b60b6fb72864f96aecd3f658207b480fe2e4226a3b3a121f9711"
+  "graphSha256": "b66664e3654ce0e2265622a5157d186a2de97fc15745cc0c0a7b6d493a350a95"
 };

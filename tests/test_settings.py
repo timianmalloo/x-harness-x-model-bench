@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import dataclasses
 import hashlib
+import os
 from pathlib import Path
 
 import pytest
@@ -231,6 +232,31 @@ def test_a_grok_or_agy_cap_above_one_is_refused_and_one_passes(tmp_path, monkeyp
     err = _refuse(root, _matrix(combo, caps={harness: 2}))
     assert err.code == "HB-PRE-011" and "2" in err.message
     plan.require_combo_settings(root, _matrix(combo, caps={harness: 1}), plan.select_tasks(BOM, ["S1"]))
+
+
+def _pool_root(tmp_path: Path, monkeypatch, homes: int) -> Path:
+    """A grok fixture profile that names a credential home variable, and that variable naming `homes` folders (plus an
+    empty trailing entry, which names no home)."""
+    root = _fixture_root(tmp_path, monkeypatch, "grok")
+    profile = root / "bench" / "profiles" / "grok.yaml"
+    profile.write_text(profile.read_text(encoding="utf-8") + "credential_home_env: HB_GROK_CRED_HOME\n", encoding="utf-8")
+    monkeypatch.setenv("HB_GROK_CRED_HOME", "".join(f"{tmp_path / f'home-{n}'}{os.pathsep}" for n in range(homes)))
+    return root
+
+
+GROK_C = {"id": "grok-c", "harness": "grok", "model": "x", "effort": "default", "context": "default"}
+
+
+def test_a_grok_cap_above_its_credential_home_count_is_refused_naming_the_count(tmp_path, monkeypatch):
+    err = _refuse(_pool_root(tmp_path, monkeypatch, 1), _matrix(GROK_C, caps={"grok": 2}))
+    assert err.code == "HB-PRE-011" and "grok-c" in err.message and "1 credential home" in err.message
+
+
+def test_a_grok_cap_up_to_its_credential_home_count_passes(tmp_path, monkeypatch):
+    root = _pool_root(tmp_path, monkeypatch, 2)
+    plan.require_combo_settings(root, _matrix(GROK_C, caps={"grok": 2}), plan.select_tasks(BOM, ["S1"]))
+    err = _refuse(root, _matrix(GROK_C, caps={"grok": 3}))
+    assert err.code == "HB-PRE-011" and "2 credential homes" in err.message
 
 
 def test_build_plan_refuses_an_uncapped_grok_combo(monkeypatch):

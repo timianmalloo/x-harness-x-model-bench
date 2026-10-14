@@ -90,9 +90,17 @@ CELL_ENV = {
 }
 # ADR-0025 s7: the lock file inside the credential home; a cell holds it from seed to write-back.
 CRED_LOCK_NAME = ".harness-bench-cred.lock"
-# simplify: a fixed wait for another engine's cell to release the credential home. Ceiling: one Grok cell (cap 1) per
-# engine, so the wait is at most one other engine's cell. Upgrade trigger: a seed refused with HB-CELL-202 in a run.
+# simplify: a fixed wait for another engine's cell to release a credential home. Ceiling: an engine runs at most one
+# Grok cell per home of the pool (HB-PRE-011), so the wait is at most one other engine's cell. Upgrade trigger: a seed
+# refused with HB-CELL-202 in a run.
 CRED_LOCK_WAIT_SECONDS = 3600.0
+
+
+def credential_homes(value: str | None) -> tuple[Path, ...]:
+    """ADR-0025 s7 (Am. 2026-10-13): the bench credential homes a `credential_home_env` value names, in its order: one
+    folder, or a pool of folders joined by os.pathsep (';' on Windows), each logged in once by the operator. An empty
+    entry names no home."""
+    return tuple(Path(part.strip()).expanduser() for part in (value or "").split(os.pathsep) if part.strip())
 
 
 @dataclass(frozen=True)
@@ -299,18 +307,21 @@ def find_records(home: Path, record_glob: str, session_id: str) -> list[Path]:
     return sorted(home.glob(record_glob.replace("{session_id}", session_id)))
 
 
-def _acquire_waiting(path: Path, wait: float, poll: float = 0.05) -> oslock.RunLock:
-    """Take the credential-home lock, waiting up to `wait` seconds for another holder (a second engine, ADR-0025 s7).
-    The OS releases a dead holder's lock, so only a live cell can make this wait."""
+def _acquire_waiting(homes: tuple[Path, ...], wait: float, poll: float = 0.05) -> tuple[Path, oslock.RunLock]:
+    """Take the lock of the first free credential home, trying each in the listed order without waiting; while every
+    home is held (a cell of this engine or of another, ADR-0025 s7), retry for up to `wait` seconds. The OS releases a
+    dead holder's lock, so only a live cell can make this wait."""
     deadline = time.monotonic() + wait
     while True:
-        try:
-            return oslock.RunLock.acquire(path, code="HB-CELL-202")
-        except BenchError as exc:
-            if time.monotonic() >= deadline:
-                raise BenchError("HB-CELL-202", f"credential home lock not released within {wait:g} s: "
-                                                f"{exc.message}") from None
-            time.sleep(poll)
+        for bench in homes:
+            try:
+                return bench, oslock.RunLock.acquire(bench / CRED_LOCK_NAME, code="HB-CELL-202")
+            except BenchError as exc:
+                held = exc
+        if time.monotonic() >= deadline:
+            raise BenchError("HB-CELL-202", f"credential home lock not released within {wait:g} s: "
+                                            f"{held.message}") from None
+        time.sleep(poll)
 
 
 def _replace_atomically(target: Path, data: bytes) -> None:
@@ -455,8 +466,10 @@ class ProfileLauncher:
         self.shutdown_grace = profile.shutdown_grace
         self.build: tools.Build | None = None
         # ADR-0025 s7: a profile with `credential_home_env` seeds from, and writes back to, a bench credential home the
-        # operator logged into once; `credential.source` is resolved against it. Read once, like the oauth token.
-        self._credential_home = os.environ.get(profile.credential_home_env) if profile.credential_home_env else None
+        # operator logged into once; `credential.source` is resolved against it. Read once, like the oauth token. A pool
+        # (several homes) lets one cell per home run at once; each cell writes back to the home it took.
+        self._credential_homes = credential_homes(os.environ.get(profile.credential_home_env)) \
+            if profile.credential_home_env else ()
         self.cred_lock_wait = cred_lock_wait
         self._held: dict[Path, tuple[oslock.RunLock, Path, bytes | None]] = {}  # cell home -> lock, bench file, seeded
 
@@ -477,15 +490,14 @@ class ProfileLauncher:
                           worktree=home.parent / CELL_WORKTREE_BESIDE_HOME)
 
     def _take_credential_home(self, home: Path) -> Path:
-        """Lock the bench credential home (waiting for another engine's cell to write back), and return the credential
-        file the copy is seeded from. The lock is kept until `clean`."""
+        """Lock a free bench credential home of the pool (waiting while every home is held), and return the credential
+        file the copy is seeded from. The lock is kept until `clean`, which writes back to that same home."""
         env = self.profile.credential_home_env
-        if not self._credential_home:
+        if not self._credential_homes:
             raise BenchError("HB-USR-002", f"{self.harness}: {env} is not set: log in once into the bench credential "
                                            "home and set it to that folder (ADR-0025 s7)")
-        bench = Path(self._credential_home)
+        bench, lock = _acquire_waiting(self._credential_homes, self.cred_lock_wait)
         source = bench / (self.profile.credential_source or "")
-        lock = _acquire_waiting(bench / CRED_LOCK_NAME, self.cred_lock_wait)
         self._held[home] = (lock, source, source.read_bytes() if source.is_file() else None)
         return source
 

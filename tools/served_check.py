@@ -7,12 +7,13 @@ A thin wrapper over the views: validity and its codes come from `views.load`, ne
       - a cell has no `reasoning` row other than `omitted` (every harness can show text, ADR-0026 s1);
       - a pack-on cell has 0 instruction-file `prompt_parts`, or a pack-off cell has any. A harness with no
         `prompt_parts` row in the run reports `not recorded` for both instead (ADR-0024 s6);
-      - an archived cell home holds a value of the real or the bench Grok auth.json (ADR-0025 s7);
+      - an archived cell home holds a value of the real or any bench Grok auth.json (ADR-0025 s7, every home of a pool);
       - an archived Copilot debug log holds an `Authorization` or `Bearer` shape (ADR-0024 s6, ADR-0027 s6);
       - a real harness store changed since SNAPSHOT, or no SNAPSHOT was given (fail closed; ADR-0025 s8).
   served_check.py --snapshot OUT          list the real stores (names, sizes, mtimes; never contents).
   served_check.py --refresh-start STATE   the Grok refresh gate's start: the bench token must be expired (its JWT
-                                          `exp` is read, never its value); records the auth.json digest.
+                                          `exp` is read, never its value); records the auth.json digest. With a pool
+                                          the gate reads the first home: sequential cells take it (the first free).
   served_check.py --refresh-finish STATE --grok EXE [ARG ...]
                                           the gate's end: the bench auth.json bytes changed and were written back,
                                           and `grok models` authenticates against the bench home and the real home.
@@ -32,7 +33,7 @@ import sys
 import time
 from pathlib import Path
 
-from harness_bench import views
+from harness_bench import profiles, views
 from harness_bench.report import credentials, publish
 
 INSTRUCTION_FILE = "instruction_file"
@@ -101,15 +102,15 @@ def _cell_homes(run_dir: Path) -> list[Path]:
 
 
 def _bench_auth(env=os.environ) -> Path | None:
-    home = env.get(BENCH_HOME_ENV, "").strip()
-    return Path(home) / credentials.BENCH_HOME_FILE if home else None
+    homes = profiles.credential_homes(env.get(BENCH_HOME_ENV))
+    return homes[0] / credentials.BENCH_HOME_FILE if homes else None
 
 
 def credential_failures(run_dir: Path, env=os.environ) -> list[str]:
     """ADR-0025 s7: no archived cell home holds a value of the real Grok login or of the bench credential home."""
     values = credentials.values_in_file(_home(env) / ".grok" / credentials.BENCH_HOME_FILE)
-    if (bench := _bench_auth(env)) is not None:
-        values |= credentials.values_in_file(bench)
+    for bench in profiles.credential_homes(env.get(BENCH_HOME_ENV)):
+        values |= credentials.values_in_file(bench / credentials.BENCH_HOME_FILE)
     if not values:
         return []
     return [f"{_rel(f, run_dir)}: a credential copy left in a cell home" for home in _cell_homes(run_dir)
