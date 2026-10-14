@@ -21,7 +21,8 @@
 The lean re-run's reader facts (ADR-0024 s4, ADR-0026 s1; R-READ-CODEX):
 - `served`: `model_served`, `effort` and `reasoning_summary` from each `turn_context` (`model`, `effort`, `summary`);
   `context_tokens` is the nominal window (Leader ruling 2026-10-12): `task_started.model_context_window` (the
-  effective one) / (the cell's own catalog percent / 100), from `<home>/models_cache.json`, the served model's
+  effective one) / (the cell's own catalog percent / 100), from the catalog its config.toml names
+  (`model_catalog_json`), else `<home>/models_cache.json`, the served model's
   `effective_context_window_percent`, where home is the parent of the record's `sessions` folder; an exact integer,
   else not recorded. Its source keeps the effective value and the percent. A value that changes between turns is a
   second `ServedSettings` (DR2), so both are written. The rollout carries no API model and Codex has no context tier: both not recorded.
@@ -42,6 +43,7 @@ import hashlib
 import json
 import re
 import shlex
+import tomllib
 from dataclasses import replace
 from pathlib import Path
 
@@ -73,7 +75,9 @@ OUTPUT_TYPES = ("custom_tool_call_output", "function_call_output", "local_shell_
 SHELL_NAMES = ("exec", "shell", "exec_command", "local_shell", "container.exec")
 EDIT_NAMES = ("apply_patch", "write_file", "edit")
 # R-74 item 5: the collaboration ids the pinned 0.156.0 system message names (ok.jsonl:4). qual-r74-codex-1 issued
-# spawn_agent and wait_agent. Static here, as the Claude and Copilot readers; in profile only in a scenario-6 cell (views).
+# spawn_agent and wait_agent. 0.160.0 offers exactly these six as `collaboration.*` tools when the catalog entry names
+# multi_agent_version v2 (request captured, fix/codex-profile-0160). Static here, as the Claude and Copilot readers; in
+# profile only in a scenario-6 cell (views).
 DELEGATE_NAMES = ("spawn_agent", "send_message", "followup_task", "wait_agent", "interrupt_agent", "list_agents")
 MCP_CLASSES = {"scripted_user.ask_user": "scripted user"}  # R-37 c2: the task's own MCP tool; every other MCP call is other
 
@@ -130,29 +134,42 @@ _TURN_FIELDS = (("model", "model_served"), ("effort", "effort"), ("summary", "re
 _CONTEXT_SOURCE = "rollout:task_started.model_context_window"
 
 
+def _catalog_file(home: Path) -> Path:
+    """The catalog the cell's Codex read: the file its config.toml names (`model_catalog_json`, resolved beside it;
+    Codex then fetches none, fix/codex-profile-0160), else the fetched `<home>/models_cache.json`."""
+    config = home / "config.toml"
+    try:
+        named = tomllib.loads(config.read_text(encoding="utf-8")).get("model_catalog_json") \
+            if config.is_file() and config.stat().st_size <= MAX_FILE else None
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):
+        named = None
+    return home / named if isinstance(named, str) and named else home / "models_cache.json"
+
+
 def _catalog_percent(path: Path, model: str | None) -> tuple[int | None, str]:
     """(the served model's `effective_context_window_percent`, its source note), or (None, the reason) (ADR-0024 s4):
-    `<home>/models_cache.json`, where home is the parent of the record's nearest `sessions` folder."""
+    the catalog in `<home>` (`_catalog_file`), where home is the parent of the record's nearest `sessions` folder."""
     home = next((p.parent for p in path.parents if p.name == "sessions"), path.parent)
-    catalog = home / "models_cache.json"
+    catalog = _catalog_file(home)
+    name = catalog.name
     if not catalog.is_file():
-        return None, "no models_cache.json beside the record"
+        return None, f"no {name} beside the record"
     if model is None:
         return None, "no served model to look up"
     try:
         if catalog.stat().st_size > MAX_FILE:
-            return None, "models_cache.json over the size bound"
+            return None, f"{name} over the size bound"
         body = json.loads(catalog.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, ValueError, RecursionError):
-        return None, "models_cache.json does not parse"
+        return None, f"{name} does not parse"
     entry = next((m for m in as_list(as_dict(body).get("models")) if isinstance(m, dict) and m.get("slug") == model), None)
     if entry is None:
-        return None, f"models_cache.json has no {model}"
+        return None, f"{name} has no {model}"
     percent, ceiling = entry.get("effective_context_window_percent"), entry.get("max_context_window")
     if not is_count(percent) or percent == 0:
-        return None, f"models_cache.json {model} has no effective_context_window_percent"
+        return None, f"{name} {model} has no effective_context_window_percent"
     tail = f" (max_context_window={ceiling})" if is_count(ceiling) else ""
-    return percent, f"models_cache.json models[{model}].effective_context_window_percent={percent} / 100){tail}"
+    return percent, f"{name} models[{model}].effective_context_window_percent={percent} / 100){tail}"
 
 
 def _nominal(window: int, percent: int | None, note: str) -> tuple[int | tuple, str]:

@@ -7,12 +7,19 @@ credential_kind: "subscription login (copied)"
 command: ["{node}", "{adapter}"]
 shutdown_grace_seconds: 10
 files:
-  # R-74 item 5: `multi_agent` is the pinned 0.160.0 feature (stable, default true; as in 0.156.0) that offers
-  # spawn_agent and the other collaboration tools. seed_home writes true only for a scenario-6 cell and false for every other cell.
+  # R-74 item 5 (re-measured on the pinned 0.160.0, fix/codex-profile-0160): the collaboration tools (spawn_agent,
+  # send_message, followup_task, wait_agent, interrupt_agent, list_agents) come from the catalog entry's
+  # `multi_agent_version` ("v2" for gpt-6.1-sol); `features.multi_agent` / `multi_agent_v2` do not remove them. So every
+  # cell reads the frozen catalog below (`model_catalog_json`, resolved beside this file), and seed_home keeps the field
+  # only in a scenario-6 cell. `multi_agent` stays scenario-gated: it still offers tools for a model whose entry names
+  # no version (gpt-5.5: `tool_search`).
+  # `plugins = false` with `remote_plugin = false`: no ~32 MB plugins/cache (OpenAI curated plugins and their skills) and
+  # no 35 MB cache/remote_plugin_catalog per cell home (`remote_plugin = false` alone still downloads plugins/cache).
   # ADR-0024 s3: the effort and context lines are left out of a "default" cell's file; top-level keys sit before the
   # first table. model_reasoning_summary is requested only, never judged (ADR-0024 s7: codex-acp 1.12.0 serves `auto`).
   config.toml: |-
     model = "{model}"
+    model_catalog_json = "model_catalog.json"
     model_reasoning_effort = "{effort}"
     model_context_window = {context_tokens}
     model_reasoning_summary = "detailed"
@@ -20,14 +27,27 @@ files:
     [features]
     apps = false
     multi_agent = {multi_agent}
+    plugins = false
+    remote_plugin = false
+# fix/codex-profile-0160: the catalog the 0.160.0 build was served on 2026-10-13 (one etag in all 60 cells of
+# lean-20261013T222718-ef6b), less the account `identity` hash and the etag. Frozen so no cell fetches its own, and so
+# the delegate field can be dropped; a model it lacks is refused at seed. Refresh it with the build pin (a test checks
+# client_version against bench/tools/package-lock.json); sha256 is LF-normalized, so the profile record covers it.
+model_catalog:
+  source: codex-models-0.160.0.json
+  sha256: ca41b3615176dbc671e1612d538ff0d16106ca4ef33907aee065d8833788f301
+  name: model_catalog.json
+  delegate_field: multi_agent_version
 env:
   CODEX_PATH: "{exe}"
 # ADR-0024 s3: what a combo may pin. Effort values: gpt-6.1-sol's supported_reasoning_levels in the 0.160.0
 # models_cache.json (spike-settings/codex); 872,000 is the measured window (served 828,400 = 95%, spike X2). The default
-# effort depends on the model (gpt-6.1-sol: low), so it is not declared; the default window serves 272,000.
+# effort and the default window both depend on the model, so neither is declared: a default cell's served values are
+# recorded, never judged. gpt-6.1-sol: effort low; window 500,000 nominal in the served catalog, 272,000 in 0.160.0's
+# bundled one (HB-VAL-010 on 43/60 cells of lean-20261013T222718-ef6b under the old `default_serves: 272000`).
 settings:
   effort: {values: [low, medium, high, xhigh, max, ultra], apply: placeholder, default_serves: null}
-  context: {values: ["872000"], apply: placeholder, default_serves: 272000}
+  context: {values: ["872000"], apply: placeholder, default_serves: null}
 mode: agent-full-access
 record_glob: "sessions/**/rollout-*-{session_id}.jsonl"
 # R-74 item 5: a spawned agent writes its own rollout beside the parent's in the fresh home. The runner skips the

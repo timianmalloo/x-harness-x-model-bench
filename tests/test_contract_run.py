@@ -38,7 +38,9 @@ EXISTING = ("claude-code", "codex", "copilot")
 # `settings` (claude-code 32e06b14..7bca and codex 57701845..fe56, as it reported) and R-COPILOT-P changed copilot.
 PROFILE_RECORD_HASHES = {
     "claude-code": "48a8adf21c80e74725c5c31e7821ef3d5c3ec7d11430ad6ee23e1f969cd439a0",  # PROBE-FIX-2 A: model_aliases
-    "codex": "5770184504015078b37e8a69e6b050c2c55dc99d18c1725173930e541515fe56",
+    # fix/codex-profile-0160, deliberate: codex.yaml now names the frozen 0.160.0 catalog (sha256-pinned, no collaboration
+    # tools outside scenario 6), turns plugins and remote_plugin off, and declares no default context (was 5770184..fe56)
+    "codex": "b3bca6d16523d366716c3c19d457b7aea3b3bafeea9aa37ad55d821156248e57",
     "copilot": "62a87c27b83a9c9ec291139e6b8301ee1f2528b5631ade7bec19138a47766eac",
 }
 # The new fields each existing profile now sets (R-SETTINGS: settings, Claude's session_meta; Ruling 120: copilot -p
@@ -190,8 +192,9 @@ def test_default_changes_nothing_for_the_existing_profiles(tmp_path, harness):
     assert p.argv(build, "model-x", scenario=6, effort="default", context="default", home=tmp_path) == old_argv
     assert p.cell_env(base, tmp_path, build, "model-x", "tp", effort="default", context="default") == \
         p.cell_env(base, tmp_path, build, "model-x", "tp")
-    p.seed_home(tmp_path / "a", "model-x", 6)
-    p.seed_home(tmp_path / "b", "model-x", 6, effort="default", context="default")
+    # fix/codex-profile-0160: a model the frozen codex catalog has; seed_home refuses one it lacks
+    p.seed_home(tmp_path / "a", "gpt-6.1-sol", 6)
+    p.seed_home(tmp_path / "b", "gpt-6.1-sol", 6, effort="default", context="default")
     assert {f.name: f.read_bytes() for f in (tmp_path / "a").iterdir()} == \
         {f.name: f.read_bytes() for f in (tmp_path / "b").iterdir()}
 

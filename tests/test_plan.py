@@ -776,7 +776,8 @@ def test_the_plan_records_each_harness_profile_it_uses():  # grading and views r
                       "record_glob": "sessions/**/rollout-*-{session_id}.jsonl", "shutdown_grace_seconds": "10",
                   "subagent_glob": "sessions/**/rollout-*.jsonl",
                   "settings": {
-                      "context": {"values": ["872000"], "apply": "placeholder", "default_serves": 272000, "args": {}},
+                      # fix/codex-profile-0160: no default window is declared (it is the model's)
+                      "context": {"values": ["872000"], "apply": "placeholder", "default_serves": None, "args": {}},
                       "effort": {"values": ["low", "medium", "high", "xhigh", "max", "ultra"], "apply": "placeholder",
                                  "default_serves": None, "args": {}}}},
     }
