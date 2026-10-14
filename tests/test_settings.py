@@ -96,7 +96,7 @@ def test_a_default_cell_launches_without_any_setting(tmp_path, harness):
     p = profiles.load(ROOT, harness, credential_source=tmp_path / "absent")
     env = p.cell_env({"PATH": "p"}, tmp_path, _build(tmp_path, harness), "m", "")
     assert "CLAUDE_CODE_EFFORT_LEVEL" not in env
-    p.seed_home(tmp_path / "h", "m")
+    p.seed_home(tmp_path / "h", "gpt-6.1-sol")  # in the frozen codex catalog (fix/codex-profile-0160)
     for f in (tmp_path / "h").iterdir():
         text = f.read_text(encoding="utf-8")
         assert "{" + "effort}" not in text and "{context_tokens}" not in text
@@ -347,7 +347,8 @@ def test_the_plan_profile_record_freezes_a_profile_alias_table(tmp_path, monkeyp
 def test_the_plan_profile_record_freezes_a_non_empty_settings_block(tmp_path, monkeypatch):
     """R-VALIDITY's seam: a "default" cell is judged against the frozen record's settings[name].default_serves."""
     assert plan.profile_record(ROOT, "codex")["settings"] == {
-        "context": {"apply": "placeholder", "args": {}, "default_serves": 272000, "values": ["872000"]},
+        # fix/codex-profile-0160: the default window is the model's (gpt-6.1-sol serves 500,000), so none is declared
+        "context": {"apply": "placeholder", "args": {}, "default_serves": None, "values": ["872000"]},
         "effort": {"apply": "placeholder", "args": {}, "default_serves": None,
                    "values": ["low", "medium", "high", "xhigh", "max", "ultra"]}}
     assert plan.profile_record(ROOT, "claude-code")["settings"]["context"] == {

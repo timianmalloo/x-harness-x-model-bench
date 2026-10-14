@@ -4,11 +4,15 @@ Hand-built `served` rows (the ADR-0026 s1 columns) are judged by `views._served_
 test drives them through `_cell_view` over a real graded run, and one shows an old run (no `served` rows) unchanged.
 """
 
+from pathlib import Path
+
 import pytest
 from archived_runs import GOOD, make_root, make_run
 from test_views import _acp_run, _cell, _edit_plan, _warnings
 
-from harness_bench import profiles, telemetry, views
+from harness_bench import plan, profiles, telemetry, views
+
+ROOT = Path(__file__).resolve().parents[1]
 
 VALID = ("valid", None)
 MISMATCH = ("invalid (setting mismatch)", "HB-VAL-010")
@@ -59,6 +63,17 @@ CODEX_SOURCE = "rollout task_started.model_context_window 828400 / models_cache.
 def test_a_codex_cell_at_828400_under_pin_872000_with_catalog_percent_95_is_valid():
     rows = [_row("context_tokens", 872000, CODEX_SOURCE)]
     assert _judge(_cell_rec("codex", context="872000"), _prof(default_context=272000), rows)[0] == VALID
+
+
+def test_a_default_codex_context_is_recorded_but_never_judged_since_the_default_window_is_the_model_s():
+    """fix/codex-profile-0160 (HB-VAL-010 on 43/60 cells): gpt-6.1-sol's catalog serves a 500,000 nominal window where
+    0.160.0's bundled catalog says 272,000, so one profile number is wrong for some model. The real frozen record
+    declares no default context: a default cell's served window is kept as a row, and neither HB-VAL-010 nor
+    HB-VAL-011 is raised for it; a pinned window is still judged."""
+    prof = plan.profile_record(ROOT, "codex")
+    served = [_row("context_tokens", 500000, CODEX_SOURCE.replace("828400", "475000"))]
+    assert _judge(_cell_rec("codex"), prof, served) == (VALID, [])
+    assert _judge(_cell_rec("codex", context="872000"), prof, served)[0] == MISMATCH
 
 
 def test_an_effective_codex_window_is_judged_as_written_never_scaled_by_the_source():

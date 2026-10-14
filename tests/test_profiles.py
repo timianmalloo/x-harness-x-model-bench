@@ -1,5 +1,6 @@
 """Harness profiles (ADR-0003, ADR-0004, ADR-0013): per-cell home, credential copy, static permissions, env."""
 
+import hashlib
 import importlib.util
 import json
 import shutil
@@ -381,6 +382,67 @@ def test_codex_profile_disables_account_apps_in_each_seeded_home(tmp_path):
     assert config["features"]["apps"] is False
 
 
+# fix/codex-profile-0160 (spike on the pinned 0.160.0 build): a catalog entry's `multi_agent_version` ("v2" for
+# gpt-6.1-sol) offers the collaboration tools whatever `features.multi_agent`/`multi_agent_v2` say; a catalog named by
+# `model_catalog_json` replaces the fetched one, and without that field the request offers none of them.
+CODEX_CATALOG = "model_catalog.json"
+
+
+def _codex_seed(tmp_path, name, model="gpt-6.1-sol", scenario=None):
+    p = profiles.load(ROOT, "codex", credential_source=tmp_path / "absent")
+    home = tmp_path / name
+    p.seed_home(home, model, scenario)
+    return (tomllib.loads((home / "config.toml").read_text(encoding="utf-8")),
+            json.loads((home / CODEX_CATALOG).read_text(encoding="utf-8")))
+
+
+def test_every_codex_cell_reads_the_frozen_catalog_and_only_a_scenario6_cell_keeps_multi_agent_version(tmp_path):
+    frozen = json.loads(profiles.load(ROOT, "codex").model_catalog.source.read_text(encoding="utf-8"))
+    for name, scenario in (("plain", None), ("five", 5), ("six", 6)):
+        config, catalog = _codex_seed(tmp_path, name, scenario=scenario)
+        assert config["model_catalog_json"] == CODEX_CATALOG  # resolved beside config.toml (spike: cwd elsewhere)
+        assert config["features"]["multi_agent"] is (scenario == 6)  # still gates v1-catalog models (gpt-5.5)
+        if scenario == 6:
+            assert catalog == frozen
+            assert next(m for m in catalog["models"] if m["slug"] == "gpt-6.1-sol")["multi_agent_version"] == "v2"
+        else:
+            assert catalog["models"] == [{k: v for k, v in m.items() if k != "multi_agent_version"}
+                                         for m in frozen["models"]]
+
+
+def test_a_codex_cell_whose_model_the_frozen_catalog_lacks_is_refused(tmp_path):
+    with pytest.raises(BenchError) as error:
+        _codex_seed(tmp_path, "home", model="gpt-no-such-model")
+    assert error.value.code == "HB-USR-002" and "gpt-no-such-model" in error.value.message
+
+
+def test_the_frozen_codex_catalog_is_the_pinned_build_s_and_carries_no_account_identity():
+    """A control: bumping @openai/codex in the lock without refreshing the catalog fails here (the served catalog is
+    per client version). The account hash Codex writes into models_cache.json (`identity`) is never committed."""
+    lock = json.loads((ROOT / "bench" / "tools" / "package-lock.json").read_text(encoding="utf-8"))
+    catalog = profiles.load(ROOT, "codex").model_catalog
+    body = json.loads(catalog.source.read_text(encoding="utf-8"))
+    assert body["client_version"] == lock["packages"]["node_modules/@openai/codex"]["version"]
+    assert set(body) == {"client_version", "fetched_at", "models"}
+    assert hashlib.sha256(catalog.source.read_bytes().replace(b"\r\n", b"\n")).hexdigest() == catalog.sha256
+
+
+def test_a_codex_catalog_that_differs_from_its_pinned_hash_is_refused_at_seed(tmp_path):
+    shutil.copytree(ROOT / "bench" / "profiles", tmp_path / "bench" / "profiles")
+    p = profiles.load(tmp_path, "codex", credential_source=tmp_path / "absent")
+    p.model_catalog.source.write_text('{"models": []}\n', encoding="utf-8")
+    with pytest.raises(BenchError) as error:
+        p.seed_home(tmp_path / "home", "gpt-6.1-sol")
+    assert error.value.code == "HB-USR-002" and "sha256" in error.value.message
+
+
+def test_codex_cells_turn_off_plugins_and_the_remote_plugin_catalog(tmp_path):
+    """Spike: `plugins = false` with `remote_plugin = false` stops the ~32 MB plugins/cache download per cell
+    (`remote_plugin = false` alone does not)."""
+    config, _ = _codex_seed(tmp_path, "home")
+    assert config["features"]["plugins"] is False and config["features"]["remote_plugin"] is False
+
+
 def test_cell_env_is_clean_pinned_and_turns_build_servers_off(tmp_path):
     p = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "c")
     base = {"PATH": "x", "CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "ANTHROPIC_API_KEY": "sk-leak",
@@ -442,6 +504,7 @@ def test_a_real_profile_launcher_gets_the_engine_past_attempt_start(base, tmp_pa
     launcher.argv_env = lambda cell, home, tp: ([sys.executable, str(FAKE)], launcher.profile.cell_env(
         dict(os.environ), home, launcher.build, cell["model"], tp))
     p = _plan(n_cells=1)
+    p["cells"][0]["model"] = "gpt-6.1-sol"  # in the frozen codex catalog; seed refuses one it lacks (fix/codex-profile-0160)
     _, events, _ = _run(base, p, launcher)
     started = [e for e in events if e["kind"] == "attempt.process_started"]
     assert [e["credential_kind"] for e in started] == ["subscription login (copied)"]

@@ -15,7 +15,9 @@ at every cell start (US-12).
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import importlib
+import json
 import os
 import shutil
 import sys
@@ -120,6 +122,33 @@ class Setting:
 
 
 @dataclass(frozen=True)
+class ModelCatalog:
+    """A frozen model catalog written into each cell home (fix/codex-profile-0160). `source` is the committed file
+    beside the profile, `sha256` its LF-normalized hash as the profile pins it (so the profile record covers its bytes),
+    `name` the file in the cell home that the harness config names, and `delegate_field` the per-model field kept only
+    in a scenario-6 cell (Codex 0.160.0: `multi_agent_version` offers the collaboration tools, and no feature turns
+    them off while the catalog names a version)."""
+
+    source: Path
+    sha256: str
+    name: str
+    delegate_field: str
+
+    def seed(self, home: Path, model: str, scenario: int | None) -> None:
+        data = self.source.read_bytes().replace(b"\r\n", b"\n") if self.source.is_file() else b""
+        if hashlib.sha256(data).hexdigest() != self.sha256:
+            raise BenchError("HB-USR-002", f"model catalog {self.source.name}: missing, or its sha256 is not the "
+                                           f"profile's {self.sha256}")
+        body = json.loads(data)
+        if not any(m.get("slug") == model for m in body["models"]):
+            raise BenchError("HB-USR-002", f"model catalog {self.source.name} has no {model}: the cell would run on "
+                                           "the harness's fallback model metadata")
+        if scenario != 6:
+            body["models"] = [{k: v for k, v in m.items() if k != self.delegate_field} for m in body["models"]]
+        (home / self.name).write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+@dataclass(frozen=True)
 class Profile:
     harness: str
     home_env: str
@@ -141,6 +170,7 @@ class Profile:
     # R-74 item 4: where a session's sub-agent records land beside the main one ({session_id} filled per cell); empty
     # when a harness writes its sub-agents into the main record (Copilot: rows with a top-level agentId).
     subagent_glob: str = ""
+    model_catalog: ModelCatalog | None = None  # fix/codex-profile-0160: Codex's frozen catalog; None writes none
     # Lean re-run seams (ADR-0024 s3, ADR-0025 s1-s8, ADR-0028 s7). Parsed here with defaults that leave the three
     # existing profiles' launches byte-equal; what each one does beyond placeholder expansion is R-SETTINGS's and
     # R-TRANSPORT's (session_meta on session/new, user_home_vars, seed_files, the credential home, the alias table).
@@ -205,9 +235,12 @@ class Profile:
         home.mkdir(parents=True, exist_ok=True)
         (home / CELL_GITCONFIG_NAME).write_text(CELL_GITCONFIG_TEXT, encoding="utf-8")
         delegate = "".join(f', "{name}"' for name in self.delegate_ids(scenario))
-        # R-74 item 5: Codex 0.156.0 feature multi_agent (stable, default true) is what offers the collaboration tools.
+        # R-74 item 5: Codex feature multi_agent (stable, default true) offers the collaboration tools for a model whose
+        # catalog entry names no multi_agent_version; a version is kept only in a scenario-6 cell (ModelCatalog.seed).
         # True only in a scenario-6 cell; false in every other cell, including a seed that names no scenario.
         multi_agent = "true" if scenario == 6 else "false"
+        if self.model_catalog is not None:
+            self.model_catalog.seed(home, model, scenario)
         for name, template in self.files.items():
             text = self._expand_file(template, name, effort, context)
             (home / name).parent.mkdir(parents=True, exist_ok=True)  # ADR-0025 s8: nested seeds (.grok/, .gemini/)
@@ -376,6 +409,20 @@ def _settings(harness: str, data) -> dict[str, Setting]:
     return out
 
 
+def _model_catalog(harness: str, folder: Path, data) -> ModelCatalog | None:
+    """`model_catalog: {source, sha256, name, delegate_field}`; absent means none. The file is read at seed, never
+    here, so a profile copied without it still loads."""
+    if data is None:
+        return None
+    entry = _mapping(harness, "model_catalog", data)
+    values = {key: entry.get(key) for key in ("source", "sha256", "name", "delegate_field")}
+    if any(not isinstance(v, str) or not v for v in values.values()):
+        raise BenchError("HB-USR-002", f"{harness}: model_catalog needs nonempty strings source, sha256, name and "
+                                       "delegate_field")
+    return ModelCatalog(source=folder / values["source"], sha256=values["sha256"], name=values["name"],
+                        delegate_field=values["delegate_field"])
+
+
 def load(root: Path, harness: str, credential_source: Path | None = None) -> Profile:
     if harness not in HARNESSES:
         raise ValueError(f"no profile for harness {harness!r} (have {HARNESSES})")
@@ -419,6 +466,7 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         credential_kind=data.get("credential_kind", "subscription login (copied)"),
         shutdown_grace=float(grace),
         subagent_glob=data.get("subagent_glob") or "",
+        model_catalog=_model_catalog(harness, root / "bench" / "profiles", data.get("model_catalog")),
         settings=_settings(harness, data.get("settings") or {}),
         transport=transport,
         session_meta=_mapping(harness, "session_meta", data.get("session_meta") or {}),

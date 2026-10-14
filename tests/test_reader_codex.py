@@ -68,6 +68,22 @@ def test_served_context_without_a_catalog_is_not_recorded_naming_the_missing_per
     assert rows["context_tokens"][0]["source"] == "rollout:task_started.model_context_window=828400"
 
 
+def test_the_percent_comes_from_the_catalog_the_cell_s_config_names(tmp_path):
+    """fix/codex-profile-0160: a seeded cell names its catalog (`model_catalog_json`, resolved beside config.toml) and
+    Codex then fetches none, so no models_cache.json exists; the percent is read from the named file."""
+    rollout = _home(tmp_path, catalog=None)
+    home = tmp_path / "home"
+    (home / "config.toml").write_text('model = "gpt-6.1-sol"\nmodel_catalog_json = "model_catalog.json"\n', encoding="utf-8")
+    (home / "model_catalog.json").write_text(json.dumps(CATALOG), encoding="utf-8")
+    rows = _served(codex.read(rollout))
+    assert [(r["value"], r["source"]) for r in rows["context_tokens"]] == [
+        (872000, ("nominal = rollout:task_started.model_context_window=828400 / (model_catalog.json models[gpt-6.1-sol]"
+                  ".effective_context_window_percent=95 / 100) (max_context_window=872000)"))]
+    (home / "model_catalog.json").unlink()  # a named catalog that is gone is not recorded, never a fallback guess
+    assert [r["not_recorded"] for r in _served(codex.read(rollout))["context_tokens"]] == [
+        "not recorded: nominal window needs the catalog percent: no model_catalog.json beside the record"]
+
+
 def test_a_percent_that_does_not_divide_the_window_exactly_is_not_recorded(tmp_path):
     catalog = {"models": [{**CATALOG["models"][0], "effective_context_window_percent": 97}]}
     rows = _served(codex.read(_home(tmp_path, catalog=catalog)))
