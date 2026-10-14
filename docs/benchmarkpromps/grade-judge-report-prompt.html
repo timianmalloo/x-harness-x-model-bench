@@ -137,7 +137,9 @@ STEP 3 - judges (only if JUDGE = yes; otherwise print "not judged" and go on)
     reported verbatim. Then `verify` again: exit 0.
 
 STEP 4 - page 1, run health and issues
-  - Per READY run: `uv run bench --runs &lt;INDEX&gt; report &lt;RUN_ID&gt;` (writes its report.html); a refusal is quoted.
+  - Per READY run: `uv run bench --runs &lt;INDEX&gt; report &lt;RUN_ID&gt; --prereg docs/notes/lean-preregistration.md`
+    (writes its report.html; the pre-registration check counts the run only if the note's commit precedes its first
+    cell); a refusal is quoted. SV1 (the supervise-a-long-job task) is in its own SV1 table, never the primary.
   - The issues: every handoff.json "issues" line; every invalid cell (code and text, from status --json); every
     LIVE or BROKEN run; and the CLI sessions' own problems: for each run's transcript (handoff.json "transcript";
     if "not found", search the CLI's session store for the RUN_ID), list errors, refusals, retries, workarounds and

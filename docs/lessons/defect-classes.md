@@ -2256,3 +2256,45 @@ registers both.*
   killed per R-PACKCOST's report). Rung: test, for `pack_cost.py`. Upgrade trigger: a threshold rule in another
   module.
 - **Status:** `partially-controlled`
+
+### GLOB-A: a record glob that also matches the main record, so one record is read twice (candidate)
+- **Signature:** a harness profile's `subagent_glob` is broad enough to match the main session's record too. A
+  consumer that reads "the main record, then every sub-agent record" without excluding the main path counts every call,
+  byte and text block twice.
+- **Instance:** `2026-10-14` (track W4 of `docs/plans/benchmark-instrumentation-2026-10-14.md`; measured): Codex's
+  `subagent_glob` `sessions/**/rollout-*.jsonl` matches the main rollout. `report/tool_phases.cell_trace` read it twice:
+  cell `04f62cfd` gave 28 calls, 2,810 chars and 8 messages against 14 / 1,405 / 4 in the raw rollout. Every Codex
+  tool-phase, re-read and pack-cost number that went through `cell_trace` was about 2x. `grade/drift.py` already
+  excluded the main path.
+- **Sweep:** the two readers of `subagent_glob` (`grade/drift.py`, `report/tool_phases.py`; `grep subagent_glob src`).
+  Both now exclude the main record.
+- **Control:** `tests/test_tool_phases.py::test_cell_trace_reads_the_main_record_once_when_the_subagent_glob_also_matches_it`.
+  Rung: test. Upgrade trigger: a third reader of `subagent_glob`; then one helper that returns the sub-agent records
+  without the main one.
+- **Status:** `controlled`
+
+### PARSE-A: a reader keeps the first of several values, or leaves a string escaped, and nothing fails (candidate)
+- **Signature:** a reader parses a field that can hold several items (a batch of commands) or an escaped string, keeps
+  only the first item or the raw escaped text, and every downstream measure is quietly smaller or wrong.
+- **Instance:** `2026-10-14` (track W2; measured on the 2026-10-13 Codex run): `telemetry/codex.py` `_kv_fields` kept
+  only the first `cmd` of an exec; 297 of 955 execs batch 2-5 commands. It also never unescaped the JavaScript string,
+  so `\n` stayed literal and a leading `# Intent:` comment swallowed the whole command, and Windows paths kept `\\`.
+- **Sweep:** the other `_KV`/argument parsers in `telemetry/` (Codex only uses `_kv_fields`; the JSON-argument readers
+  parse with `json`). Older Codex `function_call` shell calls with JSON arguments are not parsed (Inferred, none in the
+  run).
+- **Control:** `tests/test_reader_codex.py::test_an_exec_call_batching_several_commands_names_them_all_and_unescapes_the_javascript_string`.
+  Rung: test. Upgrade trigger: a new record shape for shell calls.
+- **Status:** `controlled`
+
+### PIN-C: a track changes a pinned input and runs only the tests it thinks are related, so the pin breaks at the join (candidate)
+- **Signature:** a parallel track edits a profile or a dataclass that a contract test pins (a profile record hash, a
+  field list), runs a subset of the suite that does not include the pinning test, and reports green. The failure shows
+  only at the integration's test run.
+- **Instance:** `2026-10-14` (track W12; observed at the join): `bench/profiles/copilot.yaml` gained `transports.acp`
+  and `profiles.Profile` gained `transports`; `tests/test_contract_run.py` (the profile record hashes and the field list)
+  was not in the track's runs and failed at the join. Also W12 left five mutation-register `find` strings unmatched,
+  found by the coordinator's register check.
+- **Control:** the integration step runs `tests/test_contract_run.py` and a check that every mutation-register `find`
+  occurs exactly once after each merge (the coordinator's script; candidate for `tools/`). Rung: procedure. Upgrade
+  trigger: a second instance; then add the find check as a test and name `test_contract_run.py` in the track brief.
+- **Status:** `candidate`

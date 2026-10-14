@@ -133,3 +133,19 @@ review-suggested:
   it is written.
 - **HB-VAL-002 reads only `model_served`.** Rejected at the gate (finding 9): old runs would change validity on
   re-render.
+
+## Amendment 1 (accepted 2026-10-14): an optional `transport` combo key
+
+Owner decision, plan row A3 of `docs/plans/benchmark-instrumentation-2026-10-14.md`: the Copilot transport control
+(ACP against `copilot -p`, ADR-0028) is a combo option, not a hand-swapped profile.
+
+- A `/3` combo is `{id, harness, model, effort, context}` plus an optional `transport`, a non-empty string. Every
+  other unknown key is still refused.
+- The value must name a launch the profile declares under `transports:` (today only Copilot's `acp`); any other
+  value is refused at plan time (HB-PRE-010). `transport: acp` is refused at any context but `default`, because ACP
+  serves 272,000 whatever the flag says (measured 2026-10-14, as in this ADR's context).
+- `plan.Cell` freezes `transport`. It joins the cell id only when set, so existing cell ids are unchanged (RECID-A).
+- The judging follows the cell's combo, not the harness alone: `views._prompt_mode` is false for an ACP combo, so
+  HB-VAL-005 cross-checks the ACP turn total; the report pages label the cell `acp`.
+- Verified on a real 2-cell run (`w12-transport-a3`, task X1, gpt-6.1-sol, default context): both cells valid; the ACP
+  turn total equals the reader's model-call sums.

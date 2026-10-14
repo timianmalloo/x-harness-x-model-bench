@@ -990,7 +990,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9d561e1ae5190fe73ea5b6c3769e92e325543c3bac7eb8d07cf5db654c7c3731"
+      "sourceSha256": "5f9833d869bce92c45c01952ce0a0a518cbc95620bbbea868fa1f286c5eb71f0"
     },
     {
       "id": "adr-0023-lean-summary-over-verdicts",
@@ -1030,7 +1030,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "20d0a5952b44f11ba014777cffad36a901ab5851e5951fac92a767f6cadff50a"
+      "sourceSha256": "4bc2e3e08c9a84de1e9b5d7e7aa9d2741d1ca16ac0dbc8c10ced663a4a3e0143"
     },
     {
       "id": "adr-0024-combo-settings-and-served-read-back",
@@ -1077,7 +1077,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "50d39cc14d92b110d218bc1041a0ee32206e8110333105db733ca46632eca895"
+      "sourceSha256": "af86341ea3d8f34d335ff1c2f65f2b3a2d537d202e6d0d2c63ed0782d2bc0bbd"
     },
     {
       "id": "adr-0025-transport-seam-grok-and-agy-cells",
@@ -1464,7 +1464,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "bd03b4a10dd1e1ac2342fc00f3b94e4bcaad9cc2f6862e61e2e8771045eeba71"
+      "sourceSha256": "23385178568e1479a07bdbb57b79daadd37409ec9edfbfd3ee20a08d1d4dca29"
     },
     {
       "id": "arch-lean-rerun",
@@ -1571,7 +1571,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "af36296ebcb019711788e97641e4f3dfa84421999e7f2a49580686b1a43e8a4a"
+      "sourceSha256": "93dc1ecf07bc29e283eaa67c0dafc0920935a1c3e5014ca4630b7d9e7ceb1609"
     },
     {
       "id": "mutation-record-phase1",
@@ -5783,7 +5783,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3e046b0cd1522ea51af2b8ed798f83b04a6850f9cd58517faa47273e418fa9fd"
+      "sourceSha256": "b78f9ea81e12d86a47e9d3024e8a3316dfebb818a353534d403e8c9e4f7d668c"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -8322,7 +8322,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5132997249281b5ad78eeede103fe5d625279c221c20cb05d2a4f7c550a5a8a1"
+      "sourceSha256": "466063917d0713e8c254a677527db86ea2fb90d8313a79a5912ed9e14bcea89e"
     },
     {
       "id": "runbook-grok-credential-pool",
@@ -8350,6 +8350,38 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "931849eb9d46f67ae130a9bd39983c1ac5cd5db78af94f6831e2c483e033e436"
+    },
+    {
+      "id": "runbook-lean-comparison-run",
+      "path": "docs/runbooks/lean-comparison-run.md",
+      "title": "Runbook: the lean comparison run - pinned windows, launch folder, sessions, Copilot transport control",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-14",
+      "reviewSuggested": [],
+      "summary": "What the operator needs to run Prompt 1 for a like-for-like comparison: the context window each CLI is pinned at (measured), the folder to start the CLI in so no pack file loads, how many interactive sessions to run per CLI and how the hand-off identifies them, and why Copilot over ACP cannot run at the pinned window (and how to run it at the default window as a transport control: a combo with `transport: acp`).",
+      "tags": [
+        "runbook",
+        "lean",
+        "context-window",
+        "copilot",
+        "acp",
+        "session-layer"
+      ],
+      "links": [
+        {
+          "to": "adr-0024-combo-settings-and-served-read-back",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0028-copilot-prompt-mode-transport",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6553c325cd760fa0c60efc2e46d237ac8ed2c7ae2f9c46e42479470f987cf3dc"
     },
     {
       "id": "runbook-resume-and-alarm",
@@ -10590,7 +10622,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9519fc5e62bae1f4e9da6ebd88198dfae89dfb6813b4c041c8979f5f2042acf2"
+      "sourceSha256": "20055d4d2e6f950b5009019c844cf38a99bbb3c0c7abb2cb29e939f53f26c031"
     },
     {
       "id": "plan-lean-runs-2026-10-13-findings-and-repair",
@@ -11943,5 +11975,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "4f74ec3473d88c0033ec9a3181538bf643929ea0e2b748df7711ced285ff01e1"
+  "graphSha256": "7d94de555d82f86584600d6977d3c7f19948be52c832c1c5dcbbffa21233498f"
 };

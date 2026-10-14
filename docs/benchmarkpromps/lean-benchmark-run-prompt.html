@@ -73,7 +73,7 @@
         <code>HANDOFF: &lt;RUN_ID&gt;@&lt;worktree&gt;</code>. Paste the HANDOFF line into Prompt 2.</li>
       <li><strong>Run 2 sessions per CLI</strong> (<code>SESSIONS_PER_CLI</code>): paste the same prompt into a second
         new session of the same CLI once the first has finished. Each paste is its own run (own name, branch,
-        worktree, 60 cells); the session index counts the runs of that combo since <code>SESSIONS_SINCE</code>, so
+        worktree, 66 cells); the session index counts the runs of that combo since <code>SESSIONS_SINCE</code>, so
         the second session says <code>session 2 of 2</code>. <code>handoff.json</code> carries
         <code>session_index</code> and <code>transcript</code> for each, so Prompt 2 can pair the sessions.</li>
     </ol>
@@ -188,9 +188,10 @@ Work alone: no sub-agents, no coordination layer, no worktree other than the one
 
 FIXED (change these only by editing the prompt):
   REPO        = C:\Projects\x-harness-x-model-bench
-  TASKS       = [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2]
+  TASKS       = [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2, SV1]
   ARMS        = off (no pack) and on (the AI-Forward pack)
-  REPETITIONS = 3                  (10 tasks x 2 arms x 3 = 60 cells)
+  REPETITIONS = 3                  (11 tasks x 2 arms x 3 = 66 cells; SV1, the supervise-a-long-job task, is scored in its own
+                                  SV1 table of the lean summary, not in the primary; its cells take about 4-5 min)
   PARALLELISM = 3                  (a harness capped at one cell at a time runs one regardless)
   PACK        = C:/Projects/ai-forward@ed9625a78690aeba04d0b6693ad296ba5e6a0cd9
   RUNBOOK     = docs/runbooks/add-a-harness.md   (how a new CLI is onboarded and qualified)
@@ -271,7 +272,7 @@ STEP 0 - who am I (read only: nothing is created until this step passes)
                  `BENCH run &lt;RUN_ID&gt;`.
   - Print this line, then go on without waiting:
       RUN: &lt;RUN_ID&gt; | harness &lt;HARNESS&gt; (known | new: onboarding first) | model &lt;MODEL&gt; | effort &lt;EFFORT&gt; |
-           context &lt;CONTEXT&gt; | 60 cells | session &lt;SESSION_INDEX&gt; of &lt;SESSIONS_PER_CLI&gt;
+           context &lt;CONTEXT&gt; | 66 cells | session &lt;SESSION_INDEX&gt; of &lt;SESSIONS_PER_CLI&gt;
 
 STEP 1 - start state and the worktree (stop and report if a check fails)
   - `git -C REPO pull --ff-only origin main` succeeds. Another CLI may be pulling at the same moment: on a git lock
@@ -331,7 +332,7 @@ STEP 5 - the matrix (write it to WT\runs\&lt;RUN_ID&gt;.matrix.yaml, which git i
 STEP 6 - plan, then confirm (with the STEP 4 environment)
   - `BENCH plan --matrix WT\runs\&lt;RUN_ID&gt;.matrix.yaml --run-id &lt;RUN_ID&gt; --parallelism &lt;PARALLELISM&gt;
     --arm on=&lt;PACK&gt;` and read the table: every cell has HARNESS's pinned build, the pack-on arm shows the pack
-    revision, the pack-off arm shows "no pack", and there are 60 cells. A refusal (HB-PRE-*) is a stop: report it
+    revision, the pack-off arm shows "no pack", and there are 66 cells. A refusal (HB-PRE-*) is a stop: report it
     verbatim.
   - Then the same command with `--confirm`.
 
