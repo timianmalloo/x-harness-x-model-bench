@@ -635,7 +635,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f205dce9e911100fac9262c27a178741e428e0f75a2afa59deb2577dea574670"
+      "sourceSha256": "dae09a384336cbbfd62d479e9f525071ecbb5c80da339198f85faf000556a2b3"
     },
     {
       "id": "adr-0014-arm-and-cell-grain",
@@ -1168,7 +1168,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9724e1e60e1737b86fb01a58114cafe7d0576b6f46c04111636403a103c3f618"
+      "sourceSha256": "886fc24a174ac0849a1b93ced9038bf55bed8fc83f9cf6d447c0e334b1a5f112"
     },
     {
       "id": "adr-0027-cost-compare-report",
@@ -3985,7 +3985,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7ab3f541781705af3004e9567e0cbaba868c4965b2464c579eeb3c470d58d914"
+      "sourceSha256": "31a2661a0a38910108a7f691d4b4e36d646f05dd68d5dbc994f4196269b9cf43"
     },
     {
       "id": "design-phase4-report",
@@ -5783,7 +5783,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b78f9ea81e12d86a47e9d3024e8a3316dfebb818a353534d403e8c9e4f7d668c"
+      "sourceSha256": "0dadffbde4d603d88b7642c2ea76ee543826e408233d66cf3620a77d413316d1"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5809,6 +5809,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e"
+    },
+    {
+      "id": "note-spike-copilot-home-vars",
+      "path": "docs/notes/spike-copilot-home-vars.md",
+      "title": "Spike: Copilot with HOME and USERPROFILE at the cell home, and repo hooks in -p and ACP",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-14",
+      "reviewSuggested": [],
+      "summary": "Copilot 1.0.89-1 serving gpt-6.1-sol keeps its login with HOME and USERPROFILE at the cell home. A command naming $env:USERPROFILE is still denied unless the cell home is an allowed directory, so the profile also passes --add-dir {home}. uv keeps working when APPDATA stays the operator's. Repo hooks (.github/hooks) run under copilot --acp but not under copilot -p, in a folder that is not in trustedFolders.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "copilot",
+        "isolation",
+        "hooks"
+      ],
+      "links": [
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b981e637636ee6a22dc9e9dda01b500a84683d223ae01c4dfb7f97d6866096b6"
     },
     {
       "id": "note-spike-fm1-tla-trace-validation",
@@ -8322,7 +8349,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "466063917d0713e8c254a677527db86ea2fb90d8313a79a5912ed9e14bcea89e"
+      "sourceSha256": "06de8318d721712c5d4e39e3e1fc5aa0a34a9e802654a2c9b1166a79f282af03"
     },
     {
       "id": "runbook-grok-credential-pool",
@@ -10596,7 +10623,7 @@ window.DOCS_INDEX = {
       "path": "docs/plans/benchmark-instrumentation-2026-10-14.md",
       "title": "Benchmark instrumentation for drift, tool use and the Codex/Copilot contradiction",
       "type": "plan",
-      "status": "in-progress",
+      "status": "done",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-10-28",
@@ -10622,7 +10649,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "20055d4d2e6f950b5009019c844cf38a99bbb3c0c7abb2cb29e939f53f26c031"
+      "sourceSha256": "d61712ebc19b8e467f3daf355cea669255193fcb3704f7d9008788d49f124c9d"
     },
     {
       "id": "plan-lean-runs-2026-10-13-findings-and-repair",
@@ -10666,7 +10693,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "59663c2a5ff8b8fca02b6cbdb4b4d9f8fce002f9e384e61a419f6a67b48b2a77"
+      "sourceSha256": "f9d975b44f13f3c5c9e1ff579eba1cfc192d67c28c85c584185799f3c9f4697d"
     },
     {
       "id": "plan-spec-backlog",
@@ -11975,5 +12002,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "7d94de555d82f86584600d6977d3c7f19948be52c832c1c5dcbbffa21233498f"
+  "graphSha256": "5c85f0ee730cc471ed13c97a6a1ac5addb1c31162159e1e0de4bff2eaa0be9b2"
 };

@@ -16,6 +16,14 @@ review-by: "2026-10-28"
 
 # Lean runs of 2026-10-13: what they show, what broke, what changed
 
+> **Update 2026-10-14.** Three facts found since change how these runs read (details and fixes in
+> `docs/plans/benchmark-instrumentation-2026-10-14.md`): (1) Copilot's pack-on cells ran **none** of the pack's hooks,
+> because `copilot -p` runs repo hooks only in a trusted folder and cells were not trusted (verified by spike; fixed,
+> W17); (2) Copilot's per-call `ok` meant "the tool ran", so a failing shell command counted as a success (fixed, W14);
+> (3) Codex tool-phase, re-read and pack-cost numbers that went through `cell_trace` were doubled (fixed, W4). Grok
+> finished: 60/60, 58 valid, 1 cell lost to the Grok CLI's 10-hour cap on background tasks, 1 false out-of-profile flag
+> (fixed, W18).
+
 ## In one minute
 
 - **Copilot vs Codex, same model (gpt-6.1-sol).** In the 60 headless cells, Copilot does more: 3.6x the tool calls,

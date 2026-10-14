@@ -23,6 +23,13 @@ th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); 
 .source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
 @media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
 </style></head><body><main><div class="source">Rendered from lean-runs-2026-10-13-findings-and-repair.md</div><h1>Lean runs of 2026-10-13: what they show, what broke, what changed</h1>
+<blockquote><strong>Update 2026-10-14.</strong> Three facts found since change how these runs read (details and fixes in</blockquote>
+<blockquote><code>docs/plans/benchmark-instrumentation-2026-10-14.md</code>): (1) Copilot&#x27;s pack-on cells ran <strong>none</strong> of the pack&#x27;s hooks,</blockquote>
+<blockquote>because <code>copilot -p</code> runs repo hooks only in a trusted folder and cells were not trusted (verified by spike; fixed,</blockquote>
+<blockquote>W17); (2) Copilot&#x27;s per-call <code>ok</code> meant &quot;the tool ran&quot;, so a failing shell command counted as a success (fixed, W14);</blockquote>
+<blockquote>(3) Codex tool-phase, re-read and pack-cost numbers that went through <code>cell_trace</code> were doubled (fixed, W4). Grok</blockquote>
+<blockquote>finished: 60/60, 58 valid, 1 cell lost to the Grok CLI&#x27;s 10-hour cap on background tasks, 1 false out-of-profile flag</blockquote>
+<blockquote>(fixed, W18).</blockquote>
 <h2>In one minute</h2>
 <ul><li><strong>Copilot vs Codex, same model (gpt-6.1-sol).</strong> In the 60 headless cells, Copilot does more: 3.6x the tool calls,</li></ul>
 <p>3.4x the reasoning tokens, and it changes lines outside the task (median 16.5 discretionary lines; Codex 0). That is behaviour, not only output style. In the interactive sessions you watched, the opposite: Codex polled 10x too often, wrote 10x the text and skipped the last three steps; Copilot followed the prompt. Two confounds keep this from being a clean harness verdict (section 2), and the instrumentation to remove them is listed.</p>
