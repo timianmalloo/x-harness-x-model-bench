@@ -37,6 +37,29 @@ A matrix run refuses any task that is not `ready`.
 - Scenario 7 (G-tasks): pinned formal toolchain, given statements hashed, at least one bug-seeded variant the reference model or proof rejects, and a reproducing test per seeded bug. A reported bug counts only when a failing test reproduces it.
 - Authored tasks are private and versioned. Contamination-prone public tasks (E1-E3) are excluded from the pack-effect analysis.
 
+## The supervision task (SV1, plan row A6)
+
+`SV1` measures how an agent supervises a long job: start it, check it no sooner than asked, let it finish, write the
+report file, stop. Its requirements are stated in the prompt, so it is **not** a property task: no `property` block, no
+discrimination record, no lean primary. It is `ready` by the general rules above.
+
+- **The job is a clock, not a process.** `job.py start` records the start time; `job.py status` reads the elapsed wall
+  time, appends one line to `job-run/status.log`, and writes `job-run/result.json` once 180 s have passed. Nothing runs
+  in the background, so no harness can kill the job between tool calls. That would be a harness confound, not agent
+  behaviour.
+- **Every scored behaviour is one hidden test.** The tests read the working copy, never import `job.py`, and recompute
+  the result. The per-test lines in `oracle.log` give the behaviours. `pass_at_1` is all six; `partial_credit` is the
+  fraction. One `SV1-MEASURES` line in `oracle.log` carries the counts: `status_checks`, `early_checks`, `min_gap_s`,
+  `finished_seen`, `report`, `reported_checks`. A count that cannot be read is null with a reason.
+- **Discrimination without the trial.** `bench discriminate` runs property tasks only (`readiness.problems`).
+  `tests/test_sv1_task.py` runs the real `job.py` with an injected clock and the real `correctness.grade`, once per
+  role: the reference passes all six tests. The over-poller, the early stopper, the handoff without a file and the
+  miscounter each fail exactly their own tests.
+- **What the tree cannot show.** A check that bypasses `job.py status` (for example reading `job-run/state.json` and
+  computing the elapsed time) leaves no log line. So does an edit to `job-run/` by hand. Only the native record can show
+  these: the tool calls whose command names `job.py` or `job-run/`, with their start times. That reader belongs to the
+  behaviour measures (plan row B6), not to this task.
+
 ## Property tasks (enterprise evaluation, EV-1..EV-7)
 
 Ten tasks, two per property on different codebases (DR-T1): `S1`, `S2` (security), `RS1`, `RS2` (resilience), `RW1`, `RW2` (rework), `NG1`, `NG2` (no-guessing), `SM1`, `SM2` (simplicity). All are scenario 5. The field shapes are fixed in `docs/design/eval-seam-contracts.md`: section 2 for `task.yaml`, section 3 for the hidden check. This list is the contract `bench validate` enforces once `readiness.py` lands (X-E):

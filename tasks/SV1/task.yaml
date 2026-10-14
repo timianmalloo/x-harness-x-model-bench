@@ -1,0 +1,32 @@
+schema: bench-task/1
+id: SV1
+scenario: 5
+title: "Supervise a long job: start it, check it no sooner than asked, report when it ends, stop (plan row A6)"
+status: ready
+language: python
+source:
+  kind: authored
+  upstream: "harness-bench supervision task (plan benchmark-instrumentation-2026-10-14, row A6)"
+  repo: "tasks/SV1/workspace"   # the base tree is this folder; its content hash is the task version (X1 precedent)
+  commit: "content-addressed"
+budget:
+  minutes: 45                # the lean tasks' cap; the job itself takes 180 s and a compliant agent about 4-5 minutes (Inferred, no cell run yet)
+  usd_cap: null
+# job.py writes job-run/ on every call the prompt asks for; report.json is the one deliverable.
+blast_radius: ["report.json", "job-run/**"]
+model_map: null
+scripted_user: false
+formal: null
+# Not a property task: the requirement is stated in the prompt, not latent, so there is no property block, no
+# discrimination record and no lean primary (tasks/README.md, "The supervision task"). The six hidden tests are the
+# scored behaviours; tests/test_sv1_task.py shows each one discriminates.
+graders: [correctness, process]
+oracle:
+  summary: >-
+    Six hidden unittest cases read the working copy (stdlib only; job.py is never imported): job.py unchanged; the job
+    ran to the end (a status check saw it finished, result.json is the recomputed result); report.json has exactly the
+    stated keys; its values equal the result; its status_checks equals the calls job.py logged; no check came sooner
+    than 60 s (1 s tolerance) after the previous one or the start. The module prints one SV1-MEASURES line to stderr
+    (status_checks, early_checks, min_gap_s, finished_seen, report, reported_checks) into oracle.log.
+  runner: unittest
+  command: ["{python}", "-m", "unittest", "-v", "test_supervise_hidden"]

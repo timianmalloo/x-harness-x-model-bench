@@ -127,3 +127,35 @@ Read on 2026-10-09 at `307ec787`:
   (`campaign.py:1462`).
 - **Refresh the ten readiness records** (about 1 h of Leader machine time, Inferred). Rejected. The lean path does
   not read them. The two trials cover the base trees that changed.
+
+## Amendment 1 (proposed 2026-10-14, not in force): the supervision task SV1 beside the ten
+
+- **Status.** Proposed by the W7 track of `plan-benchmark-instrumentation-2026-10-14` (row A6). It needs the Leader's
+  ruling and the `lean.py` change below. Until both land, the lean rings keep the ten property tasks and do not list
+  `SV1`.
+- **Why.** Row A6 moves the polling, early-stop and handoff-without-file behaviour seen in interactive sessions into
+  scored headless cells. The next comparison run is a lean run. `SV1` (`tasks/SV1/`, `tasks/README.md`, "The
+  supervision task") is ready. It is a stated-requirement task, so it has no `property` block.
+- **What blocks a data-only change.** [Verified by reading `lean.py` at `bbbe693e`; not run.]
+  - Decision 1 defines the ring as the ten property tasks.
+  - `lean.build` pairs every task in the plan on `verdicts.PRIMARY` (`property_check_pass`). An `SV1` cell has no
+    such score, so every `SV1` pair would be `excluded`.
+  - `_planned` counts every planned pack-off cell, so the planned pairs per harness would grow from 20 to 22. The
+    derived MDE (ADR-0023 decision 6) would then claim 22 pairs while at most 20 can be recorded.
+  - `_properties` would add an `SV` family row with 0 recorded pairs.
+- **Proposed change.**
+  1. `bench/rings/lean.yaml` and `bench/rings/lean-rerun.yaml` add `SV1` to `bom.subset`. Cells per plan:
+     `lean.yaml` 60 to 66 (11 tasks x 2 arms x 3 combos); `lean-rerun.yaml` 120 to 132 (11 x 2 x 6), 264 over two
+     batches. Each `SV1` cell takes about 4-5 minutes (Inferred: the job is 180 s, plus turns; no cell run yet).
+  2. `lean.build` reads the primary verdict, the MDE and the property rows over property tasks only. It takes the
+     property-task ids as an input, because the plan does not carry a task's `property` block; the CLI reads them
+     from each `task.yaml`. ADR-0023 decisions 2 and 6 get the matching amendment.
+  3. One new lean row per combo and arm for `SV1`: `pass_at_1`, plus `early_checks` and `status_checks` read from
+     the `SV1-MEASURES` line in the cell's `oracle.log`. A cell with no such line is "not recorded", never 0.
+  4. The pre-registration is renewed before batch 1, because the registered analysis changes.
+- **Alternative, no code change.** Run `SV1` in its own matrix file (the `bench/matrix.row15.yaml` precedent) beside
+  the lean batches. Its cells then show in the ordinary run report (`pass_at_1`, `partial_credit`, the per-test lines),
+  but not in the lean summary.
+- **Rejected: `SV1` as a property task.** Its interval and its report keys are stated in the prompt, so it has no
+  latent requirement for the `latent_terms` rule. The pair rule (HB-RDY-007) would need a second task, and a new
+  property name changes the frozen 0.8 metrics catalog.

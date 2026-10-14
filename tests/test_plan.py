@@ -562,10 +562,11 @@ def _inputs(subset):
 
 def test_full_grid_matches_proposal_run_count():
     # Proposal: 24 tasks x 4 combos x pack on/off x 3 reps = 576 runs, plus the ten property-task stubs of BOM 0.6
-    # (W0, docs/design/eval-seam-contracts.md section 1): 34 x 4 x 2 x 3 = 816. Fixture tasks are never in it.
+    # (W0, docs/design/eval-seam-contracts.md section 1): 34 x 4 x 2 x 3 = 816, plus SV1 of BOM 0.7 (plan row A6):
+    # 35 x 4 x 2 x 3 = 840. Fixture tasks are never in it.
     # expand enumerates; build_plan separately refuses nonready tasks (W1-A §3.5).
     m, bom = _inputs("full")
-    assert len(plan.expand(m, bom)) == 816
+    assert len(plan.expand(m, bom)) == 840
 
 
 def test_smoke_grid_is_one_task_per_scenario():
