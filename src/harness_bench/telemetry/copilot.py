@@ -23,7 +23,9 @@ because its record carries the CLI build version, not a distinct format version 
   Correlation Identifier), even when completions arrive interleaved or out of order across several
   open calls. `outcome_code` is `data.error.code`, but only when the call did not succeed: **null on
   `success: true`** regardless of a stray `error.code` (`ToolCall.outcome_code`'s own contract), and
-  null too when there is no `error` object.
+  null too when there is no `error` object. `ok` follows Claude Code, Codex and agy (W14): a `success: true` call
+  whose `shellExecution.exitCode` is a non-zero int is `ok` False with `outcome_code` `exit_<N>` (on the 6.1 lean run
+  260 of 906 powershell calls); `success` alone says the tool ran. A denial keeps `denied`.
 - `hook_starts` / `hook_failures` (US-9's live signal, design section 4.5): counted only once the
   version gate passes -- otherwise, like the model calls, NOT_RECORDED (`None`). `tool_calls` and
   `first_user_text` are **not** gated by the version check (the design scopes the gate to model rows
@@ -189,6 +191,9 @@ def read(path: Path) -> Extraction:
                 ok = success if isinstance(success, bool) else None
                 error = as_dict(data.get("error"))
                 outcome_code = None if ok is True else as_str(error.get("code"))
+                exit_code = as_dict(data.get("shellExecution")).get("exitCode")
+                if ok is True and type(exit_code) is int and exit_code != 0:  # `success` says the tool ran; the exit code is the outcome (W14)
+                    ok, outcome_code = False, f"exit_{exit_code}"
                 basis = PATH_VERIFICATION if outcome_code == "denied" and tool_call_id in path_denied else None
                 ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], stamp, ok,
                                               outcome_code, basis))

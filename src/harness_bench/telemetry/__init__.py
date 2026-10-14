@@ -68,7 +68,7 @@ class ToolCall:
     start: str | None
     end: str | None
     ok: bool | None
-    outcome_code: str | None = None  # the native error code of a failed call (e.g. "denied"); null on success
+    outcome_code: str | None = None  # the native error code of a failed call (e.g. "denied", "exit_1"); null on success
     denial_basis: str | None = None  # "path_verification" when the harness's own path check denied it (B10); else null
 
 
