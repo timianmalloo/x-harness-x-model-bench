@@ -50,5 +50,5 @@ def test_t_sweep_1_guard_detects_unknown_reader_and_broad_glob():
 def test_t_sweep_1_exact_reader_and_exception_set():
     sources = {p.relative_to(SRC).as_posix(): p.read_text(encoding="utf-8") for p in SRC.rglob("*.py")}
     assert archive_readers(sources) == READERS
-    assert len(READERS) == 11
+    assert len(READERS) == 12
     assert ANNOTATION | GIT_ARCHIVE <= sources.keys()
