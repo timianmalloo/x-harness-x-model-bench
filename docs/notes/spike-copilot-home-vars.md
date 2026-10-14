@@ -73,3 +73,46 @@ workspace. One prompt, one `Get-Content hello.txt` tool call, cell-like home, fo
 
 19 Copilot sessions that reached a model (summed from the records' `session.shutdown` metrics): 377,116 input
 (243,163 cache read, 133,794 cache write), 1,781 output, 21 reasoning tokens. Runs that failed to start used none.
+
+## Trusted folder and the uv store (instr/w17)
+
+Date: 2026-10-14. Same binary (1.0.89-1, `gpt-6.1-sol`, no `XAI_API_KEY`). Spikes ran under `C:\tf\w17\<name>\{home,ws}`
+with the home seeded by the real `Profile.seed_home` and the argv from the real `Profile.argv`; the hooks are the five
+events of the W16 spike. Figures are Verified from `out.txt`, the hook log and `events.jsonl`.
+
+| Run | Setup | Hook log lines |
+| --- | --- | --- |
+| t0 | profile argv, `config.json` not seeded (control) | **none** |
+| t1 | profile argv, `config.json` seeded by the profile | all five events |
+
+- The seeded file is `{"trustedFolders": ["C:\\tf\\w17\\t1\\ws"]}` (backslashes JSON-escaped). Copilot rewrites
+  the file at startup (it adds two `//` comment lines and `firstLaunchAt`) and keeps the `trustedFolders` entry.
+- uv store: `Get-ChildItem "$env:APPDATA\uv\python"` was **denied** ("Permission denied and could not request
+  permission", u1), which would make the cell invalid (HB-VAL-012). With the profile's `--add-dir <uv python store>`
+  (resolved from `UV_PYTHON_INSTALL_DIR`, else `%APPDATA%\uv\python`, only if the folder exists) the same command
+  listed the interpreters (u2, exit 0). W16's Inferred residual is confirmed and closed.
+- The `--add-dir` grant covers writes too (the profile allows the `write` tool), so a model could change the host's
+  managed interpreters. Accepted: the alternative, a denial, invalidates the cell; the grant is the host's uv store only.
+
+### Real bench cells
+
+Run `w17-trust`: task X1, `copilot` `gpt-6.1-sol`, effort high, context default, arms off and on
+(`--arm on=C:/Projects/ai-forward@0900e784594a2ce27d5110ca5b24ad170e5dbf7e`, pack revision 102), 2 repetitions
+(a 2-cell matrix cannot plan: HB-PLN-001, one block of two arms cannot meet the 5 % launch balance bound). All four
+cells completed and read valid; `bench status --check-ended` reported "ok 4" with only HB-VAL-011 (served context not
+recorded at `default`, a known condition).
+
+| Cell | Seeded `config.json` names its own worktree | Hook events in the Copilot record | Pack marker |
+| --- | --- | --- | --- |
+| off r1, off r2 | yes | 0 `hook.start` | no `<git-dir>/ai-forward` |
+| on r1 | yes | 40 `hook.start`/`hook.end`, 40 success (sessionStart 1, userPromptSubmitted 1, preToolUse 13, postToolUse 24, agentStop 1) | `<git-dir>/ai-forward/run-starts.json` present |
+| on r2 | yes | 39 `hook.start`/`hook.end`, 39 success (sessionStart 1, userPromptSubmitted 1, preToolUse 12, postToolUse 24, agentStop 1) | present |
+
+`run-starts.json` held `{}` at archive time (the session end consumed the marker; Inferred from the empty object, not
+read from the pack). The hook events in the record are the primary evidence.
+
+Tokens (from the records' `session.shutdown`): spikes t0, t1, u1, u2: 50,203 input, 337 output. Bench cells: off
+34,543 and 34,188 input (917 and 993 output); on 1,388,525 and 1,281,230 input (4,261 and 3,675 output). The run total
+was 2,738,486 input, 9,846 output, 2,509,352 cache read. The large pack-on input is the pack's skills and instruction
+reads across 13 and 12 tool rounds; a pre-W17 pack-on X1 baseline was not measured, so the share due to hooks is not
+known.
