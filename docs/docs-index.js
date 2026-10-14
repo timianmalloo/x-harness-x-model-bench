@@ -10601,7 +10601,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ea81a397d03024b524d57354f0ffde367ebf20674b40f5b53821b9a9074f55b7"
+      "sourceSha256": "59663c2a5ff8b8fca02b6cbdb4b4d9f8fce002f9e384e61a419f6a67b48b2a77"
     },
     {
       "id": "plan-spec-backlog",
@@ -11902,5 +11902,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "933db3b123cc76ea23a7a98b31ebd8bed0c58ebf2063b790938d91fc206013b9"
+  "graphSha256": "ad4fd2c6e41f993f34408774f401d9ce54805aa7ea0ea25fcb06cf3e2a213e83"
 };

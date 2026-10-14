@@ -42,11 +42,12 @@ review-by: "2026-10-28"
 | Copilot, GPT-5.5, high, 922k | 60/60 | 59 | 1 (HB-VAL-004: Copilot path check) | Yes; `bench report` failed, wrote its own summary |
 | Copilot, gpt-6.1-sol, high, 922k | 60/60 | 52 | 8 (HB-VAL-004: Copilot path check) | Yes; polling as asked |
 | Codex, gpt-6.1-sol, high, default | 60/60 | 0 | 43 HB-VAL-010 + 17 HB-VAL-008 (stale bench profile) | No: polled every ~1 min, skipped steps 7-9, printed HANDOFF without handoff.json |
-| agy, Gemini 4 Argon (high) | 27/60 at 20:30 | 26 of 27 (early check, provisional) | 1 (HB-VAL-008: the model called `schedule`, NG1 pack-on r1) | Running; about 9.5 min a cell, one at a time |
-| Grok 4.7, high | 15/60 at 20:30 | 15 of 15 (early check, provisional) | - | Running; about 18 min a cell, one at a time |
+| agy, Gemini 4 Argon (high) | 60/60 | 59 | 1 (HB-VAL-008: the model called `schedule`, NG1 pack-on r1; B16) | Finished and graded; about 11 min a cell, one at a time |
+| Grok 4.7, high | 15/60 at 20:30 on 2026-10-13 | 15 of 15 (early check, provisional) | - | Still running; about 18 min a cell, one at a time |
 
-The agy and Grok counts come from the new `bench status <run> --check-ended`, run on the live runs. It uses the
-grading pass's rules but writes nothing. The final grading at the end of each run is the record.
+The Grok counts come from the new `bench status <run> --check-ended`, run on the live run. It uses the grading pass's
+rules but writes nothing; the final grading at the end of the run is the record. On agy it flagged the same one cell
+the final grading did.
 
 The Codex run's HANDOFF line should not be graded: its cells are invalid for bench reasons (fixed now) and it has no
 handoff.json. Re-run Codex with the fixed profile.
@@ -106,6 +107,13 @@ follows from one design choice) plus skipping steps (behaviour). Your anecdote m
 | I5 | Copilot interactive usage | Interactive Copilot writes token usage only at shutdown | Harness limit; use cell layer |
 | I6 | First-request input split (system prompt, tool catalogue, instructions) per harness | Separates "the harness sends more" from "the model does more" | Partly there (prompt_parts); owed for Copilot's tool catalogue |
 | I7 | Same pinned context and effort across harnesses for a comparison | Settings are a confound today | Prompt/operator |
+| I8 | A `tool_inputs` reader for agy and Grok (the paths each call names) | Without it `grade/drift.py` returns "no tool-input reader", so attention drift is not recorded for either harness, though both record read and edit tools | Owed |
+
+**agy (Gemini 4 Argon, high), final, 60 cells.** It does the most reasoning of any run: a median 23.5k reasoning tokens
+off and 20.7k on, against 4.5k for Claude and 1.2k for Codex. It takes about 11 minutes a cell. It changes nothing
+outside the task (scope_creep 0 on both arms), and the pack barely moves it: requests 25.5 vs 23, tool calls 33.5 vs
+31.5, wall time 11.4 vs 11.0 minutes. Its pack-on cells leave only 9.5 machine lines in the task tree, against 519 for
+Claude and 587 for Codex (why is not checked yet). Attention drift is not recorded (I8).
 
 ## 3. Issues and the repair plan
 
