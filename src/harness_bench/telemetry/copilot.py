@@ -23,7 +23,9 @@ because its record carries the CLI build version, not a distinct format version 
   Correlation Identifier), even when completions arrive interleaved or out of order across several
   open calls. `outcome_code` is `data.error.code`, but only when the call did not succeed: **null on
   `success: true`** regardless of a stray `error.code` (`ToolCall.outcome_code`'s own contract), and
-  null too when there is no `error` object.
+  null too when there is no `error` object. `ok` follows Claude Code, Codex and agy (W14): a `success: true` call
+  whose `shellExecution.exitCode` is a non-zero int is `ok` False with `outcome_code` `exit_<N>` (on the 6.1 lean run
+  260 of 906 powershell calls); `success` alone says the tool ran. A denial keeps `denied`.
 - `hook_starts` / `hook_failures` (US-9's live signal, design section 4.5): counted only once the
   version gate passes -- otherwise, like the model calls, NOT_RECORDED (`None`). `tool_calls` and
   `first_user_text` are **not** gated by the version check (the design scopes the gate to model rows
@@ -69,7 +71,8 @@ the R-COPILOT-P and Sol Fast records), which keys every per-request fact to the 
   file of the cell home (events.jsonl, the `-p` output stream, the debug process log), so the part has no character
   count. Their size is recorded only in tokens: `session.usage_checkpoint.data.promptCacheBreakState[].models[].
   tool_tokens` (2187 for 9 tools on both runs) beside `tool_count`; the count is `Extraction.tools_advertised` (the
-  same checkpoint's `tools[].name`). A `PromptPart` has no token column, so the token size is not emitted here.
+  same checkpoint's `tools[].name`). The `tools` part carries the token size in `PromptPart.tokens` (ADR-0026
+  amendment, 2026-10-14): the first checkpoint that states one size for its models; None when none does.
 - `harness_events`: `hook.start`/`hook.end` paired by `hookInvocationId`; skill loads are `skill` tool calls.
   Compaction is not mapped: no record seen carries one (Flagged, ADR-0026 s1). C4: under `copilot -p` hook time is
   not recorded by the harness. The pack-on cells of both lean runs (.github/hooks/ai-forward.json wires preToolUse
@@ -78,6 +81,18 @@ the R-COPILOT-P and Sol Fast records), which keys every per-request fact to the 
   the gap from the tool request (`assistant.message.toolRequests`) to `tool.execution_start` is 2-3 ms median both
   pack-on and pack-off. Inferred, not emitted: the median `view` call takes 60 ms on against 9 ms off (gpt-5.5) and
   730 ms against 46 ms (gpt-6.1-sol), which would put any hook time inside the tool call's interval.
+  Did the hooks run under `copilot -p`? (W14 item 3, archived pack-on cells, 30 per run, both lean runs.) NOT
+  DETERMINED. Checked for the hooks' side effects in each cell's `ws`: the sessionStart hook (`session-start.py`)
+  writes a `__harness__:<session>` marker to `.agents/log/audit/.run-starts.json`, which the cells of Claude Code (20 of
+  30 hold one, the rest consumed by the agent's own audit append) and agy (24 of 30) hold, and which no Copilot cell
+  holds (0 of 60; the 5 empty `.run-starts.json` files of the 6.1 run are consumed markers, with no key left). The
+  reread-guard's state file (`ai-forward-reread-guard-<sessionId>.json` in the temp dir) matches none of the 60 pack-on
+  cells' session ids. That is absence of a trace, not proof: `session-start.py` exits silently when the payload carries
+  no session id, heartbeat writes only with `AGENT_SESSION`, and the other hooks leave no file. So `hook_starts` 0 means
+  "no `hook.start` row", NOT "no hook ran", and nothing reads it (`Extraction.hook_starts` has no consumer); the
+  time-anatomy surface already says `no hook rows; a reader that reads none is not told apart from a cell that ran
+  none` (`views.NO_HOOKS`). What would settle it: one short `copilot -p` run in a scratch repo whose
+  `.github/hooks` wires a hook that writes a file.
 """
 
 from __future__ import annotations
@@ -149,6 +164,7 @@ def read(path: Path) -> Extraction:
     messages: list[tuple[int, dict]] = []
     hooks: dict[str, list] = {}  # hookInvocationId -> [n, hookType, start, end, ok, detail]
     skills: dict[str, list] = {}  # toolCallId of a `skill` call -> [n, skill, start, end, ok]
+    tool_tokens: int | None = None  # A7: the tool catalogue's size, in tokens, from the first usage checkpoint that states it
 
     for n, row in rows(path, ex):
         kind = row.get("type")
@@ -187,6 +203,9 @@ def read(path: Path) -> Extraction:
                 ok = success if isinstance(success, bool) else None
                 error = as_dict(data.get("error"))
                 outcome_code = None if ok is True else as_str(error.get("code"))
+                exit_code = as_dict(data.get("shellExecution")).get("exitCode")
+                if ok is True and type(exit_code) is int and exit_code != 0:  # `success` says the tool ran; the exit code is the outcome (W14)
+                    ok, outcome_code = False, f"exit_{exit_code}"
                 basis = PATH_VERIFICATION if outcome_code == "denied" and tool_call_id in path_denied else None
                 ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], stamp, ok,
                                               outcome_code, basis))
@@ -220,14 +239,19 @@ def read(path: Path) -> Extraction:
             ex.errors.append(ProviderError(n, unexpected_status(raw), as_str(data.get("errorType")) or "unknown", raw[:300]))
         elif kind == "session.usage_checkpoint":
             advertised, listed = [], False  # listed: some model carries a tools list, even an empty one (R-63 c1)
+            sizes = set()  # `tool_tokens` of every model in this checkpoint
             for state in as_list(data.get("promptCacheBreakState")):
                 for model in as_dict(as_dict(state).get("models")).values():
                     listed = listed or isinstance(as_dict(model).get("tools"), list)
+                    if is_count(as_dict(model).get("tool_tokens")):
+                        sizes.add(as_dict(model)["tool_tokens"])
                     for tool in as_list(as_dict(model).get("tools")):
                         name = as_str(as_dict(tool).get("name"))
                         if name is not None:
                             advertised.append(name)
             ex.tools_advertised = list(dict.fromkeys(advertised)) if listed else None
+            if tool_tokens is None and len(sizes) == 1:  # the first checkpoint that states one size; models that differ are ambiguous
+                tool_tokens = sizes.pop()
         elif kind == "session.shutdown":
             last_shutdown = (n, stamp, data)
 
@@ -254,7 +278,7 @@ def read(path: Path) -> Extraction:
             line_by_call.setdefault(call, n)
     ex.served = _served(start_data or {}, logs, pairs)
     ex.reasoning = _reasoning(messages, pairs, line_by_call)
-    ex.prompt_parts = _prompt_parts(logs, pairs)
+    ex.prompt_parts = _prompt_parts(logs, pairs, tool_tokens)
     ex.harness_events = sorted([HarnessEvent(h[0], "hook", h[1], h[2], h[3], h[4], h[5]) for h in hooks.values()]
                                + [HarnessEvent(s[0], "skill_load", s[1], s[2], s[3], s[4], None) for s in skills.values()],
                                key=lambda e: e.native_ordinal)
@@ -480,14 +504,14 @@ def _path(text: str) -> str:
     return text.replace("\\\\", "/").replace("\\", "/")
 
 
-def _prompt_parts(logs: list[Path], pairs: list[dict]) -> list[PromptPart] | str:
+def _prompt_parts(logs: list[Path], pairs: list[dict], tool_tokens: int | None) -> list[PromptPart] | str:
     if not logs:
         return not_recorded(_NO_LOG)[1]
     text = pairs[0]["instructions"] if pairs else None
     if text is None:
         return not_recorded("no request instructions in the debug process log")[1]
     source = f"{_DEBUG}:request.instructions"
-    parts: list[tuple] = []  # (part, path, chars, delivery, source); each becomes a PromptPart numbered by position
+    parts: list[tuple] = []  # (part, path, chars, delivery, source[, tokens]); each becomes a PromptPart numbered by position
     covered = 0
     custom = [(m.start(), m.end()) for m in _CUSTOM.finditer(text)]
     for start, end in custom:
@@ -522,10 +546,11 @@ def _prompt_parts(logs: list[Path], pairs: list[dict]) -> list[PromptPart] | str
     parts.insert(0, ("system", None, len(text) - covered, "inlined", source))
     if pairs[0]["tools"] is not None:
         # no character count (names and digests only); the fingerprint's digest is kept in `path` so two cells' tool
-        # catalogues compare exactly (Leader ruling, J2-FIX tools-part DR); None when the record gives no digest
+        # catalogues compare exactly (Leader ruling, J2-FIX tools-part DR); None when the record gives no digest.
+        # `tokens` is the usage checkpoint's `tool_tokens` (A7, ADR-0026 amendment 2026-10-14); None when it states none
         digest = as_str(as_dict(pairs[0]["tools"]).get("digest"))
         parts.append(("tools", f"{FINGERPRINT}:{digest}" if digest else None, None, "listed",
-                      f"{_DEBUG}:request.copilotToolsFingerprint (names and digests only)"))
+                      f"{_DEBUG}:request.copilotToolsFingerprint (names and digests only)", tool_tokens))
     # native_ordinal is the part's position in the record's parts (J1A-FIX item 28), so no two share a key
     return [PromptPart(n, *part) for n, part in enumerate(parts)]
 

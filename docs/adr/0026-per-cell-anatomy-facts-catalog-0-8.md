@@ -179,3 +179,27 @@ review-suggested:
 - **Class all of `docs/audit` as machine-written.** Rejected at the gate (finding 12): it would hide agent-authored,
   pack-induced edits.
 - **Reasoning text in `docs/audit`.** Rejected by Ruling 117 item 3.
+
+## Amendment 1 (2026-10-14): `prompt_parts` gains an optional `tokens` column
+
+- **Why.** Copilot (`copilot -p`) records its tool definitions' size only in tokens: each `session.usage_checkpoint`
+  carries `promptCacheBreakState[].models[].tool_tokens` beside `tool_count` (2187 for 9 tools in every checkpoint of
+  the 2026-10-13 lean runs lean-20261013T222133 and lean-20261013T222416; Verified on the archived records). The full
+  definitions are in no file of the cell home, so the `tools` part has no character count. Plan row A7.
+- **Column.** `prompt_parts` rows gain `tokens: int | None` (after `source`), and `PromptPart` gains the same field with
+  a `None` default. `None` is "not recorded", never 0. `chars` and `tokens` are separate measures: nothing converts one
+  into the other, and a part may carry either, both or neither.
+- **Measure class.** Non-additive across requests (it is the size of one catalogue, not a count of tokens sent); it
+  is per cell, read from the first usage checkpoint that states one size for its models. If the models of that
+  checkpoint disagree, or no checkpoint states one, the value is `None`.
+- **Who fills it.** Only Copilot's `tools` part. Claude Code, Codex, Grok and agy leave `tokens` `None` by the dataclass
+  default; their parts keep their `chars` unchanged.
+- **Migration.** The streams are append-only. A `prompt_parts` row written before this amendment has no `tokens` key
+  and reads as `None` (`pack_cost` maps rows with `r.get("tokens")`). No rewrite and no backfill. The key
+  `(run_id, extraction_id, cell_id, native_session_id, native_ordinal, part, path, source)` is unchanged. A grading pass
+  run after the join writes a new `extraction_id` (the hash covers `telemetry/*.py`), so a re-grade adds new rows
+  beside the old.
+- **Consumers.** `normalize.prompt_part_rows` emits it; `pack_cost` carries it through `CellFacts.prompt_parts`.
+  `pack_cost`'s fixed-prefix derivation and `cost_compare`'s characters-per-part table read `chars` only, so they are
+  unchanged: the `tools` part is still an exact zero delta when its fingerprint is identical in both cells of a pair
+  (`pack_cost._identical`). Showing the catalogue's tokens on a report is a later, separate change.

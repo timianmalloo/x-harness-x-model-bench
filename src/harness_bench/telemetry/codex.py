@@ -834,7 +834,8 @@ def tool_inputs(path: Path) -> ProcessTrace:
     """`ToolInput`s from `function_call`/`custom_tool_call`/`local_shell_call` payloads (`_open_call`,
     the walker `read()`'s `ToolCall`s also key off -- R-85 condition 1), in native order, plus this
     record's own first assistant text block (design section 4.3, slice S2). A shell call's paths also hold its
-    shell-read targets (`shell_read_paths`); `bytes_returned` is its output row's size (None with no output row).
+    shell-read targets (`shell_read_paths`) unless it patches (`is_write`: then the patch headers alone, W14);
+    `bytes_returned` is its output row's size (None with no output row).
     The assistant text count (I2) is every non-blank `output_text` of an assistant `message` item (commentary and the
     final answer alike): reasoning items and tool input are not counted, and a record that lost a line reports none."""
     ex = Extraction()
@@ -869,7 +870,10 @@ def tool_inputs(path: Path) -> ProcessTrace:
         text = text if isinstance(text, str) else ""
         paths, command = _kv_fields(text)
         call_ids[call_id] = len(calls)
-        calls.append(ToolInput(n, name, paths + shell_read_paths(command), command, bool(patch_header_paths(text))))
+        patched = patch_header_paths(text)
+        # a call that writes names only its patch headers: the classifier reads every path of a write as written, so a
+        # read in the same exec stays in `command`, where the read classifier finds it (W14 item 5)
+        calls.append(ToolInput(n, name, patched if patched else paths + shell_read_paths(command), command, bool(patched)))
     for call_id, i in call_ids.items():
         if call_id in returned:
             calls[i] = replace(calls[i], bytes_returned=returned[call_id])

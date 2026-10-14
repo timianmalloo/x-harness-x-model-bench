@@ -68,7 +68,7 @@ class ToolCall:
     start: str | None
     end: str | None
     ok: bool | None
-    outcome_code: str | None = None  # the native error code of a failed call (e.g. "denied"); null on success
+    outcome_code: str | None = None  # the native error code of a failed call (e.g. "denied", "exit_1"); null on success
     denial_basis: str | None = None  # "path_verification" when the harness's own path check denied it (B10); else null
 
 
@@ -146,13 +146,15 @@ class ReasoningItem:
 class PromptPart:
     """One part of the fixed prefix one cell's harness sent (ADR-0026 s1): `part` in PART_KINDS, `delivery` in
     DELIVERIES. `native_ordinal` is the part's position in its record (Leader ruling, the DR1 shape of HarnessEvent),
-    so two identical parts never share a key."""
+    so two identical parts never share a key. `tokens` (ADR-0026 amendment, 2026-10-14) is the part's size in tokens
+    where the harness records only that (Copilot's `tools` part); None is not recorded, never 0."""
     native_ordinal: int
     part: str
     path: str | None
     chars: int | None
     delivery: str
     source: str
+    tokens: int | None = None
 
 
 @dataclass(frozen=True)

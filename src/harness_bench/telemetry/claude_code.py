@@ -35,6 +35,7 @@ The lean re-run's reader facts (ADR-0026 s1; R-READ-CC spike, 2026-10-12, one pa
   `detail`, so the cell's hook time (a sum over events) stays not recorded rather than a sum that leaves out the
   silent invocations. The hook time is inside each tool call's interval (tool_use row to tool_result row). Inferred
   estimate, not emitted: the median Read call takes 1275 ms pack-on against 14 ms pack-off on the same run.
+  `HOOK_TIME_REASON` is that fact in one sentence; `views.time_anatomy` shows it as the hook-time reason.
 """
 
 from __future__ import annotations
@@ -68,7 +69,10 @@ from harness_bench.telemetry import (
     unexpected_status,
 )
 
-__all__ = ["ProviderError", "read", "tool_inputs"]
+__all__ = ["HOOK_TIME_REASON", "ProviderError", "read", "tool_inputs"]
+
+# Why a cell's hook time is not recorded, for `views.time_anatomy` (a reader module may state one; see its docstring, C4).
+HOOK_TIME_REASON = "Claude Code records a tool hook's time only when the hook prints output"
 
 TOOL_CLASSES = {"Bash": "shell", "PowerShell": "shell", "Edit": "edit", "Write": "edit", "MultiEdit": "edit",
                 "NotebookEdit": "edit", "Read": "read", "Glob": "read", "Grep": "read",

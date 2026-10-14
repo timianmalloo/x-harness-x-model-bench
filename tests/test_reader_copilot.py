@@ -237,6 +237,30 @@ def test_the_tools_part_carries_the_fingerprint_digest_and_no_character_count():
     assert fast == ["copilotToolsFingerprint:360fbf8f"]  # a different catalogue, a different digest
 
 
+def _without_tool_tokens(event: dict) -> dict:
+    for state in event.get("data", {}).get("promptCacheBreakState", []):
+        for model in state.get("models", {}).values():
+            model.pop("tool_tokens", None)
+    return event
+
+
+def test_the_tools_part_carries_the_catalogue_size_in_tokens_from_the_usage_checkpoint(tmp_path):
+    """A7: Copilot records the tool definitions' size only as `tool_tokens` beside `tool_count` in the usage
+    checkpoint (2187 for 9 tools on both lean runs). The `tools` part carries it in `tokens`; every other part has none,
+    and a checkpoint without it is None (not recorded), never 0."""
+    tokens = {name: [p.tokens for p in copilot.read(rec).prompt_parts if p.part == "tools"]
+              for name, rec in (("off", OFF), ("on", ON), ("fast", FAST))}
+    assert tokens == {"off": [2187], "on": [2187], "fast": [1996]}  # the fast build's catalogue has 8 tools
+    assert all(p.tokens is None for p in copilot.read(ON).prompt_parts if p.part != "tools")
+
+    shutil.copytree(RERUN / "rerun-on" / "home", tmp_path / "home")
+    record = _record(tmp_path)
+    record.write_text("".join(json.dumps(_without_tool_tokens(e)) + "\n" for e in _events(record)), encoding="utf-8")
+    assert [p.tokens for p in copilot.read(record).prompt_parts if p.part == "tools"] == [None]
+    (row,) = [r for r in normalize.prompt_part_rows("r", "c", "s", copilot.read(ON), "x") if r["part"] == "tools"]
+    assert row["tokens"] == 2187
+
+
 def test_pack_on_parts_carry_distinct_ordinals_and_load_in_a_view(tmp_path, monkeypatch):
     """J2-FIX item 10: `PromptPart.native_ordinal` (J1A-FIX item 28) is the part's position in its record, so the
     pack-on parts never share a key and a pass that writes them loads without HB-LED-003."""

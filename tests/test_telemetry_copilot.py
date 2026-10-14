@@ -261,12 +261,13 @@ def test_pack_on_skill_call_is_a_file_read():
     assert [t.tool_class for t in skill_calls] == ["read"]
 
 
-def test_on_rev95_tool_calls_are_16_success_and_1_ordinary_failure_not_denied():  # R-27 c3
+def test_on_rev95_tool_calls_are_15_success_1_exit_1_and_1_ordinary_failure_not_denied():  # R-27 c3; W14 exit codes
     on = copilot.read(ON).tool_calls
     assert len(on) == 17
-    assert sum((t.ok, t.outcome_code) == (True, None) for t in on) == 16
+    assert sum((t.ok, t.outcome_code) == (True, None) for t in on) == 15
     failed = [t for t in on if not t.ok]
-    assert len(failed) == 1 and failed[0].outcome_code == "failure" and failed[0].outcome_code != "denied"
+    # the 16th `success: true` call ran a shell command that exited 1 (shellExecution.exitCode): a failed call (W14)
+    assert sorted(t.outcome_code for t in failed) == ["exit_1", "failure"] and all(t.outcome_code != "denied" for t in failed)
     assert sum(t.outcome_code == "denied" for t in on) == 0
     assert any(t.name == "apply_patch" for t in on)
 
@@ -583,6 +584,30 @@ def test_an_approved_path_request_does_not_mark_a_later_hook_denial(tmp_path):
     prompt = {"kind": "path", "accessKind": "shell", "paths": ["C:\\Users\\someone"]}
     events = _denied_call("A", prompt, decision="approved")
     assert _denial_basis(tmp_path, events) == [None]
+
+
+# W14 item 6: a shell call's exit code is its outcome, as for Claude Code, Codex and agy -------------------------
+# Real shape (lean run lean-20261013T222416, 907 powershell calls): `success: true` beside
+# `shellExecution: {"exitCode": N}` even for N of 1, 2 or 4; `success` says the tool ran.
+
+def _shell_outcomes(tmp_path, completions: list[dict]) -> list[tuple]:
+    calls = []
+    for n, data in enumerate(completions):
+        calls += [_row("tool.execution_start", {"toolCallId": f"c{n}", "toolName": "powershell"}),
+                  _row("tool.execution_complete", {"toolCallId": f"c{n}", **data})]
+    ex = copilot.read(_write(tmp_path, [_start(), _user("prompt"), *calls, _shutdown(_model_metrics())]))
+    return [(r["ok"], r["outcome_code"]) for r in normalize.tool_call_rows("r1", "c1", ex.session_id, ex, "x")]
+
+
+def test_a_shell_call_with_a_non_zero_exit_code_failed_with_an_exit_outcome_code(tmp_path):
+    assert _shell_outcomes(tmp_path, [
+        {"success": True, "shellExecution": {"exitCode": 0}},
+        {"success": True, "shellExecution": {"exitCode": 1}},
+        {"success": True, "shellExecution": {"exitCode": 4}},
+        {"success": True},  # no exit code in the record: the tool ran, nothing says it failed
+        {"success": True, "shellExecution": {"exitCode": True}},  # not a count
+        {"success": False, "error": {"code": "denied"}, "shellExecution": {"exitCode": 1}},  # a denial keeps its code
+    ]) == [(1, None), (0, "exit_1"), (0, "exit_4"), (1, None), (1, None), (0, "denied")]
 
 
 # Bounds: the shared MAX_LINE/MAX_FILE caps apply unchanged to the Copilot reader -----------------------

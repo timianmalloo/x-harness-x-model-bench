@@ -77,7 +77,7 @@ Not in scope:
 | G7 | `task_version_hash` hashes every file under the task folder. Current values: A1 `0127daa0…7627`, C1 `d9d72e41…7a2b`, D1 `b2b3170e…e519`, E6 `b3fd1ea1…352f`. A1 and D1 equal the versions frozen in their archived plans. | `plan.py:91-97`; computed in this session | Verified |
 | G8 | `tests/test_grade.py:328` asserts `catalog_version == "0.3"` against a copy of the real `bench/metrics.yaml` (`tests/archived_runs.py:44`). No test fails on a score change without a version bump. | files read | Verified |
 | G9 | An archived working copy is a git repo. The root commit is `"<task> base (<ver12>)"`. With the pack on, a first-parent child `"ai-forward pack revision <n>"` adds about 430 pack files, **including a root `.editorconfig`** (absent in pack-off trees). The agent's changes are uncommitted files or later commits. Untracked `bin/` and `obj/` hold the agent's build output. | `workspace.py:89`, `:145`; `git log`, `git status`, `ls-tree` on row15 cells | Verified |
-| G10 | Tool-call rows carry `name`, `tool_class`, `ok`, `outcome_code`, `start` and `end`. They carry **no arguments or command text**. Every Codex row has `ok = null`, class `shell` and name `exec`. | `telemetry/__init__.py:47-55`; row15 and a1 `tool_calls` | Verified |
+| G10 | Tool-call rows carry `name`, `tool_class`, `ok`, `outcome_code`, `start` and `end`. They carry **no arguments or command text**. At first measurement every Codex row had `ok = null`, class `shell` and name `exec`; since 2026-10-14 (W2) a Codex row carries the class of its call (`read`, `edit`, `test`, else `shell`), and the reader decides `ok` (see `telemetry/codex.py`). | `telemetry/__init__.py:47-55`; row15 and a1 `tool_calls` | Verified |
 | G11 | A Copilot `model_calls` row summarises several requests and has no per-call `start`. `model_call_rows` has no `grading_id` field, and its `principal` is the cell id. | `telemetry/__init__.py:25-33`; `normalize.py:129-133` | Verified |
 | G12 | A1 scripted-user logs: cc-opus asked 1 question, and T0 matched none (`rung: none`). Codex and Copilot each show `tool_listed: true, calls: 0`. | the three `scripted-user.jsonl` files | Verified |
 | G13 | C1's hidden tests already check `docs/architecture.md` and its six sections (`HiddenArchitecture`). | `tasks/C1/tests/test_c1_hidden.py:144-150` | Verified |
@@ -568,8 +568,8 @@ Exact values below were computed from the archived rows in this session (Verifie
 - Kind and class: score · non-additive · weight 0.
 - Definition: Σ `requests` of model calls that start before the first `edit`-class call ÷ Σ `requests`.
 - Rung: telemetry.
-- NA reasons: `no edit-class tool call (edits through the shell are not classed)`; `model calls not itemised in time (summary rows)`.
-- Fixtures: D1 cc on 7/20 = `0.3500`; cc off 4/12 = `0.3333`; A1 cc 3/5 = `0.6000`; Codex → the first NA; Copilot → the second NA (G11).
+- NA reasons: `no edit-class tool call (a shell command is an edit only where the reader classifies it as one)`; `model calls not itemised in time (summary rows)`.
+- Fixtures: D1 cc on 7/20 = `0.3500`; cc off 4/12 = `0.3333`; A1 cc 3/5 = `0.6000`; Codex → the first NA at first measurement (every row was class `shell`; since W2 it has edit-class rows); Copilot → the second NA (G11).
 
 **`completion_without_intervention`**
 - Kind and class: score · additive (0/1).

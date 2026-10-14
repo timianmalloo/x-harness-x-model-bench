@@ -241,7 +241,8 @@ def cell_facts(view: RunView, cell: CellView) -> CellFacts:
     calls = sorted((r for r in views.cell_rows(view, "model_calls", cell) if r.get("principal") == cell.cell_id
                     and (session is None or r.get("native_session_id") == session)), key=lambda r: r["native_ordinal"])
     ordinals = tuple(r["native_ordinal"] for r in calls) or "not recorded: no model_calls rows"
-    parts = tuple(PromptPart(r["native_ordinal"], r["part"], r.get("path"), r.get("chars"), r["delivery"], r["source"])
+    parts = tuple(PromptPart(r["native_ordinal"], r["part"], r.get("path"), r.get("chars"), r["delivery"], r["source"],
+                       r.get("tokens"))
                   for r in sorted(views.cell_rows(view, "prompt_parts", cell), key=lambda r: r["native_ordinal"])) \
         or "not recorded: no prompt_parts rows"
     events = tuple(HarnessEvent(r["native_ordinal"], r["event"], r.get("name"), r.get("start"), r.get("end"),

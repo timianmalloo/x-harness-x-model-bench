@@ -111,6 +111,23 @@ def test_hook_time_is_the_union_of_hook_spans_and_not_recorded_with_no_hook_row(
     assert views.time_anatomy(v1, cell).hook_ms == views.Measure(4000)
 
 
+def test_a_reader_that_records_hook_time_only_for_printing_hooks_says_so_in_the_hook_ms_reason(fixture_runs):
+    """W5 decision 3 / W14: Claude Code records a tool hook only when it prints (a `hook_success` attachment), with the
+    end and a duration but no start. The reason comes from the reader module's own `HOOK_TIME_REASON`; a harness whose
+    reader states none keeps the generic interval reason."""
+    from harness_bench.telemetry import claude_code
+
+    _, _, (v1, _) = fixture_runs
+    cell = v1.cells[0]
+    hook = {"cell_id": cell.cell_id, "extraction_id": cell.extraction_id, "event": "hook", "start": None,
+            "end": "2026-09-23T10:00:02+00:00"}
+    v1.facts["harness_events"] = [hook]
+    assert views.time_anatomy(v1, cell).hook_ms == views.Measure(None, "an interval has no start or end")
+    claude = dataclasses.replace(cell, harness="claude-code")
+    reason = views.time_anatomy(v1, claude).hook_ms.reason
+    assert reason == claude_code.HOOK_TIME_REASON and "only when the hook prints output" in reason
+
+
 def test_request_series_is_per_request_or_not_recorded_with_its_reason(fixture_runs):
     _, _, (v1, _) = fixture_runs
     cell = v1.cells[0]

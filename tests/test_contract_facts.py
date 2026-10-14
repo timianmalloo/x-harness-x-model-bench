@@ -76,7 +76,9 @@ def test_tool_input_gains_bytes_returned_last_with_a_none_default():
 def test_the_stream_item_dataclasses_carry_the_adr_0026_columns():
     assert names(telemetry.ReasoningItem) == ["native_ordinal", "item_ordinal", "source_kind", "text", "chars",
                                               "reasoning_tokens", "opaque_sha256"]
-    assert names(telemetry.PromptPart) == ["native_ordinal", "part", "path", "chars", "delivery", "source"]
+    assert names(telemetry.PromptPart) == ["native_ordinal", "part", "path", "chars", "delivery", "source", "tokens"]
+    # ADR-0026 amendment (2026-10-14): `tokens` is optional; None is "not recorded", and every other part is unchanged.
+    assert telemetry.PromptPart(0, "system", None, 5, "inlined", "x").tokens is None
     # Ruling on DR1 (ADR-0026 erratum): `native_ordinal`, the event's position in its record, so two identical events
     # never collide on the key (HB-LED-003).
     assert names(telemetry.HarnessEvent) == ["native_ordinal", "event", "name", "start", "end", "ok", "detail"]
@@ -133,7 +135,7 @@ def test_the_list_stream_row_builders_have_exactly_the_adr_columns():
     assert list(r) == [*PREFIX, "native_ordinal", "item_ordinal", "source_kind", "text", "chars", "reasoning_tokens",
                        "opaque_sha256"] and r["kind"] == "reasoning_item"
     (p,) = normalize.prompt_part_rows("r1", "a", "s", ex, "x")
-    assert list(p) == [*PREFIX, "native_ordinal", "part", "path", "chars", "delivery", "source"]
+    assert list(p) == [*PREFIX, "native_ordinal", "part", "path", "chars", "delivery", "source", "tokens"]
     assert (p["kind"], p["native_ordinal"]) == ("prompt_part", 2)
     (h,) = normalize.harness_event_rows("r1", "a", "s", ex, "x")
     assert list(h) == [*PREFIX, "native_ordinal", "event", "name", "start", "end", "ok", "detail"]
