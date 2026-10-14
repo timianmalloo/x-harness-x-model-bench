@@ -621,3 +621,37 @@ def test_pi_t6_trace_length_equals_extractor_tool_call_count(path):
     request, a paired `tool.execution_start`/`tool.execution_complete`) at 1:1, so `tool_inputs`'s
     count and `read`'s `ToolCall` count agree (`copilot.tool_inputs`'s own docstring)."""
     assert len(copilot.tool_inputs(path).calls) == len(copilot.read(path).tool_calls)
+
+
+# --- C3 / C5 (plan 2026-10-14): ceremony text and tool-result bytes in `tool_inputs` ----------------------------------
+
+def test_tool_inputs_counts_message_content_only_and_sizes_results_by_their_content(tmp_path):
+    def request(call_id):
+        return {"toolCallId": call_id, "name": "view", "arguments": {"path": "a.py"}}
+
+    def done(call_id, **data):
+        return {"type": "tool.execution_complete", "data": {"toolCallId": call_id, **data}}
+
+    rows = [
+        {"type": "assistant.message", "data": {"content": "Goal é", "reasoningText": "hidden thoughts",
+                                               "toolRequests": [request("c1"), request("c2")]}},  # 6 chars
+        done("c1", success=True, result={"content": "out é", "detailedContent": "a much longer display copy"}),  # 6 bytes
+        done("c2", success=False, error={"message": "Path does not exist", "code": "failure"},
+             toolTelemetry={"metrics": {"resultLength": 228, "resultForLlmLength": 228}}),  # no result: the record's own size
+        done("c4", success=False, error={"message": "denied", "code": "denied"}),  # no result, no size: not recorded
+        {"type": "assistant.message", "data": {"content": "", "reasoningText": "only thoughts",
+                                               "toolRequests": [request("c3"), request("c4")]}},
+        {"type": "assistant.message", "data": {"content": "Done.", "toolRequests": []}},  # 5 chars
+    ]
+    record = tmp_path / "events.jsonl"
+    record.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    trace = copilot.tool_inputs(record)
+    assert (trace.assistant_chars, trace.assistant_messages) == (6 + 5, 2)
+    assert [c.bytes_returned for c in trace.calls] == [6, 228, None, None]
+
+
+def test_tool_inputs_text_count_is_not_recorded_when_the_record_lost_lines(tmp_path):
+    record = tmp_path / "events.jsonl"
+    record.write_text(json.dumps({"type": "assistant.message", "data": {"content": "hi"}}) + "\n{not json\n", encoding="utf-8")
+    trace = copilot.tool_inputs(record)
+    assert (trace.assistant_chars, trace.assistant_messages) == (None, None)

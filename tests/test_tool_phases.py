@@ -82,3 +82,37 @@ def test_carry_until_compaction_counts_each_entry_on_every_later_request_until_a
     assert tool_phases.carry_until_compaction((5, 3, 2, 4), ()) == (5, 8, 10, 14)
     assert tool_phases.carry_until_compaction((5, 3, 2, 4), (2,)) == (5, 8, 2, 6)  # drops what entered before 2
     assert tool_phases.carry_until_compaction((), ()) == ()
+
+
+def test_composed_trace_sums_the_ceremony_fields_and_keeps_any_unrecorded_unrecorded():
+    from harness_bench.telemetry import ProcessTrace
+    main = ProcessTrace("hi", (_t(1, "Read"),), 10, 2)
+    sub = ProcessTrace("sub", (_t(1, "Bash"),), 5, 1)
+    both = tool_phases.compose_traces(main, [sub, sub])
+    assert (both.first_assistant_text, len(both.calls), both.assistant_chars, both.assistant_messages) == ("hi", 3, 20, 4)
+    unknown = tool_phases.compose_traces(main, [sub, ProcessTrace("x", (), None, None)])
+    assert (unknown.assistant_chars, unknown.assistant_messages) == (None, None)
+    assert tool_phases.compose_traces(main, []).assistant_chars == 10
+
+
+def test_cell_trace_reads_the_main_record_once_when_the_subagent_glob_also_matches_it(tmp_path):
+    """Codex's `subagent_glob` (`sessions/**/rollout-*.jsonl`) matches the main rollout too; the main record is not
+    its own sub-agent. Two rollouts here: the main (1 call, 5 text chars) and a sub-agent's (1 call, 3 text chars)."""
+    import json
+    from types import SimpleNamespace
+    home = tmp_path / "archive" / "c1" / "attempt-1" / "home" / "sessions"
+    home.mkdir(parents=True)
+
+    def rollout(name, text, command):
+        rows = [{"type": "response_item", "payload": {"type": "message", "role": "assistant",
+                                                       "content": [{"type": "output_text", "text": text}]}},
+                {"type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "k", "name": "exec",
+                                                       "input": f'tools.exec_command({{cmd:"{command}"}})'}}]
+        (home / name).write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+    rollout("rollout-1-sid.jsonl", "hello", "ls")
+    rollout("rollout-2-other.jsonl", "sub", "pwd")
+    profile = {"record_glob": "sessions/**/rollout-*-{session_id}.jsonl", "subagent_glob": "sessions/**/rollout-*.jsonl"}
+    view = SimpleNamespace(plan={"profiles": {"codex": profile}})
+    trace = tool_phases.cell_trace(tmp_path, view, SimpleNamespace(harness="codex", cell_id="c1"), "sid")
+    assert (len(trace.calls), trace.assistant_chars, trace.assistant_messages) == (2, 8, 2)

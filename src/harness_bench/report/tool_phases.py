@@ -209,8 +209,19 @@ def cell_trace(run_dir: Path, view: RunView, cell: CellView, session_id: str | N
     mains = profiles.find_records(home, profile["record_glob"], session_id)
     if not mains:
         return None
-    main = reader.tool_inputs(mains[0])
-    extra: list[ToolInput] = []
-    for sub_path in profiles.find_records(home, profile.get("subagent_glob") or "", session_id):
-        extra.extend(reader.tool_inputs(sub_path).calls)
-    return ProcessTrace(main.first_assistant_text, main.calls + tuple(extra))
+    # Codex's sub-agent glob matches the main rollout too (profile comment); the main record is read once, as `drift` does
+    subs = [reader.tool_inputs(p) for p in profiles.find_records(home, profile.get("subagent_glob") or "", session_id)
+            if p != mains[0]]
+    return compose_traces(reader.tool_inputs(mains[0]), subs)
+
+
+def _sum_or_none(values: Sequence[int | None]) -> int | None:
+    return None if any(v is None for v in values) else sum(values)
+
+
+def compose_traces(main: ProcessTrace, subs: Sequence[ProcessTrace]) -> ProcessTrace:
+    """The main session's trace followed by each sub-agent record's calls. The assistant text counts add up across
+    the records; one record that does not count them makes the cell's count not recorded (never a partial sum)."""
+    every = [main, *subs]
+    return ProcessTrace(main.first_assistant_text, main.calls + tuple(c for t in subs for c in t.calls),
+                        _sum_or_none([t.assistant_chars for t in every]), _sum_or_none([t.assistant_messages for t in every]))

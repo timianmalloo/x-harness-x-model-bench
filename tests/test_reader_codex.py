@@ -222,3 +222,33 @@ def test_a_call_with_no_output_row_returns_no_bytes(tmp_path):
         "type": "custom_tool_call", "call_id": "c1", "name": "exec",
         "input": 'tools.exec_command({cmd:"cat a.txt"})'}}) + "\n", encoding="utf-8")
     assert [(c.paths, c.bytes_returned) for c in codex.tool_inputs(record).calls] == [(("a.txt",), None)]
+
+
+# --- C3 (plan 2026-10-14): user-visible assistant text in `tool_inputs` ------------------------------------------------
+
+def _message(role, *parts):
+    return {"type": "response_item", "payload": {"type": "message", "role": role, "content": [
+        {"type": kind, "text": text} for kind, text in parts]}}
+
+
+def test_tool_inputs_counts_assistant_output_text_only(tmp_path):
+    rows = [
+        _message("developer", ("input_text", "system words")),
+        _message("user", ("input_text", "the task")),
+        _message("assistant", ("output_text", "Goal é")),  # 6 chars
+        {"type": "response_item", "payload": {"type": "reasoning", "summary": [{"type": "summary_text", "text": "hidden"}]}},
+        {"type": "event_msg", "payload": {"type": "item_completed", "item": {"type": "AgentMessage", "text": "Goal é"}}},  # a copy
+        _message("assistant", ("output_text", "Done."), ("output_text", "Ok")),  # one message, 7 chars
+        _message("assistant", ("output_text", " ")),  # blank: not a message
+    ]
+    record = tmp_path / "r.jsonl"
+    record.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    trace = codex.tool_inputs(record)
+    assert (trace.assistant_chars, trace.assistant_messages) == (6 + 7, 2)
+
+
+def test_tool_inputs_text_count_is_not_recorded_when_the_record_lost_lines(tmp_path):
+    record = tmp_path / "r.jsonl"
+    record.write_text(json.dumps(_message("assistant", ("output_text", "hi"))) + "\n{not json\n", encoding="utf-8")
+    trace = codex.tool_inputs(record)
+    assert (trace.assistant_chars, trace.assistant_messages) == (None, None)
