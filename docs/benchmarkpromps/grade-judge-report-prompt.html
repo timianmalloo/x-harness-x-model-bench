@@ -152,10 +152,17 @@ STEP 5 - page 2, behaviour (drift, ceremony, over-thinking)
      --session &lt;RUN_ID&gt;=&lt;harness&gt;:&lt;transcript&gt; [--session ...] --out OUT/behaviour`
     (one --session per run whose transcript was found; the harness name is the run's.)
   - Read OUT/behaviour/behaviour.md and the per-cell JSON. Write OUT/behaviour-analysis.md:
-      * Over-thinking: requests, reasoning tokens and reasoning characters per cell, per harness and arm.
-      * Ceremony: tool calls, calls before the first edit, reads, planning or to-do tool calls, files written outside
-        the task (lines outside, machine lines), and, for the interactive sessions, status messages and poll cadence.
-      * Drift: scope_creep, attention_drift, lines outside the blast radius, delegation tool calls.
+      * Over-thinking: requests, reasoning tokens and reasoning characters per cell, per harness and arm, and
+        "reasoning tok / tool call"; re-reads; tool_error_rate and stuck_loops.
+      * Ceremony: tool calls, calls before the first edit, reads, planning calls, assistant text chars and messages,
+        tool-result bytes, files written outside the task (lines outside, machine lines), and, for the interactive
+        sessions, the Compliance table (status checks, median gap against the asked interval, steps done of 11,
+        HANDOFF printed, handoff.json written, "HANDOFF without handoff.json", watcher and wait calls).
+      * Drift: scope_creep, attention_drift, lines outside the blast radius, delegation tool calls; the table
+        "Files behind the discretionary lines" (which files, how many lines, how many cells); and the "outside /
+        inside reads before / after 1st edit" columns (exploration versus wandering).
+      * Noise: read each gap against the "Spread between repetitions" table (median, IQR, min-max); a gap inside the
+        IQR is not a finding. The "Not recorded, and why" table lists every measure the records cannot give.
       * The same model in two harnesses (for example gpt-6.1-sol in Codex and in Copilot): compare them task by task
         and arm by arm, and say whether the difference is in what was produced (output style) or in what was done
         (actions), with the numbers.
