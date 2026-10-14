@@ -1342,6 +1342,19 @@ def test_an_archive_failure_is_recorded_and_the_run_is_incomplete(base, monkeypa
     assert (config.cells_root / p["run_id"] / cid / "ws").is_dir()  # the only copy of the work is kept
 
 
+def test_a_cells_root_named_for_the_run_gets_no_second_run_folder(base, monkeypatch):  # B10: the cell path stays short
+    from harness_bench import archive
+
+    monkeypatch.setattr(archive, "archive_cell", lambda *a, **k: (_ for _ in ()).throw(OSError("keep the folder")))
+    p = _plan(n_cells=1)
+    cid = p["cells"][0]["cell_id"]
+    root = base / "cells" / p["run_id"]
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=root, launchers={"fake": FakeLauncher({})},
+                                 build_workspace=_build_workspace, grade=None)
+    _engine_run(p, config)
+    assert (root / cid / "ws").is_dir() and not (root / p["run_id"]).exists()
+
+
 def test_a_full_disk_while_building_the_workspace_is_a_disk_failure(base):  # T1-12: ENOSPC -> Cause.disk
     def full(cell, cell_dir):
         raise OSError(errno.ENOSPC, "No space left on device")

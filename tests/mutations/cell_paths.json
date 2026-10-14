@@ -1,0 +1,30 @@
+[
+ {
+  "name": "B10: a cells root named for the run repeats the run id in the cell folder",
+  "file": "src/harness_bench/workspace.py",
+  "find": "    if cells_root.name == run_id and not (cells_root / run_id).is_dir():\n",
+  "replace": "    if False:\n",
+  "tests": [
+   "tests/test_cell_paths.py::test_the_worst_case_copilot_files_path_stays_under_max_path_with_a_margin",
+   "tests/test_engine.py::test_a_cells_root_named_for_the_run_gets_no_second_run_folder"
+  ]
+ },
+ {
+  "name": "B10: an old-layout run folder is not found under a root named for the run",
+  "file": "src/harness_bench/workspace.py",
+  "find": "    if cells_root.name == run_id and not (cells_root / run_id).is_dir():\n",
+  "replace": "    if cells_root.name == run_id:\n",
+  "tests": [
+   "tests/test_cell_paths.py::test_an_old_run_folder_is_still_found_under_a_root_named_for_the_run"
+  ]
+ },
+ {
+  "name": "B10: teardown judges the shared folders of a root named for the run",
+  "file": "src/harness_bench/archive.py",
+  "find": "p.is_dir() and (only is None or p.name in only)",
+  "replace": "p.is_dir()",
+  "tests": [
+   "tests/test_cell_paths.py::test_teardown_leaves_the_shared_folders_of_a_cells_root_named_for_the_run"
+  ]
+ }
+]

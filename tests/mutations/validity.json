@@ -21,11 +21,29 @@
  {
   "name": "R-27: every tool call counts as a hook denial",
   "file": "src/harness_bench/telemetry/normalize.py",
-  "find": "    return sum(1 for r in tool_rows if r.get(\"outcome_code\") == HOOK_DENIED)\n",
+  "find": "    return sum(1 for r in tool_rows if r.get(\"outcome_code\") == HOOK_DENIED and r.get(\"denial_basis\") != PATH_VERIFICATION)\n",
   "replace": "    return len(tool_rows)\n",
   "tests": [
    "tests/test_views.py::test_the_revision_95_pack_on_copilot_cell_is_valid",
    "tests/test_views.py::test_an_ordinary_tool_failure_is_not_a_hook_denial"
+  ]
+ },
+ {
+  "name": "B10: a path-verification denial counts as a hook denial",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "    return sum(1 for r in tool_rows if r.get(\"outcome_code\") == HOOK_DENIED and r.get(\"denial_basis\") != PATH_VERIFICATION)\n",
+  "replace": "    return sum(1 for r in tool_rows if r.get(\"outcome_code\") == HOOK_DENIED)\n",
+  "tests": [
+   "tests/test_views.py::test_a_path_verification_denial_is_a_harness_path_limit_not_a_hook_denial"
+  ]
+ },
+ {
+  "name": "B10: a path-verification denial does not invalidate",
+  "file": "src/harness_bench/views.py",
+  "find": "    if path_limit is not None:  # B10: the harness's own path check, not a hook, the pack or the model; same slot, measured\n",
+  "replace": "    if False:\n",
+  "tests": [
+   "tests/test_views.py::test_a_path_verification_denial_is_a_harness_path_limit_not_a_hook_denial"
   ]
  },
  {

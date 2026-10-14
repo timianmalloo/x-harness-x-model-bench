@@ -50,6 +50,7 @@ from harness_bench import (
     oslock,
     procs,
     stream_driver,
+    workspace,
 )
 from harness_bench.errors import BenchError, Cause
 from harness_bench.gitsafe import GitError
@@ -750,7 +751,7 @@ class Engine:
     def _run_cell(self, cell: dict) -> None:
         cid = cell["cell_id"]
         launcher = self.cfg.launchers[cell["harness"]]
-        cell_dir = self.cfg.cells_root / self.plan["run_id"] / cid
+        cell_dir = workspace.cell_dir(self.cfg.cells_root, self.plan["run_id"], cid)
         home, ws = cell_dir / "home", cell_dir / "ws"
         task = self.plan["tasks"][cell["task"]]
 
