@@ -136,6 +136,22 @@ def test_flagged_3_stop_hooks_from_the_stop_hook_summary_row():
     assert len({e["native_ordinal"] for e in events}) == len(events)  # DR1: identical events never share a key
 
 
+def test_a_tool_hook_that_prints_is_a_hook_row_with_its_duration_and_no_start(tmp_path):
+    """C4: the transcript keeps a PreToolUse/PostToolUse hook only when it prints (a `hook_success` attachment, the
+    shape seen in lean-20261013T222006: 8 rows over 30 pack-on cells and 712 tool calls). `start` stays None so a
+    cell's hook time stays not recorded: the silent invocations are missing and a sum would undercount."""
+    hook = {"type": "hook_success", "hookName": "PreToolUse:Read", "toolUseID": "toolu_1", "hookEvent": "PreToolUse",
+            "content": "", "stdout": "{}", "stderr": "", "exitCode": 0, "command": "run-hook.sh reread-guard.py --host claude",
+            "durationMs": 512}
+    path = tmp_path / "s.jsonl"
+    path.write_text(json.dumps({"type": "attachment", "attachment": hook, "timestamp": "2026-10-13T22:22:29.512Z"}) + "\n",
+                    encoding="utf-8")
+    events = normalize.harness_event_rows(*ARGS, claude_code.read(path), "x")
+    assert [(e["event"], e["name"], e["start"], e["end"], e["ok"], e["detail"]) for e in events] == [
+        ("hook", "run-hook.sh reread-guard.py --host claude", None, "2026-10-13T22:22:29.512Z", 1,
+         "PreToolUse:Read durationMs=512")]
+
+
 def test_flagged_4_a_skill_load_is_a_skill_tool_call(tmp_path):
     rows = [{"type": "assistant", "requestId": "req_1", "timestamp": "t1", "message": {"id": "m1", "model": "claude-opus-5-5",
              "usage": {"input_tokens": 1, "output_tokens": 1, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},

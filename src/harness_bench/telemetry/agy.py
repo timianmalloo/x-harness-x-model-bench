@@ -24,7 +24,12 @@ stream_driver.STREAM_RECORD) and the conversation store beside it, `<cell home>/
 - prompt parts: `gen_metadata.data` field 1 is a request; 1.1 is its full prompt. The first request with a prompt
   gives the `system` part and one `instruction_file` part per `<RULE[<path>]>...</RULE[<path>]>` block (agy inlines
   AGENTS.md, GEMINI.md and the home rules that way; `path` is the label as stored, `chars` the body between the tags).
-- harness events: not read (steps are a Flagged source, ADR-0026 s1).
+  A7 (lean run lean-20261013T222840): the recorded prompt holds no tool declarations (no schema; one prose mention of
+  `view_file`), so there is no `tools` part. Whether another `gen_metadata` field holds them is not decoded (Inferred
+  gap; confirm by decoding the remaining fields of a request).
+- harness events: not read (steps are a Flagged source, ADR-0026 s1). C4: hook time is not recorded by the harness.
+  In all 30 pack-on cells of that run `cli.log` says `loaded 5 named hooks from 1 hooks.json file(s)`, yet no stream
+  line, step type or log line records a hook invocation, and tool steps carry no times, so no bound is derivable.
 """
 
 from __future__ import annotations

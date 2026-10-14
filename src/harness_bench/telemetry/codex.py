@@ -33,8 +33,12 @@ The lean re-run's reader facts (ADR-0024 s4, ADR-0026 s1; R-READ-CODEX):
   `reasoning_tokens` is None: the record counts reasoning per request, which `ModelCall.reasoning` already holds.
 - `prompt_parts`: `session_meta.base_instructions` (`system`), then every developer content part and every injected
   user context part before the first prompt text: the AGENTS.md block is `instruction_file` (`AGENTS.md`, inlined),
-  `<skills_instructions>` is `skills` (listed), the rest `system`. Tools are not in the record.
-- `harness_events`: not recorded (hooks and compaction are Flagged in ADR-0026 s1).
+  `<skills_instructions>` is `skills` (listed), the rest `system`. Tools are not in the record (A7, lean run
+  lean-20261013T222718, 30 pack-on cells: no tool schema in any rollout, and `logs_2.sqlite` shows only
+  `thread_start.dynamic_tool_count`), so the first request has no `tools` part: neither its size nor a tool count.
+- `harness_events`: not recorded (hooks and compaction are Flagged in ADR-0026 s1). C4: in that run no pack-on cell
+  configures a Codex hook (no `.codex/` in the working copy, none in the home's config.toml or a hooks.json), so no
+  pack hook ran and the rollout shows no hook row; how Codex records a hook's time is not observed.
 """
 
 from __future__ import annotations

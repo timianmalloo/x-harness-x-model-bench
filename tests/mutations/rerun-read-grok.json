@@ -127,10 +127,38 @@
   "tests": ["tests/test_reader_grok.py::test_a_web_fetch_call_is_class_other_and_a_read_file_call_is_read_with_its_outcome"]
  },
  {
-  "name": "hook and compaction stream claimed empty",
+  "name": "hook stream claimed empty",
   "file": "src/harness_bench/telemetry/grok.py",
-  "find": "ex.harness_events = NO_EVENTS",
+  "find": "ex.harness_events = _hook_events(d)",
   "replace": "ex.harness_events = []",
-  "tests": ["tests/test_reader_grok.py::test_hooks_and_compaction_are_flagged_so_the_stream_is_not_recorded"]
+  "tests": ["tests/test_reader_grok.py::test_hooks_are_the_hook_execution_runs_timed_back_from_the_row_stamp_one_after_another"]
+ },
+ {
+  "name": "hook runs of one row timed as parallel (C4)",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "            end = start\n",
+  "replace": "",
+  "tests": ["tests/test_reader_grok.py::test_hooks_are_the_hook_execution_runs_timed_back_from_the_row_stamp_one_after_another"]
+ },
+ {
+  "name": "no updates.jsonl read as no hooks",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "        return NO_UPDATES\n",
+  "replace": "        return []\n",
+  "tests": ["tests/test_reader_grok.py::test_without_updates_jsonl_hooks_are_not_recorded"]
+ },
+ {
+  "name": "a skill catalogue after the prompt counted as prefix (A7)",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "            if \"prompt_index\" in row or row.get(\"type\") in (\"assistant\", \"reasoning\"):\n                break\n",
+  "replace": "            if \"prompt_index\" in row or row.get(\"type\") in (\"assistant\", \"reasoning\"):\n                continue\n",
+  "tests": ["tests/test_reader_grok.py::test_the_skill_catalogue_before_the_prompt_is_a_listed_skills_part"]
+ },
+ {
+  "name": "skill catalogue not a skills part (A7)",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "and text.startswith(SKILLS_HEAD):",
+  "replace": "and text.startswith(SKILLS_HEAD + \"x\"):",
+  "tests": ["tests/test_reader_grok.py::test_the_skill_catalogue_before_the_prompt_is_a_listed_skills_part"]
  }
 ]

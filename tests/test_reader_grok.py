@@ -121,6 +121,21 @@ def test_instruction_files_from_agents_md_files_and_system_and_tools_parts_with_
     assert [r for r in off if r["part"] == "instruction_file"] == [] and {r["part"] for r in off} == {"system", "tools"}
 
 
+def test_the_skill_catalogue_before_the_prompt_is_a_listed_skills_part(tmp_path):
+    """A7: Grok sends its skill catalogue as a `system_reminder` user row before the prompt (lean-20261013T222527: one
+    per pack-on cell, 23,847 chars in cell 55f8737f9f071f28); a reload after the prompt is not part of the prefix."""
+    d = shutil.copytree(ON, tmp_path / "s")
+    lines = (d / grok.CHAT).read_text(encoding="utf-8").splitlines()
+    catalogue = "<system-reminder>\nThe following skills are available for use:\n\n- implement: build it\n</system-reminder>"
+    reload = {"type": "user", "content": [{"type": "text", "text": catalogue + "x"}], "synthetic_reason": "system_reminder"}
+    lines[2] = json.dumps({**json.loads(lines[2]), "content": [{"type": "text", "text": catalogue}]})
+    lines.insert(4, json.dumps(reload))
+    (d / grok.CHAT).write_text("\n".join(lines) + "\n", encoding="utf-8")
+    skills = [r for r in normalize.prompt_part_rows(*ARGS, grok.read(d), "x1") if r["part"] == "skills"]
+    assert [(r["chars"], r["delivery"], r["source"]) for r in skills] == [
+        (len(catalogue), "listed", "chat_history.jsonl:user.system_reminder (skills)")]
+
+
 def test_an_absent_prompt_context_is_not_recorded_never_zero_instruction_files(tmp_path):
     d = shutil.copytree(OFF, tmp_path / "s")
     (d / "prompt_context.json").unlink()
@@ -176,7 +191,24 @@ def test_a_workspace_inert_tool_call_is_meta_and_never_hb_val_008():  # Leader r
     assert views._out_of_profile(normalize.tool_call_rows(*ARGS, ex, "x1"), None)[0].code == "HB-VAL-008"
 
 
-def test_hooks_and_compaction_are_flagged_so_the_stream_is_not_recorded():
-    ex = grok.read(ON)
-    assert ex.harness_events == "not recorded: grok hook and compaction events are Flagged (no record shows their shape)"
+def test_hooks_are_the_hook_execution_runs_timed_back_from_the_row_stamp_one_after_another():
+    """C4: one row per `runs[]` entry; a row's runs ran one after another and its `agentTimestampMs` is the last one's
+    end (Verified on lean-20261013T222527 cell 55f8737f9f071f28: tool_started to the pre_tool_use row is the runs' sum,
+    5993 ms against 5990, not their max)."""
+    rows = normalize.harness_event_rows(*ARGS, grok.read(ON), "x1")
+    assert [(r["event"], r["name"], r["start"], r["end"], r["ok"]) for r in rows] == [
+        ("hook", "project/settings:session_start[0].hooks[0]", "2026-09-21T14:13:20.000Z", "2026-09-21T14:13:22.000Z", 1),
+        ("hook", "project/ai-forward:session_start[0].hooks[0]", "2026-09-21T14:13:22.000Z", "2026-09-21T14:13:23.000Z", 1),
+        ("hook", "project/settings:pre_tool_use[2].hooks[0]", "2026-09-21T14:13:28.800Z", "2026-09-21T14:13:29.300Z", 1),
+        ("hook", "project/ai-forward:pre_tool_use[1].hooks[0]", "2026-09-21T14:13:29.300Z", "2026-09-21T14:13:30.000Z", 1),
+        ("hook", "project/settings:post_tool_use[1].hooks[0]", "2026-09-21T14:13:30.700Z", "2026-09-21T14:13:31.000Z", 1),
+        ("hook", "project/ai-forward:stop[0].hooks[0]", "2026-09-21T14:13:39.600Z", "2026-09-21T14:13:40.000Z", 1)]
+    assert [r["native_ordinal"] for r in rows] == [1, 2, 3, 4, 5, 6]
+    assert rows[2]["detail"] == "pre_tool_use tool=read_file elapsed_ms=500"
+    assert views.busy_ms(rows) == views.Measure(4900)  # a report's hook time per cell: every run, once
+
+
+def test_without_updates_jsonl_hooks_are_not_recorded():
+    ex = grok.read(OFF)
+    assert ex.harness_events == "not recorded: updates.jsonl absent (hook runs are recorded there)"
     assert normalize.harness_event_rows(*ARGS, ex, "x1") == []

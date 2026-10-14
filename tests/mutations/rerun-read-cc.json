@@ -54,5 +54,12 @@
     "find": "            if name == \"Skill\":",
     "replace": "            if name == \"skill\":",
     "tests": ["tests/test_reader_claude_code.py::test_flagged_4_a_skill_load_is_a_skill_tool_call"]
+  },
+  {
+    "name": "claude printed tool hook not a hook event (C4)",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "    if att.get(\"type\") == \"hook_success\":\n",
+    "replace": "    if att.get(\"type\") == \"hook\":\n",
+    "tests": ["tests/test_reader_claude_code.py::test_a_tool_hook_that_prints_is_a_hook_row_with_its_duration_and_no_start"]
   }
 ]
