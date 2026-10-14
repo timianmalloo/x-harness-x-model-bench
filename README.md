@@ -74,13 +74,16 @@ uv run bench tools install                             # the pinned Claude Code,
 uv run bench plan --matrix bench/matrix.phase1.yaml --run-id phase1-a --confirm
 uv run bench run phase1-a                              # runs every cell, then grades
 uv run bench status phase1-a [--json]                  # progress; bench-status/1 with --json
+uv run bench status phase1-a --check-ended [--json]    # early validity check of the cells ended so far
 uv run bench report phase1-a                           # CLI table and runs/phase1-a/report.html
 uv run bench verify phase1-a                           # ledger chains, seals and archives
 uv run bench teardown phase1-a                         # remove archived cells' working copies
 uv run pytest
 ```
 
-Cells live under `--cells-root` (default: `../bench-cells`), which must have no `CLAUDE.md`, `.claude/CLAUDE.md` or `AGENTS.md` above it (HB-PRE-002). Exit codes: 0 ok, 1 invalid input, 2 usage, 3 run incomplete, 4 not built (for example an ungraded report), 5 integrity failure.
+Cells live under `--cells-root` (default: `../bench-cells`), which must have no `CLAUDE.md`, `.claude/CLAUDE.md` or `AGENTS.md` above it (HB-PRE-002). Exit codes: 0 ok, 1 invalid input, 2 usage, 3 run incomplete, 4 not built (for example an ungraded report), 5 integrity failure, 6 alarm (`--alarm-after`), 7 early mismatch (`--check-ended`).
+
+Validity is graded only at the end of `bench run`. So run `bench status <run_id> --check-ended` after the first two cells end, from another terminal. It is read-only and safe while the run is live. It reads each archived cell's native record the way the grading pass does and applies the same rules. It prints one line per ended cell (`ok`, or its provisional codes) and the totals. The codes are HB-VAL-002 (served model), HB-VAL-008 (out-of-profile tool), HB-VAL-010 (served effort or context) and HB-VAL-011 (a setting that no source records). It exits 7 on any HB-VAL-002, 008 or 010: stop the run (`bench stop`) and fix the profile or matrix before you spend the remaining cells. The end-of-run grading is still the record.
 
 To start a real run from prose, open a Claude Code or Codex session in this repo and run `/start-benchmark` (Codex: `$start-benchmark`).
 

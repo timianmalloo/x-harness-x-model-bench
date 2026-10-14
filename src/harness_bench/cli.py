@@ -58,6 +58,7 @@ from harness_bench.report import credentials as report_credentials
 
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
 ALARM = 6
+EARLY_MISMATCH = 7  # `bench status --check-ended`: an ended cell is provisionally HB-VAL-002, 008 or 010
 _LEGACY_PACK = next(a for a in config.PACKS if a != config.ARM_OFF)  # a bench-matrix/1 file's one pack arm (W1-A 3.9's `on`), read from config
 
 
@@ -445,6 +446,12 @@ def cmd_run(args) -> int:
 
 def cmd_status(args) -> int:
     run_dir = _run_dir(args)
+    if getattr(args, "check_ended", False):
+        from harness_bench import early_check
+
+        result = early_check.check(run_dir)  # read-only: safe while the engine runs
+        print(early_check.to_json(result) if args.json else early_check.text(result), end="\n" if args.json else "")
+        return EARLY_MISMATCH if result.mismatch else OK
     if getattr(args, "alarm_after", None) is not None:
         from harness_bench import alarm
 
@@ -815,6 +822,11 @@ def build_parser() -> argparse.ArgumentParser:
             sp.add_argument("--json", action="store_true", help="bench-status/2 on stdout")
             sp.add_argument("--alarm-after", type=int, default=None, metavar="SECONDS",
                             help="exit with code 6 if progress is stalled or engine is down")
+            sp.add_argument("--check-ended", action="store_true",
+                            help="early validity check, read-only and safe while the run is live: judge each ended "
+                                 "(archived) cell's native record as grading will (served model HB-VAL-002, out-of-profile "
+                                 "tool HB-VAL-008, served effort/context HB-VAL-010, not recorded HB-VAL-011); one line "
+                                 "per cell and totals (--json: bench-early-check/1); exit 7 on any HB-VAL-002, 008 or 010")
         if name == "grade":
             sp.add_argument("--allow-model-calls", action="store_true",
                             help="call the judges on a verdict-store miss; refused while any run is live (HB-GRD-005); "

@@ -12,7 +12,6 @@ import json
 import shutil
 import sqlite3
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -99,10 +98,8 @@ def test_the_runner_reads_the_cells_stream_although_session_opened_names_no_sess
     rollout.parent.mkdir(parents=True)
     rollout.write_text("{}\n", encoding="utf-8")
     assert profiles.find_records(home, "sessions/**/rollout-*{session_id}.jsonl", "") == []  # an id glob still needs one
-    fake = SimpleNamespace(plan={"run_id": "run", "profiles": {"agy": {"record_glob": glob}}}, extraction="x",
-                           streams_nr={})
-    _, _, model_rows, _ = runner._Pass._extract(fake, {"harness": "agy", "cell_id": "c"}, tmp_path / "attempt-1", "",
-                                                held={("c", "x")})
+    plan = {"run_id": "run", "profiles": {"agy": {"record_glob": glob}}}
+    model_rows = runner.read_record(plan, {"harness": "agy", "cell_id": "c"}, tmp_path / "attempt-1", "", "x").model_rows
     assert [(r["native_session_id"], r["native_ordinal"]) for r in model_rows] == [
         ("00000000-0000-4000-8000-000000000020", 2), ("00000000-0000-4000-8000-000000000020", 3)]
 
