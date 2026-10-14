@@ -120,6 +120,41 @@ def test_the_existing_profiles_declare_no_home_vars_or_seed_files(tmp_path, harn
     assert env["HOME"] == "C:/Users/op"
 
 
+# --- host_skill_roots (instr/w10, owner decision B12) ----------------------------------------------------------------
+
+def test_host_skill_roots_are_disabled_one_by_one_in_the_cell_config(tmp_path):
+    """Codex finds ~/.agents/skills through the Windows known folder, so moving HOME and USERPROFILE does not hide it
+    (spike 2026-10-14). The cell config names each host skill file disabled; a repo skill is a different path."""
+    import tomllib
+
+    host = tmp_path / "host" / ".agents" / "skills"
+    for name in ("alpha", "alpha/nested", "beta"):
+        (host / name).mkdir(parents=True)
+        (host / name / "SKILL.md").write_text("---\nname: x\n---\n", encoding="utf-8")
+    (host / "beta" / "notes.md").write_text("not a skill", encoding="utf-8")
+    p = profiles.Profile("codex", "CODEX_HOME", None, None, ("{exe}",), files={"config.toml": 'model = "{model}"'},
+                         host_skill_roots=(str(host), str(tmp_path / "absent")))
+    p.seed_home(tmp_path / "home", "m")
+    cfg = tomllib.loads((tmp_path / "home" / "config.toml").read_text(encoding="utf-8"))
+    assert cfg["model"] == "m"
+    assert sorted(cfg["skills"]["config"], key=lambda e: e["path"]) == sorted(
+        ({"path": (host / name / "SKILL.md").as_posix(), "enabled": False} for name in ("alpha", "alpha/nested", "beta")),
+        key=lambda e: e["path"])
+
+
+def test_a_profile_without_host_skill_roots_writes_its_config_unchanged(tmp_path):
+    p = profiles.Profile("codex", "CODEX_HOME", None, None, ("{exe}",), files={"config.toml": 'model = "{model}"'})
+    p.seed_home(tmp_path / "home", "m")
+    assert (tmp_path / "home" / "config.toml").read_text(encoding="utf-8") == 'model = "m"\n'
+
+
+def test_the_codex_profile_hides_the_operator_skills_and_keeps_the_cell_home(tmp_path):
+    p = profiles.load(ROOT, "codex", credential_source=tmp_path / "absent")
+    assert p.host_skill_roots == ("~/.agents/skills",)
+    env = p.cell_env(dict(PARENT), tmp_path / "home", _build(tmp_path, "codex"), "m", "")
+    assert env["CODEX_HOME"] == str(tmp_path / "home")
+
+
 def test_seed_home_creates_the_parents_of_a_nested_template(tmp_path):
     p = profiles.Profile("codex", "CODEX_HOME", None, None, ("{exe}",), files={"a/b/c.toml": 'model = "{model}"'})
     p.seed_home(tmp_path / "home", "m")

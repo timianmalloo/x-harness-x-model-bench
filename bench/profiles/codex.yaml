@@ -4,6 +4,11 @@ vendor: openai   # R-73 item 1: a profile fact, never inferred from a model id
 home_env: CODEX_HOME
 credential: { source: "~/.codex/auth.json", name: "auth.json" }
 credential_kind: "subscription login (copied)"
+# B12 (spike 2026-10-14): Codex lists the operator's skills under ~/.agents/skills (6 microsoft-foundry skills in all 76
+# rollouts of lean-20261013T222718-ef6b) and finds that folder through the Windows known folder, so user_home_vars
+# (HOME, USERPROFILE, HOMEDRIVE, HOMEPATH moved to an empty cell home) left it in place. seed_home writes each of those
+# skill files into the cell's config.toml as a disabled `[[skills.config]]` entry. Repo skills (<ws>/.agents/skills) stay.
+host_skill_roots: ["~/.agents/skills"]
 command: ["{node}", "{adapter}"]
 shutdown_grace_seconds: 10
 files:
