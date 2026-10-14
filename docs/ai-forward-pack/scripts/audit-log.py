@@ -453,6 +453,23 @@ def resolve_default_root(explicit):
     return DEFAULT_FALLBACK_ROOT
 
 
+def is_fallback_root(root):
+    """Is `root` the AL0.2 local fallback (`.agents/log`) rather than a repo's own audit setup?"""
+    tail = os.path.normcase(os.path.normpath(DEFAULT_FALLBACK_ROOT))
+    path = os.path.normcase(os.path.normpath(os.path.abspath(root)))
+    return path == tail or path.endswith(os.sep + tail)
+
+
+def render_after_write(root, project=None):
+    """The views a write refreshes. Owner decision 2026-10-14 (bench B15, AL0.2): in the fallback
+    a write keeps ONLY the JSONL - the viewer, its data file and the hub (~510 lines) were most of
+    what the pack left in every task's working copy, for a repo that never asked for a viewer.
+    `render` stays available there as an explicit ask. A repo with docs/audit/ keeps its views."""
+    if is_fallback_root(root):
+        return None
+    return render(root, project)
+
+
 def audit_dir(root):
     return os.path.join(root, "audit")
 
@@ -953,7 +970,7 @@ def cmd_append(args):
     if args.git:
         entry["git"] = git_context(args.root)
     append_log(args.root, "audit", entry)
-    render(args.root, args.project)
+    render_after_write(args.root, args.project)
     print(entry["id"])
     return 0
 
@@ -989,7 +1006,7 @@ def cmd_change(args):
     if args.audit_ref or base.get("audit_ref"):
         entry["audit_ref"] = args.audit_ref or base.get("audit_ref")
     append_log(args.root, "change", entry)
-    render(args.root, args.project)
+    render_after_write(args.root, args.project)
     print(entry["id"])
     return 0
 
@@ -1352,7 +1369,7 @@ def cmd_import(args):
         append_log(args.root, "audit", entry)
         existing.add(eid)
         added += 1
-    render(args.root, args.project)
+    render_after_write(args.root, args.project)
     print(f"imported {added} session turn(s) into the audit log")
     return 0
 
