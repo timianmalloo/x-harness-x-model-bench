@@ -301,12 +301,15 @@ def read(path: Path) -> Extraction:
                 name = f"{server}.{tool}"
                 ex.tool_calls.append(ToolCall(n, name, MCP_CLASSES.get(name, "other"), None, stamp, ok))
         elif _open_call(kind, ptype, call_id):
-            open_tools[call_id] = {"n": n, "name": as_str(payload.get("name")) or ptype, "start": stamp}
+            arguments = payload.get("arguments")
+            text = arguments if isinstance(arguments, str) else payload.get("input")
+            name = as_str(payload.get("name")) or ptype
+            open_tools[call_id] = {"n": n, "name": name, "start": stamp, "class": _call_class(name, text if isinstance(text, str) else "")}
         elif kind == "response_item" and ptype in OUTPUT_TYPES and call_id in open_tools:
             tool = open_tools.pop(call_id)
-            ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], stamp, None))
+            ex.tool_calls.append(ToolCall(tool["n"], tool["name"], tool["class"], tool["start"], stamp, None))
     for tool in open_tools.values():
-        ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], None, None))
+        ex.tool_calls.append(ToolCall(tool["n"], tool["name"], tool["class"], tool["start"], None, None))
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)
     reasoning.extend(pending)  # no reported call followed: each keeps its own line
     ex.served = _served(path, seen)
@@ -752,6 +755,19 @@ def shell_command_class(command: str | None) -> tuple[str, tuple[str, ...]]:
     kinds = {kind for kind, _ in found}
     cls = "edit" if "edit" in kinds else "test" if "test" in kinds else "read" if kinds & {"read", "list"} else "other"
     return cls, tuple(p for _, paths in found for p in paths)
+
+
+def _call_class(name: str, text: str) -> str:
+    """The class on a call's `tool_calls` row: its tool's (`_tool_class`), except that a shell call is `edit` when it
+    holds an `apply_patch`, else by what its commands do (`read`, `edit`, `test`), else `shell` -- never `other`, which
+    the views count as outside the profile."""
+    base = _tool_class(name)
+    if base != "shell":
+        return base
+    if patch_header_paths(text):
+        return "edit"
+    cls = shell_command_class(_kv_fields(text)[1])[0]
+    return "shell" if cls == "other" else cls
 
 
 def _output_bytes(payload: dict) -> int | None:

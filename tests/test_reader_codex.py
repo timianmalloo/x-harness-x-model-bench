@@ -282,3 +282,22 @@ def test_an_exec_call_batching_several_commands_names_them_all_and_unescapes_the
     (call,) = codex.tool_inputs(record).calls
     assert call.command == "Get-Content tests" + chr(92) + "a.py\n# why\nrg -n Gate vendor/q\npython -m pytest -q"
     assert codex.shell_command_class(call.command) == ("test", ("tests" + chr(92) + "a.py", "vendor/q"))
+
+
+def test_a_codex_tool_row_carries_the_class_of_the_call_not_of_the_tool_name(tmp_path):
+    """`exec` is one tool name for every read, test run and patch; the row's class is read, edit or test when the call
+    is one, else shell (never `other`, which the views count as outside the profile). Hand count over the 24 calls of
+    the shell-reads fixture: 17 reads, 4 edits; `git status`, `Get-Content $path` and an unparsed Get-Content stay
+    `shell`. An exec holding an `apply_patch` is an edit, and one running pytest is a test."""
+    classes = [c.tool_class for c in codex.read(SHELL).tool_calls]
+    assert classes == ["read"] * 17 + ["shell", "edit", "edit", "edit", "shell", "edit", "shell"]
+
+    def exec_row(n: int, js: str) -> str:
+        return json.dumps({"type": "response_item", "payload": {"type": "custom_tool_call", "call_id": f"c{n}",
+                                                                 "name": "exec", "input": js}})
+    record = tmp_path / "r.jsonl"
+    record.write_text("\n".join([
+        exec_row(1, 'text(await tools.apply_patch("*** Begin Patch\n*** Update File: a.py\n@@\n-x\n+y\n*** End Patch"))'),
+        exec_row(2, 'text(await tools.exec_command({cmd:"python -m pytest -q"}))'),
+        exec_row(3, 'text(await tools.write_stdin({session_id:1,chars:""}))')]) + "\n", encoding="utf-8")
+    assert [c.tool_class for c in codex.read(record).tool_calls] == ["edit", "test", "shell"]
