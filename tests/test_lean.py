@@ -248,6 +248,43 @@ def test_one_pair_per_task_with_differing_tasks_has_a_nonzero_effect_interval():
     assert row.pairs == 10 and row.lo < row.hi
 
 
+def _repeated(n: int, reps: int, value=_lift, change=None) -> list:
+    """`n` lean batches of combo cc, each with `reps` repetitions of every task x arm (cell ids `cc-<task>-<arm>-r<rep>`)."""
+    out = []
+    for batch in range(1, n + 1):
+        cells = [dataclasses.replace(_cell("cc", task, arm, value("cc", task, arm, batch)), rep=rep,
+                                     cell_id=f"cc-{task}-{arm}-r{rep}")
+                 for rep in range(1, reps + 1) for task in TASKS for arm in (REF, TREAT)]
+        out.append(lean.BatchInput(_view(f"r{batch}", [change(batch, c) if change else c for c in cells]),
+                                   None, None, None, None))
+    return out
+
+
+def test_one_batch_of_three_repetitions_builds_with_three_pairs_per_task():
+    """ADR-0023 amendment 2026-10-13: a batch with repetitions > 1 used to raise HB-USR-002 (every rep became 1)."""
+    batches = _repeated(1, 3)
+    row = _build(batches, None).rows[0]
+    assert (row.pairs, row.planned_pairs, row.excluded) == (30, 30, ())
+    obs = {arm: [stats.Obs(c.task, c.rep, Decimal(str(c.scores[verdicts.PRIMARY].value)))
+                 for c in batches[0].view.cells if c.arm == arm] for arm in (REF, TREAT)}
+    assert {task: sum(1 for o in obs[REF] if o.task == task) for task in TASKS} == dict.fromkeys(TASKS, 3)
+    expected, _ = stats.paired_delta(obs[REF], obs[TREAT], (REF, TREAT), stats.Params(), "lean|cc")
+    assert (row.effect, row.lo, row.hi) == (expected.point, expected.lo, expected.hi)
+    assert expected.n == 10 and row.effect == Decimal("0.6")
+
+
+def test_repetitions_pair_within_their_own_batch_and_an_excluded_cell_names_its_batch():
+    def change(batch, cell):
+        if batch == 2 and cell.cell_id == f"cc-S1-{TREAT}-r2":
+            return dataclasses.replace(cell, outcome="failed", cause="rate limit")
+        return cell
+
+    row = _build(_repeated(2, 2, change=change), None).rows[0]
+    assert (row.pairs, row.planned_pairs) == (39, 40)
+    assert row.excluded == ((f"r2/cc-S1-{REF}-r2", f"pair partner not recorded (r2/cc-S1-{TREAT}-r2)"),
+                            (f"r2/cc-S1-{TREAT}-r2", "failed (rate limit)"))
+
+
 @pytest.mark.parametrize("tag", ["pilot", None])
 def test_a_view_whose_ring_is_not_lean_is_refused(tag):
     assert "lean" in _refused(_batches(tag=tag)).message

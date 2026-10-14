@@ -440,6 +440,18 @@ def test_the_outcome_header_repeats_the_lean_summary_per_harness(fakes):
         assert f"MDE {r.mde}" in header and html.escape(r.statement) in header
 
 
+def test_the_outcome_header_builds_for_a_run_with_two_repetitions(fakes):
+    """ADR-0023 amendment 2026-10-13: lean.build relabelled every rep of a batch to one, so a repetitions > 1 run read
+    `not recorded: ... both X1 rep 1 arm on` here."""
+    view = _views()[0]
+    second = [dataclasses.replace(c, rep=2, cell_id=c.cell_id.replace("-", "-r2-", 1)) for c in view.cells]
+    plan = view.plan | {"cells": view.plan["cells"] + [{**p, "cell_id": c.cell_id, "rep": 2}
+                                                        for p, c in zip(view.plan["cells"], second, strict=True)]}
+    pc = pack_cost.build([dataclasses.replace(view, plan=plan, cells=view.cells + second)])
+    assert pc.outcome_reason is None
+    assert {o.harness: o.pairs for o in pc.outcomes} == {"claude-code": 2, "copilot": 2, "grok": 2}
+
+
 def test_a_non_lean_run_says_why_it_has_no_outcome(fakes):
     views = _views()
     views[0].plan["ring"] = {"tag": "other"}
