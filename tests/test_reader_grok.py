@@ -150,6 +150,56 @@ def test_two_tool_calls_in_one_assistant_line_get_distinct_native_ordinals_in_na
     assert [(r["native_ordinal"], r["name"]) for r in rows] == [(1, "read_file"), (2, "grep")]
 
 
+def _session(tmp_path: Path, rows: list[dict]) -> Path:
+    d = tmp_path / "s"
+    d.mkdir()
+    (d / "chat_history.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    return d
+
+
+def _turn(content: str, first_id: int, *calls: tuple[str, dict | str]) -> dict:
+    return {"type": "assistant", "content": content, "model_id": "grok-4.7-build", "reasoning_effort": "high",
+            "tool_calls": [{"id": f"call-{first_id + i}", "name": name,
+                            "arguments": args if isinstance(args, str) else json.dumps(args)}
+                           for i, (name, args) in enumerate(calls)]}
+
+
+def test_tool_inputs_reads_each_calls_paths_command_write_class_and_result_size(tmp_path):
+    # Path parameters are the ones tool_definitions.json declares: read_file.target_file, list_dir.target_directory,
+    # grep.path, search_replace.file_path, write.file_path. A grep with no path searches the workspace: no paths.
+    rows = [{"type": "user", "content": [{"type": "text", "text": "go"}], "prompt_index": 0},
+            _turn("Reading.", 0, ("read_file", {"target_file": "C:\\ws\\a.py"}), ("list_dir", {"target_directory": "C:\\ws"}),
+                  ("grep", {"pattern": "x"}), ("grep", {"pattern": "y", "path": "C:\\ws\\docs"})),
+            {"type": "tool_result", "tool_call_id": "call-0", "content": "1\u2192caf\u00e9\n"},
+            {"type": "tool_result", "tool_call_id": "call-1", "content": "- ws/"},
+            {"type": "tool_result", "tool_call_id": "call-3", "content": ""},
+            _turn("", 10, ("search_replace", {"file_path": "C:\\ws\\a.py", "old_string": "a", "new_string": "b"}),
+                  ("write", {"file_path": "C:\\ws\\b.py", "content": "z"}),
+                  ("run_terminal_command", {"command": "pytest -q", "description": "d"}), ("todo_write", "not json"))]
+    trace = grok.tool_inputs(_session(tmp_path, rows))
+    assert [(c.native_ordinal, c.name, c.paths, c.command, c.is_write, c.bytes_returned) for c in trace.calls] == [
+        (1, "read_file", ("C:\\ws\\a.py",), None, False, len("1\u2192caf\u00e9\n".encode())),
+        (2, "list_dir", ("C:\\ws",), None, False, 5),
+        (3, "grep", (), None, False, None),  # its result is not in the record: None, never 0
+        (4, "grep", ("C:\\ws\\docs",), None, False, 0),
+        (5, "search_replace", ("C:\\ws\\a.py",), None, True, None),
+        (6, "write", ("C:\\ws\\b.py",), None, True, None),
+        (7, "run_terminal_command", (), "pytest -q", False, None),
+        (8, "todo_write", (), None, False, None)]  # arguments that do not parse: no paths, still a call
+    assert (trace.first_assistant_text, trace.assistant_chars, trace.assistant_messages) == ("Reading.", 8, 1)
+
+
+def test_tool_inputs_count_equals_the_readers_tool_call_count_on_every_fixture():
+    # R-85 condition 1: both projections walk the assistant rows' tool_calls, one call per id.
+    for d in (ON, OFF, WEB):
+        assert [c.native_ordinal for c in grok.tool_inputs(d).calls] == [c.native_ordinal for c in grok.read(d).tool_calls]
+
+
+def test_tool_inputs_without_a_chat_history_is_an_empty_trace_with_no_text_count(tmp_path):
+    trace = grok.tool_inputs(tmp_path)
+    assert (trace.calls, trace.first_assistant_text, trace.assistant_chars, trace.assistant_messages) == ((), None, None, None)
+
+
 def test_tool_class_covers_every_advertised_tool_and_classes_the_out_of_profile_ones_other():
     advertised = [t["function"]["name"] for t in json.loads((ON / "tool_definitions.json").read_text(encoding="utf-8"))]
     assert sorted(grok.TOOL_CLASS) == sorted(advertised) and len(advertised) == 26

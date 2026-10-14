@@ -116,3 +116,14 @@ def test_cell_trace_reads_the_main_record_once_when_the_subagent_glob_also_match
     view = SimpleNamespace(plan={"profiles": {"codex": profile}})
     trace = tool_phases.cell_trace(tmp_path, view, SimpleNamespace(harness="codex", cell_id="c1"), "sid")
     assert (len(trace.calls), trace.assistant_chars, trace.assistant_messages) == (2, 8, 2)
+
+
+def test_every_harness_whose_reader_has_tool_inputs_is_a_trace_reader_so_the_report_and_drift_agree():
+    # grade/drift.py finds `tool_inputs` on the harness's reader module; cell_trace finds it in TRACE_READERS. A reader
+    # added to one and not the other makes attention drift compute while the report says "no tool-input reader".
+    import inspect
+
+    from harness_bench import profiles
+    with_inputs = {h: inspect.getmodule(r) for h, r in profiles.READERS.items()
+                   if hasattr(inspect.getmodule(r), "tool_inputs")}
+    assert tool_phases.TRACE_READERS == with_inputs
