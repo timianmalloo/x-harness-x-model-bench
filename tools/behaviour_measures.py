@@ -337,6 +337,7 @@ STEPS = (  # (step, how a session proves it): a bench subcommand, a command patt
 _STATUS = re.compile(BENCH + r"(?:status|verify)\b")
 WAIT_TOOLS = frozenset({"wait", "sleep", "Monitor"})  # a harness's own wait or watch tools (Codex wait/sleep, Claude Monitor)
 _ASKED = re.compile(r"status\b[^\n]{0,40}?\bevery\s+(\d+)\s+minutes?", re.IGNORECASE)
+_HANDOFF_AT = re.compile(r"^\s*HANDOFF:\s+(lean-\S+?)@(\S+)", re.MULTILINE)
 _HANDOFF = re.compile(r"^\s*HANDOFF:\s+lean-\S+@\S+", re.MULTILINE)
 
 
@@ -351,15 +352,53 @@ def _proved(step: tuple, start, call, ok) -> bool:
     return (call.is_write and named) or (re.search(pattern, text) is not None and _WROTE.search(text) is not None)
 
 
-def session_compliance(events: list, user_texts: list[str] | None, assistant_texts: list[str] | None) -> dict:
+def disk_steps(run_dir: Path) -> dict[str, bool | None]:
+    """The files that prove a step of Prompt 1, read from the run folder (runs/<RUN_ID>): plan.json (plan confirmed), the
+    matrix file beside it, events (run started), report.html, run-summary.md and .html, handoff.json, and handoff.json's
+    "verify" field for the verify step (the session's own record of `bench verify`; the bench writes no verify file).
+    None = the disk cannot prove that step (a status check, a tools install, the worktree is the folder's parent)."""
+    handoff = run_dir / "handoff.json"
+    verify = None
+    if handoff.is_file():
+        try:
+            verify = json.loads(handoff.read_text(encoding="utf-8")).get("verify") == "ok"
+        except (ValueError, AttributeError):
+            verify = False
+    got = dict.fromkeys(s[0] for s in STEPS)
+    got.update(worktree_created=run_dir.is_dir(), matrix_written=(run_dir.parent / f"{run_dir.name}.matrix.yaml").is_file(),
+               plan_confirmed=(run_dir / "plan.json").is_file(), run_started=any((run_dir / "events").glob("engine-*.jsonl")),
+               verified=verify, report_run=(run_dir / "report.html").is_file(),
+               run_summary_written=(run_dir / "run-summary.md").is_file(), summary_rendered=(run_dir / "run-summary.html").is_file(),
+               handoff_json_written=handoff.is_file())
+    return got
+
+
+def run_folder(assistant_texts: list[str] | None, spec: str | None) -> tuple[Path | None, str]:
+    """The run folder a session worked in: the explicit `@runfolder` of its --session spec, else the last HANDOFF line
+    (RUN_ID@worktree -> worktree/runs/RUN_ID). (None, why) when neither names a folder that exists."""
+    if spec:
+        return (Path(spec), "--session spec") if Path(spec).is_dir() else (None, "the --session run folder does not exist")
+    found = [m for t in assistant_texts or () for m in _HANDOFF_AT.finditer(t)]
+    if not found:
+        return None, "no run folder given and no HANDOFF line in the session"
+    folder = Path(found[-1].group(2)) / "runs" / found[-1].group(1)
+    return (folder, "HANDOFF line") if folder.is_dir() else (None, "the HANDOFF line names a folder that does not exist")
+
+
+def session_compliance(events: list, user_texts: list[str] | None, assistant_texts: list[str] | None,
+                       run_dir: Path | None = None) -> dict:
     """B6: a session against Prompt 1. `events` are (start time, ToolInput, ok) in native order. Reports the poll
     cadence (gaps between `bench status`/`verify` commands) against the interval the prompt asks for, which steps of the
     prompt have a proving call, and a HANDOFF line printed without handoff.json written. A call counts when it did not
-    error (ok is not False); its exit code is not in the record, so "done" means attempted, not succeeded."""
+    error (ok is not False); its exit code is not in the record, so "done" means attempted, not succeeded. With `run_dir`
+    (the run folder, runs/<RUN_ID>) the files on disk decide each step they can prove (disk_steps); a step the disk cannot
+    prove keeps its call-based value. Both are reported (steps_call, steps_disk) and `steps` is the decided value."""
     polls = sorted(t for t, call, ok in events if t and call.command and _STATUS.search(call.command))
     gaps = [(_ts(b) - _ts(a)).total_seconds() / 60 for a, b in pairwise(polls)]
     asked = next((int(m.group(1)) for t in user_texts or () if (m := _ASKED.search(t))), None)
-    steps = {s[0]: any(_proved(s, t, call, ok) for t, call, ok in events) for s in STEPS}
+    steps_call = {s[0]: any(_proved(s, t, call, ok) for t, call, ok in events) for s in STEPS}
+    steps_disk = disk_steps(run_dir) if run_dir is not None else None
+    steps = {k: (v if steps_disk is None or steps_disk[k] is None else steps_disk[k]) for k, v in steps_call.items()}
     printed = None if assistant_texts is None else any(_HANDOFF.search(t) for t in assistant_texts)
     return {
         "status_checks": len(polls),
@@ -371,7 +410,8 @@ def session_compliance(events: list, user_texts: list[str] | None, assistant_tex
         "asked_interval_min": asked,
         "asked_why": None if asked is not None else "no user message in the session states a status interval",
         "intervals_under_half_asked": sum(1 for g in gaps if g < asked / 2) if asked is not None and gaps else None,
-        "steps": steps, "steps_done": sum(steps.values()), "steps_required": len(STEPS),
+        "steps": steps, "steps_call": steps_call, "steps_disk": steps_disk, "run_dir": str(run_dir) if run_dir else None,
+        "steps_done": sum(steps.values()), "steps_done_call": sum(steps_call.values()), "steps_required": len(STEPS),
         "handoff_printed": printed, "handoff_json_written": steps["handoff_json_written"],
         "handoff_without_json": None if printed is None else (printed and not steps["handoff_json_written"]),
     }
@@ -427,6 +467,7 @@ def sessions(specs: list[str]) -> list[dict]:
     for spec in specs:
         label, _, rest = spec.partition("=")
         harness, _, raw = rest.partition(":")
+        raw, _, folder_spec = raw.partition("@")  # optional: label=harness:transcript@runfolder
         path = Path(raw)
         if path.is_dir():  # a Copilot session is a folder; its record is events.jsonl
             path = path / "events.jsonl"
@@ -460,7 +501,10 @@ def sessions(specs: list[str]) -> list[dict]:
                 if harness == "codex" and len(codex_call_texts(path)) == len(inputs):
                     inputs = [i if i.command else replace(i, command=t) for i, t in zip(inputs, codex_call_texts(path))]
                 events = [(c.start, i, c.ok) for c, i in zip(ex.tool_calls, inputs)]
-                row["compliance"] = session_compliance(events, texts[0] if texts else None, texts[1] if texts else None)
+                folder, source = run_folder(texts[1] if texts else None, folder_spec or None)
+                row["compliance"] = session_compliance(events, texts[0] if texts else None, texts[1] if texts else None, folder)
+                row["compliance"]["run_dir_source"] = source if folder else None
+                row["compliance"]["run_dir_why"] = None if folder else source
         except Exception as exc:  # noqa: BLE001 - recorded, never fatal
             row["compliance"] = {"not_recorded": f"{type(exc).__name__}: {exc}"}
         out.append(row)
@@ -542,6 +586,10 @@ def not_recorded_section(all_cells: list[dict]) -> list[str]:
     return lines if n else lines + ["| - | - | every new measure is recorded | - | - |"]
 
 
+def _calls_only(c: dict) -> str:
+    return f" (calls only: {c['steps_done_call']})" if c.get("steps_disk") else ""
+
+
 def sessions_section(sess: list[dict]) -> list[str]:
     md = ["## Interactive sessions (bench readers)", "",
           "| label | harness | model calls | output tok | reasoning tok | tool calls | tool classes |",
@@ -549,7 +597,9 @@ def sessions_section(sess: list[dict]) -> list[str]:
     md += [f"| {s['label']} | {s['harness']} | {s.get('model_calls', s.get('error'))} | {s.get('output_tokens', '-')} | "
            f"{s.get('reasoning_tokens', '-')} | {s.get('tool_calls', '-')} | {s.get('tool_classes', '-')} |" for s in sess]
     steps_note = ("Steps count when a call that did not error proves them (a bench command, or a file written, named in the "
-                  "command text); the exit code is not in the record. Poll gaps are between `bench status` and `bench verify` "
+                  "command text); the exit code is not in the record. With a run folder (the --session `@runfolder`, else the HANDOFF line) "
+                  "the files on disk decide the steps they can prove, and `steps done` is that value, with the calls-only "
+                  "value in brackets. Poll gaps are between `bench status` and `bench verify` "
                   "commands.")
     watch_note = ("Watcher calls = status commands inside a loop or sleep in one call; wait calls = the harness's own wait, "
                   "sleep or monitor tool calls (neither is a status check).")
@@ -567,11 +617,18 @@ def sessions_section(sess: list[dict]) -> list[str]:
             return NOT_RECORDED + (f" ({why})" if why else "") if v is None else str(v)
         md.append(f"| {s['label']} | {c['status_checks']} | {show(c['median_interval_min'], c['interval_why'])} | "
                   f"{show(c['asked_interval_min'], c['asked_why'])} | {show(c['intervals_under_half_asked'])}{'' if c['intervals_under_half_asked'] is None else ' of ' + str(c['intervals'])} | "
-                  f"{c['watcher_calls']} | {c['wait_calls']} | {c['steps_done']} of {c['steps_required']} | {show(c['handoff_printed'])} | {c['handoff_json_written']} | "
+                  f"{c['watcher_calls']} | {c['wait_calls']} | {c['steps_done']} of {c['steps_required']}{_calls_only(c)} | {show(c['handoff_printed'])} | {c['handoff_json_written']} | "
                   f"{show(c['handoff_without_json'])} |")
     missing = [f"{s['label']}: " + ", ".join(k for k, v in s["compliance"]["steps"].items() if not v)
                for s in sess if "steps" in (s.get("compliance") or {}) and not all(s["compliance"]["steps"].values())]
-    return md + ["", "Steps with no proving call: " + "; ".join(missing)] if missing else md
+    differ = [f"{s['label']}: " + ", ".join(f"{k} (calls {c['steps_call'][k]}, disk {d})" for k, d in c["steps_disk"].items()
+                                           if d is not None and d != c["steps_call"][k])
+              for s in sess if (c := s.get("compliance") or {}).get("steps_disk")
+              and any(d is not None and d != c["steps_call"][k] for k, d in c["steps_disk"].items())]
+    nodisk = [f"{s['label']}: {s['compliance']['run_dir_why']}" for s in sess if (s.get("compliance") or {}).get("run_dir_why")]
+    notes = [("Steps with no proving call or file: ", missing), ("Calls and disk disagree (disk wins): ", differ),
+             ("No run folder to check: ", nodisk)]
+    return md + [line for head, items in notes if items for line in ("", head + "; ".join(items))]
 
 
 def main(argv: list[str]) -> int:

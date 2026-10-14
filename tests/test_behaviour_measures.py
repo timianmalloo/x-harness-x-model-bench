@@ -159,3 +159,30 @@ def test_session_compliance_reads_cadence_steps_and_a_handoff_without_its_file()
     assert bm.session_compliance(done, [prompt], ["HANDOFF: lean-1@C:/wt"])["handoff_without_json"] is False
     assert bm.session_compliance(events, [prompt], ["print HANDOFF: <RUN_ID>@<WT> last"])["handoff_printed"] is False
     assert bm.session_compliance(events, [], None)["handoff_printed"] is None  # no text reader: not recorded
+
+
+def test_session_compliance_lets_the_files_on_disk_decide_over_the_calls(tmp_path):
+    run = tmp_path / "runs" / "lean-1"
+    run.mkdir(parents=True)
+    (tmp_path / "runs" / "lean-1.matrix.yaml").write_text("x", encoding="utf-8")
+    (run / "plan.json").write_text("{}", encoding="utf-8")
+    (run / "handoff.json").write_text('{"verify": "failed: exit 5"}', encoding="utf-8")
+    # the calls claim a summary was written and the run verified; the disk has no run-summary and a failed verify
+    events = [("2026-10-13T10:00:00Z", ToolInput(1, "shell", (), "uv run bench verify lean-1", False), True),
+              ("2026-10-13T10:01:00Z", ToolInput(2, "shell", (), "python s.py > runs/lean-1/run-summary.md", False), True)]
+    got = bm.session_compliance(events, [], ["HANDOFF: lean-1@x"], run_dir=run)
+    assert got["steps_call"]["run_summary_written"] and got["steps_disk"]["run_summary_written"] is False
+    assert got["steps"]["run_summary_written"] is False and got["steps"]["verified"] is False  # disk wins
+    assert got["steps"]["handoff_json_written"] and got["steps"]["matrix_written"] and got["steps"]["plan_confirmed"]
+    assert got["steps_disk"]["status_checked"] is None and got["steps"]["status_checked"] is False  # no disk proof: calls
+    assert got["handoff_without_json"] is False
+    # a call-only read is unchanged and says so
+    assert bm.session_compliance(events, [], None)["steps_disk"] is None
+
+
+def test_run_folder_comes_from_the_explicit_spec_else_from_the_handoff_line(tmp_path):
+    (tmp_path / "wt" / "runs" / "lean-1").mkdir(parents=True)
+    assert bm.run_folder(["HANDOFF: lean-1@" + str(tmp_path / "wt")], None) == (tmp_path / "wt" / "runs" / "lean-1", "HANDOFF line")
+    assert bm.run_folder([], str(tmp_path)) == (tmp_path, "--session spec")
+    assert bm.run_folder(["HANDOFF: lean-9@" + str(tmp_path / "gone")], None) == (None, "the HANDOFF line names a folder that does not exist")
+    assert bm.run_folder([], None)[0] is None
