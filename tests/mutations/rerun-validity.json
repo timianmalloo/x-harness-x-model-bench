@@ -35,7 +35,7 @@
    "find": "(\"uuid\", re.compile(r\"\\b[0-9a-f]{8}", "replace": "(\"uuid\", re.compile(r\"\\bNEVER[0-9a-f]{8}",
    "tests": ["tests/test_served_check.py::test_scan_text_names_each_shape_never_the_value"]},
   {"name": "the bench credential home is not scanned (ADR-0025 s7)", "file": "src/harness_bench/report/credentials.py",
-   "find": "            out[f\"{data.get('harness', p.stem)}:bench-home\"] = (", "replace": "            _unscanned = (",
+   "find": "            out[f\"{data.get('harness', p.stem)}:bench-home{'' if n == 1 else f'-{n}'}\"] = (", "replace": "            _unscanned = (",
    "tests": ["tests/test_served_check.py::test_the_credential_scan_finds_a_planted_bench_token_in_a_page"]},
   {"name": "served_check: omitted-only reasoning passes (ADR-0024 s6)", "file": "tools/served_check.py",
    "find": "        if not any(r[\"source_kind\"] != OMITTED for r in mine):\n", "replace": "        if False:\n",

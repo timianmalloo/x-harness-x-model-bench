@@ -8,6 +8,7 @@ import base64
 import dataclasses
 import importlib.util
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -245,6 +246,22 @@ def test_the_credential_scan_finds_a_planted_bench_token_in_a_page(env, tmp_path
     profile.write_text("harness: grok\ncredential: null\ncredential_home_env: HB_GROK_CRED_HOME\n", encoding="utf-8")
     assert html.scan(f"<p>{token}</p>", credentials.host_values(root)) == 1
     assert credentials.credential_files(root)["grok:bench-home"] == (env["bench"] / "auth.json", "auth.json")
+
+
+def test_every_home_of_a_credential_pool_is_scanned(graded, env, tmp_path, monkeypatch):
+    """ADR-0025 s7 Am. 2026-10-13: HB_GROK_CRED_HOME may name several homes; a token in the second is still a secret."""
+    second, token = tmp_path / "bench-home-2", _jwt(2)
+    second.mkdir()
+    (second / "auth.json").write_text(json.dumps({"access_token": token}), encoding="utf-8")
+    monkeypatch.setenv("HB_GROK_CRED_HOME", f"{env['bench']}{os.pathsep}{second}")
+    root = make_root(tmp_path / "r")
+    (root / "bench" / "profiles" / "grok.yaml").write_text(
+        "harness: grok\ncredential: null\ncredential_home_env: HB_GROK_CRED_HOME\n", encoding="utf-8")
+    assert token in credentials.host_values(root)
+    copy = graded / "archive" / "a" / "attempt-1" / "home" / ".grok" / "auth.json"
+    copy.parent.mkdir(parents=True)
+    copy.write_text(json.dumps({"access_token": token}), encoding="utf-8")
+    assert served_check.credential_failures(graded) == ["archive/a/attempt-1/home/.grok/auth.json: a credential copy left in a cell home"]
 
 
 # --- publish (ADR-0027 s4, s6) and the one excerpt filter (seam ruling S-1) -----------------------------------------

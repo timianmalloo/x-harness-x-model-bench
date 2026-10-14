@@ -120,6 +120,68 @@ def test_an_unset_credential_home_is_refused_at_seed(tmp_path, monkeypatch):
     assert err.value.code == "HB-USR-002" and ENV in err.value.message
 
 
+# --- the credential pool (ADR-0025 s7 Am. 2026-10-13): the variable names several homes, joined by os.pathsep -------
+
+def _pool(tmp_path: Path, monkeypatch, *names: str) -> list[Path]:
+    homes = []
+    for name in names:
+        home = tmp_path / name
+        home.mkdir()
+        (home / "auth.json").write_text(f"{name}-1", encoding="utf-8")
+        homes.append(home)
+    monkeypatch.setenv(ENV, os.pathsep.join(str(h) for h in homes))
+    return homes
+
+
+def test_two_concurrent_cells_take_different_homes_and_each_writes_back_to_its_own(tmp_path, monkeypatch):
+    a, b = _pool(tmp_path, monkeypatch, "pool-a", "pool-b")
+    launcher = _launcher(tmp_path, cred_lock_wait=0.2)
+    one, two = tmp_path / "c1" / "home", tmp_path / "c2" / "home"
+    launcher.seed(one, {"model": "grok-4.7"})
+    launcher.seed(two, {"model": "grok-4.7"})  # the first cell still holds its home: no wait, the second home
+    assert (one / ".grok" / "auth.json").read_text(encoding="utf-8") == "pool-a-1"
+    assert (two / ".grok" / "auth.json").read_text(encoding="utf-8") == "pool-b-1"
+    assert oslock.is_held(a / profiles.CRED_LOCK_NAME) and oslock.is_held(b / profiles.CRED_LOCK_NAME)
+    _refresh(one, "pool-a-2")
+    _refresh(two, "pool-b-2")
+    launcher.clean(two)  # out of seed order: each copy goes back to the home it came from
+    launcher.clean(one)
+    assert (a / "auth.json").read_text(encoding="utf-8") == "pool-a-2"
+    assert (b / "auth.json").read_text(encoding="utf-8") == "pool-b-2"
+    assert not oslock.is_held(a / profiles.CRED_LOCK_NAME) and not oslock.is_held(b / profiles.CRED_LOCK_NAME)
+
+
+def test_a_held_home_is_skipped_without_waiting(tmp_path, monkeypatch):
+    a, _ = _pool(tmp_path, monkeypatch, "pool-a", "pool-b")
+    held = oslock.RunLock.acquire(a / profiles.CRED_LOCK_NAME)
+    try:
+        launcher = _launcher(tmp_path, cred_lock_wait=1.0)  # a wait on the held home fails the seed (HB-CELL-202)
+        launcher.seed(tmp_path / "home", {"model": "grok-4.7"})
+        assert (tmp_path / "home" / ".grok" / "auth.json").read_text(encoding="utf-8") == "pool-b-1"
+        launcher.clean(tmp_path / "home")
+    finally:
+        held.release()
+
+
+def test_a_cell_waits_while_every_home_is_held_and_takes_the_first_one_freed(tmp_path, monkeypatch):
+    a, b = _pool(tmp_path, monkeypatch, "pool-a", "pool-b")
+    held_a, held_b = oslock.RunLock.acquire(a / profiles.CRED_LOCK_NAME), oslock.RunLock.acquire(b / profiles.CRED_LOCK_NAME)
+    try:
+        launcher = _launcher(tmp_path)
+        done = threading.Event()
+        thread = threading.Thread(target=lambda: (launcher.seed(tmp_path / "home", {"model": "grok-4.7"}), done.set()))
+        thread.start()
+        assert not done.wait(0.5), "a cell seeded while every home of the pool was held"
+        held_b.release()  # the second home frees first
+        assert done.wait(10)
+        thread.join()
+        assert (tmp_path / "home" / ".grok" / "auth.json").read_text(encoding="utf-8") == "pool-b-1"
+        launcher.clean(tmp_path / "home")
+    finally:
+        held_a.release()
+        held_b.release()
+
+
 def test_a_profile_without_a_credential_home_is_unchanged(tmp_path):
     source = tmp_path / "auth.json"
     source.write_text("tok", encoding="utf-8")
