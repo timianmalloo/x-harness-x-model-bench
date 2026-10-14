@@ -7,7 +7,9 @@
 - The record is complete for this harness (profile usage_source native_record); the adapter's prompt
   response reports only the last call.
 - Tool calls are `response_item` `custom_tool_call` / `function_call` / `local_shell_call`, closed by
-  their `*_output` row with the same `call_id`; a `web_search_call` is a standalone out-of-profile row.
+  their `*_output` row with the same `call_id`; a `web_search_call` is a standalone out-of-profile row. `ok` is the
+  call's outcome (`_call_outcome`, W13): `Script failed` in the output, or a `CommandExecution` / `FileChange` item of the
+  call's window that failed, is False (`outcome_code` `script_failed`, `exit_<N>`, `patch_<status>`).
 - Code-mode MCP calls also appear as `event_msg` `item_completed` / `McpToolCall` items. Their
   server and tool fields form one server-qualified, out-of-profile tool row.
 - An error is `event_msg`/`task_complete` with `error.message`, which embeds a JSON body with `status`
@@ -113,6 +115,41 @@ def _tool_class(name: str) -> str:
     if name in DELEGATE_NAMES:
         return "delegate"
     return "other"
+
+
+def _output_head(output) -> str:
+    """The first line of a call's output text: `Script completed`, `Script failed`, `Script running with cell ID N`."""
+    texts = [output] if isinstance(output, str) else [c.get("text") for c in as_list(output) if isinstance(c, dict)]
+    first = next((t for t in texts if isinstance(t, str)), "")
+    return first.split("\n", 1)[0]
+
+
+def _call_outcome(tool: dict, output) -> tuple[bool | None, str | None]:
+    """`(ok, outcome_code)` of one closed call (W13; ADR-0006: null when the record does not say).
+
+    Failed: the script failed (`Script failed`, e.g. a rejected apply_patch or a command that would not start), or an
+    item the call ran reports a command with a non-zero exit (`exit_<N>`) or a patch that did not complete. A failing
+    test run is a failed call, as Claude Code's `is_error` counts it. `Script running with cell ID N` is a poll that
+    returned while the process still runs: the call did not fail, and the process's own outcome lands on the call in
+    whose window it completes. The items (`CommandExecution`, `FileChange`) carry no call id: they belong to the
+    open call of their turn, and two open calls of one turn make them unattributable (`ambiguous`, null).
+    """
+    head = _output_head(output)
+    if head.startswith("Script failed"):
+        return False, "script_failed"
+    if tool["ambiguous"]:
+        return None, None
+    for kind, status, code in tool["items"]:
+        if kind == "CommandExecution" and (status != "completed" or code != 0):
+            return False, f"exit_{code}" if type(code) is int else "command_failed"
+        if kind == "FileChange" and status != "completed":
+            return False, f"patch_{status}"
+    if head.startswith(("Script completed", "Script running")):
+        return True, None
+    # assume: a function_call (delegation) whose output came back succeeded -- no failure form seen in 557 rollouts
+    # (send_message, spawn_agent, wait_agent, followup_task, list_agents); confirm with one failing delegation call;
+    # if false, a failed delegation counts as ok.
+    return (True, None) if tool["kind"] == "function_call" and not head.startswith("Script") else (None, None)
 
 
 def _parse_error(message: str) -> tuple[int | None, str]:
@@ -300,11 +337,20 @@ def read(path: Path) -> Extraction:
                 ok = {"completed": True, "failed": False}.get(as_str(item.get("status")))
                 name = f"{server}.{tool}"
                 ex.tool_calls.append(ToolCall(n, name, MCP_CLASSES.get(name, "other"), None, stamp, ok))
+        elif kind == "event_msg" and ptype == "item_completed" and item.get("type") in ("CommandExecution", "FileChange"):
+            same_turn = [t for t in open_tools.values() if t["turn"] == as_str(payload.get("turn_id"))]
+            for t in same_turn:
+                t["ambiguous"] = t["ambiguous"] or len(same_turn) > 1
+            if len(same_turn) == 1:
+                same_turn[0]["items"].append((item["type"], as_str(item.get("status")), item.get("exit_code")))
         elif _open_call(kind, ptype, call_id):
-            open_tools[call_id] = {"n": n, "name": as_str(payload.get("name")) or ptype, "start": stamp}
+            turn = as_str(as_dict(payload.get("internal_chat_message_metadata_passthrough")).get("turn_id"))
+            open_tools[call_id] = {"n": n, "name": as_str(payload.get("name")) or ptype, "start": stamp, "kind": ptype,
+                                   "turn": turn, "items": [], "ambiguous": False}
         elif kind == "response_item" and ptype in OUTPUT_TYPES and call_id in open_tools:
             tool = open_tools.pop(call_id)
-            ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], stamp, None))
+            ok, outcome = _call_outcome(tool, payload.get("output"))
+            ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], stamp, ok, outcome))
     for tool in open_tools.values():
         ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], None, None))
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)
