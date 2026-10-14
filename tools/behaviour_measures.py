@@ -35,7 +35,8 @@ COLUMNS = (  # (header, cell -> value)
     ("edit", lambda c: c["tool_classes"].get("edit", 0)),
     ("delegate", lambda c: c["tool_classes"].get("delegate", 0)),
     ("lines inside", lambda c: c["drift"]["lines"].get("inside", 0)),
-    ("lines outside", lambda c: c["drift"]["lines"].get("outside-unclassed", 0)),
+    ("lines discretionary", lambda c: c["drift"]["lines"].get("discretionary", 0)
+     + c["drift"]["lines"].get("outside-unclassed", 0)),
     ("lines task-implied", lambda c: c["drift"]["lines"].get("task-implied", 0)),
     ("lines machine", lambda c: sum(v for k, v in c["drift"]["lines"].items() if k.startswith("machine"))),
     ("scope_creep", lambda c: c["scores"].get("scope_creep")),
@@ -79,8 +80,12 @@ def graded(run: Path) -> bool:
 
 
 def drift_lines(path: Path) -> dict:
-    """drift.log rows: change, path, inside|outside, +added -removed, (blank), class. Added lines per class."""
-    lines, files = Counter(), Counter()
+    """drift.log rows: change, path, inside|outside, +added -removed, (blank), class. Added lines per class. A
+    discretionary path the bench's CURRENT machine list names (a pass graded before .venv joined it) is re-labelled
+    machine:<kind> and counted in relabelled_lines, so older passes read like new ones."""
+    from harness_bench.grade import _changes
+
+    lines, files, relabelled = Counter(), Counter(), 0
     if path.is_file():
         for row in path.read_text(encoding="utf-8", errors="replace").splitlines():
             parts = row.split("\t")
@@ -90,9 +95,11 @@ def drift_lines(path: Path) -> dict:
             added = int(delta[0].lstrip("+")) if delta and delta[0].lstrip("+").isdigit() else 0
             cls = parts[5] if len(parts) > 5 and parts[5] else None
             key = "inside" if parts[2] == "inside" else (cls or "outside-unclassed")
+            if key in ("discretionary", "outside-unclassed") and (kind := _changes.machine_written(parts[1])):
+                key, relabelled = f"machine:{kind}", relabelled + added
             lines[key] += added
             files[key] += 1
-    return {"lines": dict(lines), "files": dict(files), "recorded": path.is_file()}
+    return {"lines": dict(lines), "files": dict(files), "relabelled_lines": relabelled, "recorded": path.is_file()}
 
 
 def cells(run: Path) -> list[dict]:

@@ -99,6 +99,9 @@ def test_the_machine_written_list_names_the_caches_and_the_exact_audit_files_nev
     for name in _changes.AUDIT_FILES:  # read from the pack's own writer, so the list cannot name a file it never writes
         assert f'"{name}"' in script, name
     assert {_changes.machine_written(p) for p in ("a/.mypy_cache/x", ".ruff_cache/y", "src/.pytest_cache/v/z")} == {"cache"}
+    # 2026-10-13 lean runs: an agent's own virtual environment in the task tree (uv/pip create it) scored ~837k
+    # discretionary lines of scope creep per RS2 cell; it is machine-written like any tool cache.
+    assert _changes.machine_written(".venv/Lib/site-packages/pkg/__init__.py") == "cache"
     assert {_changes.machine_written(p) for p in ("docs/audit/audit-log.jsonl", ".agents/log/audit/.run-starts.json",
                                                   ".agents/log/lean-rerun-leader.jsonl")} == {"pack-log"}
     for authored in ("docs/audit/notes.md", "docs/audit/sub/audit-log.jsonl", ".agents/log/sub/x.jsonl", "README.md",

@@ -41,7 +41,8 @@ def _run(root: Path, name: str, completed: bool) -> Path:
     drift.parent.mkdir(parents=True)
     drift.write_text("changed\tsrc/x.py\tinside\t+8 -1\t\n"
                      "added\t.agents/log/a.json\toutside\t+3 -0\t\tmachine:pack-log\n"
-                     "added\tNOTES.md\toutside\t+20 -0\t\n", encoding="utf-8")
+                     "added\tNOTES.md\toutside\t+20 -0\t\tdiscretionary\n"
+                     "added\t.venv/Lib/x.py\toutside\t+500 -0\t\tdiscretionary\n", encoding="utf-8")
     return run
 
 
@@ -53,7 +54,9 @@ def test_a_completed_run_is_measured_from_its_own_facts(tmp_path):
               if c["cell_id"] == "a1")
     assert a1["tokens"]["output"] == 150 and a1["tokens"]["reasoning"] == 50  # the auxiliary model is left out
     assert a1["calls_before_first_edit"] == 1 and a1["wall_s"] == 180
-    assert a1["drift"]["lines"] == {"inside": 8, "machine:pack-log": 3, "outside-unclassed": 20}
+    # a pass graded before .venv joined the machine list is re-labelled with the bench's current list, and says so
+    assert a1["drift"]["lines"] == {"inside": 8, "machine:pack-log": 3, "discretionary": 20, "machine:cache": 500}
+    assert a1["drift"]["relabelled_lines"] == 500
     assert sorted(p.relative_to(run) for p in run.rglob("*")) == before  # nothing written into the run
 
 

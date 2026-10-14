@@ -33,8 +33,9 @@ NOT_FOUND = "pre-turn commit not found in the working copy"
 PACK_SUBJECT = re.compile(r"ai-forward pack revision \d+")  # workspace.install_pack's message
 BUILD_OUTPUT = frozenset({".git", "bin", "obj", "TestResults", "__pycache__"})  # never part of a tree, on either side
 # ADR-0026 s5 (DRIFT-MACHINE-A): the one machine-written list, separate from BUILD_OUTPUT (the property graders' copy
-# filter, which does not move). Tool caches: config's generated names plus the two linters' caches, at any depth.
-TOOL_CACHES = frozenset(config.GENERATED_DIR_NAMES | {".mypy_cache", ".ruff_cache"})
+# filter, which does not move). Tool caches: config's generated names plus the two linters' caches and an agent-made
+# virtual environment (2026-10-13: a .venv in RS2's tree scored ~837k scope-creep lines a cell), at any depth.
+TOOL_CACHES = frozenset(config.GENERATED_DIR_NAMES | {".mypy_cache", ".ruff_cache", ".venv"})
 # The files the pack's audit script writes (`docs/ai-forward-pack/scripts/audit-log.py`: STARTS_FILE, log_path, the
 # audit-log.md, audit-data.js and index.html views), in its two audit dirs (`audit_dir(resolve_default_root(None))`:
 # docs/audit, else .agents/log/audit). The session-start hook writes only through it (`hooks/session-start.py`).
