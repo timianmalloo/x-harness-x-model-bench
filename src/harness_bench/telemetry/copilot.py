@@ -81,6 +81,18 @@ the R-COPILOT-P and Sol Fast records), which keys every per-request fact to the 
   the gap from the tool request (`assistant.message.toolRequests`) to `tool.execution_start` is 2-3 ms median both
   pack-on and pack-off. Inferred, not emitted: the median `view` call takes 60 ms on against 9 ms off (gpt-5.5) and
   730 ms against 46 ms (gpt-6.1-sol), which would put any hook time inside the tool call's interval.
+  Did the hooks run under `copilot -p`? (W14 item 3, archived pack-on cells, 30 per run, both lean runs.) NOT
+  DETERMINED. Checked for the hooks' side effects in each cell's `ws`: the sessionStart hook (`session-start.py`)
+  writes a `__harness__:<session>` marker to `.agents/log/audit/.run-starts.json`, which the cells of Claude Code (20 of
+  30 hold one, the rest consumed by the agent's own audit append) and agy (24 of 30) hold, and which no Copilot cell
+  holds (0 of 60; the 5 empty `.run-starts.json` files of the 6.1 run are consumed markers, with no key left). The
+  reread-guard's state file (`ai-forward-reread-guard-<sessionId>.json` in the temp dir) matches none of the 60 pack-on
+  cells' session ids. That is absence of a trace, not proof: `session-start.py` exits silently when the payload carries
+  no session id, heartbeat writes only with `AGENT_SESSION`, and the other hooks leave no file. So `hook_starts` 0 means
+  "no `hook.start` row", NOT "no hook ran", and nothing reads it (`Extraction.hook_starts` has no consumer); the
+  time-anatomy surface already says `no hook rows; a reader that reads none is not told apart from a cell that ran
+  none` (`views.NO_HOOKS`). What would settle it: one short `copilot -p` run in a scratch repo whose
+  `.github/hooks` wires a hook that writes a file.
 """
 
 from __future__ import annotations
