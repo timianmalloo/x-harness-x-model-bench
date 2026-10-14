@@ -116,8 +116,8 @@ def main(argv=None) -> int:
         if mail is None:
             return 0
         root, err = mail.coord_core.resolve_root(os.getcwd(), os.environ.get("COORD_ROOT"))
-        if err or root is None:
-            return 0
+        if err or root is None or not mail.coord_core.coordination_active(root):
+            return 0  # coordination is off here: no inbox to fold (B15)
         count, pointer = mail.doorbell_state(root, session)
         stop_active = bool(payload.get("stop_hook_active") or payload.get("stopHookActive"))
         response = payload_for(args.host, _event_of(args.event, payload), session, count, pointer,

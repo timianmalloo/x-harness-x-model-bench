@@ -109,8 +109,8 @@ def main(argv=None) -> int:
         if core is None:
             return 0
         root, err = core.resolve_root(cwd, os.environ.get("COORD_ROOT"))
-        if err or root is None:
-            return 0
+        if err or root is None or not core.coordination_active(root):
+            return 0  # coordination is off here: no ledger, no accumulator (B15)
         repo = core.repo_root(cwd)
         stop = event in STOP_EVENTS
         agent = (str(payload.get("agentId") or payload.get("agent_id") or "").strip()
