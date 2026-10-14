@@ -57,16 +57,56 @@
   <div class="card">
     <h2>How to use it</h2>
     <ol>
-      <li>Set the CLI up the way you want it measured: the model, effort and context window (<code>/model</code>, or
-        the CLI's config file). The run measures exactly that.</li>
-      <li>Open a <strong>new</strong> session of that CLI in <code>C:\Projects\x-harness-x-model-bench</code>, with
-        full permissions so it runs unattended. Click <em>Copy prompt</em> below and paste it in.</li>
+      <li>Set the CLI up the way you want it measured: the model and effort (<code>/model</code>, or the CLI's config
+        file). The run measures exactly that. The window is pinned for Codex and Copilot (see below), so set the
+        session itself to the same window: Codex <code>model_context_window = 872000</code> in
+        <code>~\.codex\config.toml</code>; Copilot <code>/model</code> → <em>long_context</em>.</li>
+      <li>Open a <strong>new</strong> session of that CLI in <code>C:\Projects\bench-launch</code>, with full
+        permissions so it runs unattended. Create that folder once, empty: no git repo, no
+        <code>AGENTS.md</code>, <code>CLAUDE.md</code> or <code>.github</code> instructions, so the session is pack-off
+        and every repo command in the prompt uses an absolute path. Do <strong>not</strong> start the CLI in
+        <code>C:\Projects\x-harness-x-model-bench</code> (the prompt stops if you did). Click <em>Copy prompt</em>
+        below and paste it in.</li>
       <li>Its first line names the run and says whether it onboards first:
-        <code>RUN: &lt;RUN_ID&gt; | harness … (known | new: onboarding first) | model … | effort … | context …</code>.
-        Its last line is <code>HANDOFF: &lt;RUN_ID&gt;@&lt;worktree&gt;</code>. Paste that line into Prompt 2.</li>
+        <code>RUN: &lt;RUN_ID&gt; | harness … (known | new: onboarding first) | model … | effort … | context … | session i of n</code>.
+        Its last two lines are <code>SESSION: …</code> (session index and transcript path) and
+        <code>HANDOFF: &lt;RUN_ID&gt;@&lt;worktree&gt;</code>. Paste the HANDOFF line into Prompt 2.</li>
+      <li><strong>Run 2 sessions per CLI</strong> (<code>SESSIONS_PER_CLI</code>): paste the same prompt into a second
+        new session of the same CLI once the first has finished. Each paste is its own run (own name, branch,
+        worktree, 60 cells); the session index counts the runs of that combo since <code>SESSIONS_SINCE</code>, so
+        the second session says <code>session 2 of 2</code>. <code>handoff.json</code> carries
+        <code>session_index</code> and <code>transcript</code> for each, so Prompt 2 can pair the sessions.</li>
     </ol>
     <p style="margin:12px 0 0">You can run several CLIs at once. Each run gets its own name, branch, worktree and cell
       folder.</p>
+  </div>
+
+  <div class="card">
+    <h2>Instruction files a CLI still loads from the launch folder</h2>
+    <p style="margin-top:0">Starting in <code>C:\Projects\bench-launch</code> removes the repo's
+      <code>AGENTS.md</code>, <code>CLAUDE.md</code> and <code>.github</code> instructions. A CLI's own user-level
+      files cannot be removed without changing the operator's setup. On this host:</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>CLI</th><th>User-level files still loaded</th><th>Status</th></tr>
+      <tr><td>claude-code</td><td><code>~\.claude\CLAUDE.md</code>; skills and plugins under <code>~\.claude\skills</code>,
+        <code>~\.claude\plugins</code>; settings in <code>~\.claude\settings.json</code>. Auto-memory is keyed by the
+        launch folder, so a new folder starts with none.</td><td>CLAUDE.md observed loaded in a session on this host; the rest Inferred from the
+        folders present</td></tr>
+      <tr><td>codex</td><td>no <code>~\.codex\AGENTS.md</code> exists; <code>~\.codex\skills</code>,
+        <code>~\.agents\skills</code> (your personal skills, B12), <code>~\.codex\memories_1.sqlite</code>,
+        <code>~\.codex\rules</code></td><td>Inferred from the folders present</td></tr>
+      <tr><td>copilot</td><td>no <code>~\.copilot\copilot-instructions.md</code> exists; <code>~\.copilot\skills</code>,
+        <code>~\.copilot\installed-plugins</code>, <code>~\.copilot\mcp-config.json</code></td><td>Inferred from the
+        folders present</td></tr>
+      <tr><td>agy</td><td>no <code>~\.gemini\GEMINI.md</code> exists; <code>~\.agents\skills</code>,
+        <code>~\.gemini\antigravity-cli\knowledge</code> and <code>…\brain</code></td><td>Inferred from the folders
+        present</td></tr>
+    </table>
+    </div>
+    <div class="note">The cells are unaffected: each runs in its own isolated home. These files shape only the
+      operator's session (the session layer). The run summary's <code>handoff.json</code> lists the instruction files
+      the session itself reports having loaded, so any contamination shows in the data.</div>
   </div>
 
   <div class="card">
@@ -97,9 +137,9 @@
       <tr><td>claude-code</td><td>the session's model id, plus <code>[1m]</code></td>
         <td><code>effortLevel</code> in <code>~\.claude\settings.json</code></td><td>1M (the <code>[1m]</code> suffix)</td></tr>
       <tr><td>codex</td><td><code>model</code> in <code>~\.codex\config.toml</code></td>
-        <td><code>model_reasoning_effort</code> there</td><td><code>model_context_window</code> there, else default</td></tr>
+        <td><code>model_reasoning_effort</code> there</td><td><strong>pinned 872k</strong> (not read from the config)</td></tr>
       <tr><td>copilot</td><td><code>model</code> in <code>~\.copilot\settings.json</code></td>
-        <td><code>effortLevel</code> there</td><td><code>contextTier: long_context</code> → 922k, else default</td></tr>
+        <td><code>effortLevel</code> there</td><td><strong>pinned 922k</strong> (<code>long_context</code>; not read from the config)</td></tr>
       <tr><td>grok</td><td>the session's model, else <code>default_model</code> in <code>~\.grok\settings_cache.json</code></td>
         <td><code>default_reasoning_effort</code> in <code>~\.grok\config.toml</code></td><td>default</td></tr>
       <tr><td>agy</td><td><code>model</code> in <code>~\.gemini\antigravity-cli\settings.json</code>, as an id</td>
@@ -108,10 +148,13 @@
         key each value came from</td></tr>
     </table>
     </div>
-    <div class="note">Codex with no <code>model_context_window</code> runs at its model's default window (measured
-      2026-10-13: gpt-6.1-sol on Codex 0.160 serves 500k, not the 272k the profile assumed). Earlier runs pinned 872k:
-      add <code>model_context_window = 872000</code> to <code>~\.codex\config.toml</code> to match them. For a known CLI,
-      a value the bench cannot pin stops the run before anything is created.</div>
+    <div class="note">Codex and Copilot (both gpt-6.1-sol) are pinned at the highest window each serves, so the two are
+      compared at nearly the same window. Measured 2026-10-14: Codex 0.160 with <code>model_context_window</code> 872000
+      serves 828,400 effective (872k nominal), and 1,000,000 or 1,050,000 are clamped to the same 872k; unset it serves
+      only 500k (475k effective). Copilot 1.0.89-1 offers two tiers only, <code>default</code> (272k) and
+      <code>long_context</code> (922k prompt tokens; 1.05M window including output), so 922k cannot be lowered to
+      872k. The 50k nominal gap (5%) is recorded, not hidden. For a known CLI, a value the bench cannot pin stops the
+      run before anything is created.</div>
   </div>
 
   <div class="card">
@@ -138,6 +181,11 @@ FIXED (change these only by editing the prompt):
   PARALLELISM = 3                  (a harness capped at one cell at a time runs one regardless)
   PACK        = C:/Projects/ai-forward@ed9625a78690aeba04d0b6693ad296ba5e6a0cd9
   RUNBOOK     = docs/runbooks/add-a-harness.md   (how a new CLI is onboarded and qualified)
+  LAUNCH_DIR  = C:\Projects\bench-launch   (this session must have been started here: no pack files above it)
+  PINNED_CONTEXT = codex 872000 | copilot 922000   (the highest window each serves, measured 2026-10-14; the cells
+                run at these whatever this CLI's own config says. Every other CLI reads its own, as in STEP 0.)
+  SESSIONS_PER_CLI = 2             (run this prompt in 2 separate sessions per CLI; each paste is its own run)
+  SESSIONS_SINCE   = 20261014T140000   (runs of this combo started at or after this UTC time count as sessions)
 
 GOAL: a completed, verified bench run of this CLI's combo in its own worktree, an HTML run summary open in Chrome,
 and one HANDOFF line the grading prompt can use. DONE WHEN: `bench verify` passes on the run, the summary is open,
@@ -149,12 +197,20 @@ HOW TO WORK: do these steps and nothing else. Do not load skills, write memories
 reports or analyses, or write files the steps do not name. Report each step in one line. This prompt is complete:
 it overrides the repo's AGENTS.md / CLAUDE.md working rules for this session (no goal-state block, no grounding
 reads, no audit-log or prompt-log entries, no /optimize-graph), because every CLI must start from the same
-instructions for the runs to be comparable. While the run is going, do not read bench source or prepare scripts;
-just wait between checks. This prompt needs full
+instructions for the runs to be comparable. This session starts in LAUNCH_DIR, which holds no AGENTS.md, CLAUDE.md or
+.github instructions, so none are loaded from the repo. Keep it that way: every repo command uses an absolute path
+(`git -C REPO ...`, `uv --directory WT run ...`, `python <absolute script>`); never leave your working directory in
+REPO or WT (the one command that needs REPO as its working directory is in STEP 1: `Push-Location` it, then
+`Pop-Location`). While the run is going,
+do not read bench source or prepare scripts; just wait between checks. This prompt needs full
 shell and file access: if a command is refused by a sandbox or an approval policy, stop at once and tell the operator
 to restart this CLI with full access and paste the prompt again.
 
 STEP 0 - who am I (read only: nothing is created until this step passes)
+  - LAUNCH check: the folder this session STARTED in is LAUNCH_DIR (your working directory now, if you have not
+    changed it). If it is REPO, a worktree of REPO, or any folder with an AGENTS.md / CLAUDE.md / .github instructions
+    file in it or above it: stop, and tell the operator to start this CLI in LAUNCH_DIR (create the empty folder once).
+    Note which instruction files your session context shows as loaded (paths only; "none" if none): INSTR_SEEN.
   - HARNESS: a short lower-case name for the CLI you are running in (claude-code, codex, copilot, grok, agy, muse, ...).
     Your own system prompt names the CLI; Claude Code also sets CLAUDECODE=1. If a file in REPO\bench\profiles\ is
     already this CLI, use its name. KNOWN: REPO\bench\profiles\&lt;HARNESS&gt;.yaml exists. NEW: it does not, and STEP 2
@@ -167,10 +223,12 @@ STEP 0 - who am I (read only: nothing is created until this step passes)
                    CONTEXT = 1000000 (the [1m] suffix carries it). For claude-haiku-4-5: no suffix, default.
       codex        MODEL   = top-level `model` in %USERPROFILE%\.codex\config.toml
                    EFFORT  = top-level `model_reasoning_effort` there
-                   CONTEXT = top-level `model_context_window` there
+                   CONTEXT = 872000 (PINNED_CONTEXT). SESSION_CONTEXT = top-level `model_context_window` there,
+                             else default.
       copilot      MODEL   = "model" in %USERPROFILE%\.copilot\settings.json
                    EFFORT  = "effortLevel" there
-                   CONTEXT = "contextTier" there: long_context -&gt; 922000; anything else -&gt; default
+                   CONTEXT = 922000 (PINNED_CONTEXT). SESSION_CONTEXT = "contextTier" there: long_context -&gt; 922000;
+                             anything else -&gt; default
       grok         MODEL   = the model this session runs; else "default_model" in %USERPROFILE%\.grok\settings_cache.json
                    EFFORT  = `default_reasoning_effort` under [models] in %USERPROFILE%\.grok\config.toml
                    CONTEXT = default
@@ -181,6 +239,8 @@ STEP 0 - who am I (read only: nothing is created until this step passes)
                    CONTEXT = default
       any other    its own config files and `--help`, and what this session reports about itself. Keep the file
                    and key each value came from: the run summary names them.
+  - SESSION_CONTEXT is only recorded (run summary and handoff.json), never a stop. When it differs from the pinned
+    CONTEXT, add one line to "issues": the session ran at a different window than its cells.
   - KNOWN: check EFFORT and CONTEXT against `settings` in its profile (`default` is always allowed). A value the
     profile does not list is a stop: name the file and key to change and the values the profile allows.
     NEW: STEP 2 writes the profile so that it accepts the values found here.
@@ -189,25 +249,31 @@ STEP 0 - who am I (read only: nothing is created until this step passes)
       COMBO_ID = &lt;HARNESS&gt;-&lt;MODEL without "[1m]"&gt;-&lt;EFFORT&gt;-&lt;CTX&gt;, lower case
       RUN_ID   = lean-&lt;UTC yyyymmddThhmmss&gt;-&lt;4 random hex&gt;-&lt;COMBO_ID&gt;
                  If `git -C REPO branch --list bench/&lt;RUN_ID&gt;` prints anything, draw new hex.
+      SESSION_INDEX = 1 + the number of branches `git -C REPO branch --list "bench/lean-*-&lt;COMBO_ID&gt;"` prints whose
+                 timestamp (the 15 characters after "bench/lean-") is at or after SESSIONS_SINCE. An index above
+                 SESSIONS_PER_CLI is not a stop; the run summary says so.
       CELLS    = C:\Projects\bench-cells\&lt;RUN_ID&gt;: this run's own cell folders, so runs on this host never share one.
-      BENCH    = `uv run bench --cells-root &lt;CELLS&gt;`. Every bench command of the run is BENCH followed by the
-                 subcommand (the flag goes BEFORE the subcommand), e.g. `BENCH run &lt;RUN_ID&gt;`.
+      BENCH    = `uv --directory &lt;WT&gt; run bench --cells-root &lt;CELLS&gt;` (WT is known after STEP 1). Every bench
+                 command of the run is BENCH followed by the subcommand (the flag goes BEFORE the subcommand), e.g.
+                 `BENCH run &lt;RUN_ID&gt;`.
   - Print this line, then go on without waiting:
       RUN: &lt;RUN_ID&gt; | harness &lt;HARNESS&gt; (known | new: onboarding first) | model &lt;MODEL&gt; | effort &lt;EFFORT&gt; |
-           context &lt;CONTEXT&gt; | 60 cells
+           context &lt;CONTEXT&gt; | 60 cells | session &lt;SESSION_INDEX&gt; of &lt;SESSIONS_PER_CLI&gt;
 
 STEP 1 - start state and the worktree (stop and report if a check fails)
-  - In REPO: `git pull --ff-only origin main` succeeds. Another CLI may be pulling at the same moment: on a git lock
+  - `git -C REPO pull --ff-only origin main` succeeds. Another CLI may be pulling at the same moment: on a git lock
     error, wait 10 s and retry once. Local changes that block the pull are a stop; never stash or reset them.
-    Record `git rev-parse HEAD` as BASE.
-  - `python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch bench/&lt;RUN_ID&gt; --session &lt;RUN_ID&gt;`
-  - Read its path from `git worktree list` (call it WT). Do every later step inside WT, with absolute paths.
+    Record `git -C REPO rev-parse HEAD` as BASE.
+  - `Push-Location REPO; python REPO\docs\ai-forward-pack\scripts\coord-core.py worktree new --branch bench/&lt;RUN_ID&gt;
+    --session &lt;RUN_ID&gt;; Pop-Location` (the script reads its working directory, so this one command runs in REPO).
+  - Read its path from `git -C REPO worktree list` (call it WT). Every later step uses absolute paths under WT and
+    BENCH; none changes this session's working directory.
     Never write the main checkout after this step, except the STEP 10 merge.
 
 STEP 2 - onboard (NEW only; a KNOWN CLI skips to STEP 3)
   - Follow WT\RUNBOOK, all of it: spike this CLI, write its files, tests first, qualify, record. Its qualification
     gate is the bar, and every part must hold:
-      * `uv run pytest -q` is green.
+      * `uv --directory WT run pytest -q` is green.
       * A probe run: task S1, one repetition, both arms, run id &lt;RUN_ID&gt;-probe, cells root &lt;CELLS&gt;-probe. Every
         cell is valid (no HB-VAL-001, 002, 008 or 010).
       * The token cross-check: for one probe cell, the reader's totals equal this CLI's own independent usage
@@ -221,9 +287,9 @@ STEP 2 - onboard (NEW only; a KNOWN CLI skips to STEP 3)
   - Commit the onboarding files on bench/&lt;RUN_ID&gt; as `feat(harness): onboard &lt;HARNESS&gt; &lt;version&gt;`. The probe
     run stays separate from the real run.
 
-STEP 3 - the pinned builds (inside WT)
-  - `uv run bench tools install --vendored C:\Users\malla\.harness-bench\agy-1.3.3\agy.exe`
-  - `uv run bench tools install`
+STEP 3 - the pinned builds
+  - `uv --directory WT run bench tools install --vendored C:\Users\malla\.harness-bench\agy-1.3.3\agy.exe`
+  - `uv --directory WT run bench tools install`
   - A NEW CLI's vendored build was installed in STEP 2. The output lists one line per harness with its version and
     sha. Check HARNESS's line is present.
 
@@ -236,7 +302,7 @@ STEP 4 - the environment for the cells (only HARNESS's line applies)
   - agy: nothing (the profile disables its auto-update and seeds its permissions).
   - A NEW CLI: what STEP 2's note says it needs. Never print a secret.
 
-STEP 5 - the matrix (inside WT; write it to WT\runs\&lt;RUN_ID&gt;.matrix.yaml, which git ignores)
+STEP 5 - the matrix (write it to WT\runs\&lt;RUN_ID&gt;.matrix.yaml, which git ignores)
   schema: bench-matrix/3
   ring: {tag: lean}
   bom: {file: bench/bom.yaml, subset: [&lt;TASKS&gt;]}
@@ -249,14 +315,14 @@ STEP 5 - the matrix (inside WT; write it to WT\runs\&lt;RUN_ID&gt;.matrix.yaml, 
   combos:
     - {id: &lt;COMBO_ID&gt;, harness: &lt;HARNESS&gt;, model: "&lt;MODEL&gt;", effort: &lt;EFFORT&gt;, context: &lt;CONTEXT&gt;}
 
-STEP 6 - plan, then confirm (inside WT, with the STEP 4 environment)
-  - `BENCH plan --matrix runs/&lt;RUN_ID&gt;.matrix.yaml --run-id &lt;RUN_ID&gt; --parallelism &lt;PARALLELISM&gt;
+STEP 6 - plan, then confirm (with the STEP 4 environment)
+  - `BENCH plan --matrix WT\runs\&lt;RUN_ID&gt;.matrix.yaml --run-id &lt;RUN_ID&gt; --parallelism &lt;PARALLELISM&gt;
     --arm on=&lt;PACK&gt;` and read the table: every cell has HARNESS's pinned build, the pack-on arm shows the pack
     revision, the pack-off arm shows "no pack", and there are 60 cells. A refusal (HB-PRE-*) is a stop: report it
     verbatim.
   - Then the same command with `--confirm`.
 
-STEP 7 - run (inside WT)
+STEP 7 - run
   - `BENCH run &lt;RUN_ID&gt;`, as a background job. It launches the cells and runs a deterministic grading pass at its
     end. Check it with `BENCH status &lt;RUN_ID&gt;` every 10 minutes: one blocking wait of 10 minutes between checks
     (a sleep, or your CLI's own scheduled wake-up), never a watcher that wakes you on every change. Report each
@@ -271,12 +337,12 @@ STEP 7 - run (inside WT)
   - However the run ends (complete, stopped, or with invalid cells), always do STEPS 8-10. A problem found after the
     run has ended is written into the summary and handoff.json; it is never a reason to skip them.
 
-STEP 8 - verify (inside WT)
+STEP 8 - verify
   - `BENCH verify &lt;RUN_ID&gt;` must exit 0. Exit 5 is an integrity failure: report it, do not repair it.
 
-STEP 9 - the run summary (inside WT)
-  - `BENCH report &lt;RUN_ID&gt;` (writes runs/&lt;RUN_ID&gt;/report.html).
-  - Write runs/&lt;RUN_ID&gt;/run-summary.md from `BENCH status &lt;RUN_ID&gt; --json` and the report: the STEP 0 values
+STEP 9 - the run summary
+  - `BENCH report &lt;RUN_ID&gt;` (writes WT\runs\&lt;RUN_ID&gt;\report.html).
+  - Write WT\runs\&lt;RUN_ID&gt;\run-summary.md from `BENCH status &lt;RUN_ID&gt; --json` and the report: the STEP 0 values
     with the file and key each came from; the FIXED block; BASE and WT; known or new, and for a new CLI the
     onboarding note's path and the cross-check numbers; the plan's builds; cells by outcome and by validity (codes
     named); the served settings read back per arm (model, effort, context) with their source; tokens per cell by arm
@@ -284,26 +350,31 @@ STEP 9 - the run summary (inside WT)
     warning code with its count; the run's start and end time and its total wall time. Every number comes from the
     bench's output; label anything you computed (a mean) as computed. If `BENCH report` refuses, quote the refusal,
     write the summary from `status --json` alone, and list the refusal in handoff.json "issues"; never write your
-    own report generator.
-  - `python docs/ai-forward-pack/scripts/render-markdown.py runs/&lt;RUN_ID&gt;/run-summary.md --open` (HTML beside it,
-    opened in Chrome). If it prints "not opened: &lt;why&gt;", say why.
+    own report generator. Also state SESSION_CONTEXT, INSTR_SEEN and "session SESSION_INDEX of SESSIONS_PER_CLI".
+  - `python WT\docs\ai-forward-pack\scripts\render-markdown.py WT\runs\&lt;RUN_ID&gt;\run-summary.md --open` (HTML beside
+    it, opened in Chrome). If it prints "not opened: &lt;why&gt;", say why.
 
 STEP 10 - the hand-off
-  - NEW only: bring the onboarding commit into REPO's main, so the next paste into this CLI skips STEP 2. In REPO:
-    `git merge --ff-only bench/&lt;RUN_ID&gt;`; if main has moved and that refuses, `git merge --no-edit bench/&lt;RUN_ID&gt;`.
-    A conflict is `git merge --abort` and a report line, never a resolution by hand. Do not push.
+  - NEW only: bring the onboarding commit into REPO's main, so the next paste into this CLI skips STEP 2:
+    `git -C REPO merge --ff-only bench/&lt;RUN_ID&gt;`; if main has moved and that refuses,
+    `git -C REPO merge --no-edit bench/&lt;RUN_ID&gt;`. A conflict is `git -C REPO merge --abort` and a report line,
+    never a resolution by hand. Do not push.
   - Find this session's own transcript: your CLI's session id, and the newest file in its session store (under
-    %USERPROFILE%\.claude, .codex, .copilot, .grok or .gemini) whose content names RUN_ID. "not found" if you
-    cannot; never guess a path.
-  - Write runs/&lt;RUN_ID&gt;/handoff.json: {"run_id", "worktree": WT, "branch": "bench/&lt;RUN_ID&gt;", "base": BASE,
+    %USERPROFILE%\.claude, .codex, .copilot, .grok or .gemini) whose content names RUN_ID. Its absolute path is
+    TRANSCRIPT; "not found" if you cannot; never guess a path.
+  - Write WT\runs\&lt;RUN_ID&gt;\handoff.json: {"run_id", "worktree": WT, "branch": "bench/&lt;RUN_ID&gt;", "base": BASE,
     "cells_root": CELLS, "combo": COMBO_ID, "harness", "model", "effort", "context", "pack": PACK, "cells",
     "valid_cells", "validity" (counts by code), "onboarded": true|false, "verify": "ok" | "&lt;the failure&gt;",
-    "summary": "&lt;path to run-summary.html&gt;", "session_id", "transcript", "issues": ["&lt;anything that did not go as
-    written, one line each&gt;"]}.
+    "summary": "&lt;path to run-summary.html&gt;", "session_id", "session_index": SESSION_INDEX,
+    "sessions_per_cli": SESSIONS_PER_CLI, "transcript": TRANSCRIPT, "launch_dir": LAUNCH_DIR,
+    "session_context": SESSION_CONTEXT, "instruction_files_seen": INSTR_SEEN (a list), "issues": ["&lt;anything that
+    did not go as written, one line each&gt;"]}.
   - Leave the worktree in place (Prompt 2 reads the run from it). Do not commit the run (runs/ is git-ignored) and
     do not push.
   - Report: one table (step, result, evidence) and anything that did not go as written. Then, and only once
-    handoff.json exists, print as the last line of your reply:  HANDOFF: &lt;RUN_ID&gt;@&lt;WT&gt;</pre>
+    handoff.json exists, print these as the last two lines of your reply, in this order:
+      SESSION: &lt;RUN_ID&gt; | session &lt;SESSION_INDEX&gt; of &lt;SESSIONS_PER_CLI&gt; | transcript &lt;TRANSCRIPT&gt;
+      HANDOFF: &lt;RUN_ID&gt;@&lt;WT&gt;</pre>
 </main>
 <script>
   document.getElementById("copy").addEventListener("click", function () {
