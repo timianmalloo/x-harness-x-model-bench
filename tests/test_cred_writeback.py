@@ -151,6 +151,21 @@ def test_two_concurrent_cells_take_different_homes_and_each_writes_back_to_its_o
     assert not oslock.is_held(a / profiles.CRED_LOCK_NAME) and not oslock.is_held(b / profiles.CRED_LOCK_NAME)
 
 
+def test_a_seeded_cell_records_the_credential_file_it_came_from_and_clean_removes_the_record(tmp_path, monkeypatch):
+    """Resume (a dead cell's leftover copy) writes back to the recorded file, never to the profile's relative source
+    (`auth.json`, which would land in the bench's cwd). The record is a path, kept out of the archive like the copy."""
+    _a, b = _pool(tmp_path, monkeypatch, "pool-a", "pool-b")
+    launcher = _launcher(tmp_path, cred_lock_wait=0.2)
+    launcher.seed(tmp_path / "c1" / "home", {"model": "grok-4.7"})
+    two = tmp_path / "c2" / "home"
+    launcher.seed(two, {"model": "grok-4.7"})
+    marker = two / profiles.CRED_SOURCE_MARKER
+    assert Path(marker.read_text(encoding="utf-8")) == (b / "auth.json").resolve()
+    assert profiles.CRED_SOURCE_MARKER in launcher.credential_names  # excluded from the cell archive
+    launcher.clean(two)
+    assert not marker.exists()
+
+
 def test_a_held_home_is_skipped_without_waiting(tmp_path, monkeypatch):
     a, _ = _pool(tmp_path, monkeypatch, "pool-a", "pool-b")
     held = oslock.RunLock.acquire(a / profiles.CRED_LOCK_NAME)

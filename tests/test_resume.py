@@ -38,6 +38,7 @@ from harness_bench import (
     lifecycle,
     oslock,
     plan,
+    profiles,
     resume,
     status,
     views,
@@ -1347,6 +1348,37 @@ def test_resume_writes_a_newer_leftover_credential_back_before_the_clean(golden1
     assert source.read_bytes() == (b'{"token": "refreshed"}' if leftover_is_newer else b'{"token": "bench"}')
     assert not list(env.cfg.cells_root.rglob(".credentials.json"))  # the clean still ran, after the write-back
     assert not list((env.run_dir / "archive").rglob(".credentials.json"))
+
+
+def _leftover(home: Path) -> None:
+    home.mkdir(parents=True)
+    (home / ".credentials.json").write_bytes(b"refreshed")
+
+
+def test_a_relative_source_with_no_record_is_never_written_back(tmp_path, monkeypatch):
+    """The real Grok profile's source is the relative `auth.json` (resolved against the credential home only at seed).
+    A leftover copy with no record of its home is declined: a write-back to a relative path would put a live token in
+    the bench's cwd (the repo root)."""
+    monkeypatch.chdir(tmp_path)
+    home = tmp_path / "cell" / "home"
+    _leftover(home)
+    launcher = _BenchHomeLauncher({}, Path("auth.json"))
+    assert resume.write_back_credentials(launcher, home) is False
+    assert not (tmp_path / "auth.json").exists()
+
+
+def test_a_leftover_copy_goes_back_to_the_credential_file_its_cell_recorded(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    bench = tmp_path / "pool-b" / "auth.json"
+    bench.parent.mkdir()
+    bench.write_bytes(b"old")
+    home = tmp_path / "cell" / "home"
+    _leftover(home)
+    os.utime(bench, ns=((home / ".credentials.json").stat().st_mtime_ns - 10**9,) * 2)
+    (home / profiles.CRED_SOURCE_MARKER).write_text(str(bench), encoding="utf-8")
+    launcher = _BenchHomeLauncher({}, Path("auth.json"))
+    assert resume.write_back_credentials(launcher, home) is True
+    assert bench.read_bytes() == b"refreshed" and not (tmp_path / "auth.json").exists()
 
 
 def test_a_profile_without_a_bench_home_writes_nothing_back(tmp_path):  # Claude Code, Codex: the real login is the source

@@ -11,7 +11,16 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import archive, atomic, engine, host, ledger, lifecycle, oslock
+from harness_bench import (
+    archive,
+    atomic,
+    engine,
+    host,
+    ledger,
+    lifecycle,
+    oslock,
+    profiles,
+)
 from harness_bench import plan as plan_module
 from harness_bench.errors import BenchError, Cause
 
@@ -219,6 +228,13 @@ def write_back_credentials(launcher, home: Path) -> bool:
         return False
     leftover, source = home / profile.credential_name, profile.credential_source
     if not leftover.is_file():
+        return False
+    marker = home / profiles.CRED_SOURCE_MARKER  # the absolute file this cell seeded from (one home of the pool)
+    if marker.is_file():
+        source = Path(marker.read_text(encoding="utf-8").strip())
+    if not source.is_absolute():  # a relative source would land in the bench's cwd (the repo root): never write it
+        log.warning("credential write-back declined: no record of the cell's credential home",
+                    extra={"path_role": "bench credential home"})
         return False
     if source.is_file() and (leftover.stat().st_mtime_ns <= source.stat().st_mtime_ns
                              or leftover.read_bytes() == source.read_bytes()):

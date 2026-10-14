@@ -90,6 +90,10 @@ CELL_ENV = {
 }
 # ADR-0025 s7: the lock file inside the credential home; a cell holds it from seed to write-back.
 CRED_LOCK_NAME = ".harness-bench-cred.lock"
+# The record, in a cell's own home, of the absolute credential file the cell seeded from, so resume writes a dead cell's
+# leftover copy back to that home of the pool, never to the profile's relative `credential.source` (which would land in
+# the bench's cwd). Excluded from the archive like the copy; `clean` removes it.
+CRED_SOURCE_MARKER = ".harness-bench-cred-source"
 # simplify: a fixed wait for another engine's cell to release a credential home. Ceiling: an engine runs at most one
 # Grok cell per home of the pool (HB-PRE-011), so the wait is at most one other engine's cell. Upgrade trigger: a seed
 # refused with HB-CELL-202 in a run.
@@ -455,6 +459,8 @@ class ProfileLauncher:
         self.profile, self.tools_dir, self.planned = profile, tools_dir, planned
         self.harness = profile.harness
         self.credential_names = frozenset({profile.credential_name}) if profile.credential_name is not None else frozenset()
+        if profile.credential_home_env and profile.credential_name is not None:
+            self.credential_names |= {CRED_SOURCE_MARKER}
         self.usage_source = profile.usage_source
         self.mode = profile.mode
         self.set_model = profile.set_model
@@ -499,6 +505,8 @@ class ProfileLauncher:
         bench, lock = _acquire_waiting(self._credential_homes, self.cred_lock_wait)
         source = bench / (self.profile.credential_source or "")
         self._held[home] = (lock, source, source.read_bytes() if source.is_file() else None)
+        home.mkdir(parents=True, exist_ok=True)
+        (home / CRED_SOURCE_MARKER).write_text(str(source.resolve()), encoding="utf-8")
         return source
 
     def clean(self, home: Path) -> None:
@@ -515,6 +523,7 @@ class ProfileLauncher:
                     _replace_atomically(source, data)
         finally:
             try:
+                (home / CRED_SOURCE_MARKER).unlink(missing_ok=True)
                 self.profile.clean_home(home)
             finally:
                 if held is not None:
