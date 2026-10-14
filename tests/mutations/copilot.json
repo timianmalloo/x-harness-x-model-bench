@@ -65,8 +65,8 @@
   {
     "name": "profile command missing raises coded input error",
     "file": "src/harness_bench/profiles.py",
-    "find": "    command = data.get(\"command\")",
-    "replace": "    command = data[\"command\"]",
+    "find": "command = _command(harness, \"command\", data.get(\"command\"))",
+    "replace": "command = _command(harness, \"command\", data[\"command\"])",
     "tests": ["tests/test_profiles.py::test_profile_load_rejects_missing_or_empty_command[None]"]
   },
   {
@@ -100,8 +100,8 @@
   {
     "name": "cell model reaches argv template",
     "file": "src/harness_bench/profiles.py",
-    "find": "self.profile.argv(self.build, cell[\"model\"], mcp_config=cell.get(\"mcp_config\"),",
-    "replace": "self.profile.argv(self.build, \"gpt-6-sol\", mcp_config=cell.get(\"mcp_config\"),",
+    "find": ".argv(self.build, cell[\"model\"], mcp_config=cell.get(\"mcp_config\"),",
+    "replace": ".argv(self.build, \"gpt-6-sol\", mcp_config=cell.get(\"mcp_config\"),",
     "tests": ["tests/test_profiles.py::test_copilot_launcher_fills_each_cells_model_and_finds_its_record"]
   },
   {
