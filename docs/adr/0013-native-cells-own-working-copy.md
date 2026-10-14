@@ -70,6 +70,8 @@ ADR-0001 put each cell in a Linux container, mostly for security (US-48, US-49),
 | Codex | `CODEX_HOME=<home>`; `auth.json` copied in, deleted at cell end | ACP mode `agent-full-access`; `config.toml` pins the model |
 | Copilot | `COPILOT_HOME=<home>` (empty); the Windows credential store | `--allow-tool shell --allow-tool write`, `--model` pinned |
 
+*Note 2026-10-14 (instr/w16, owner decision): Copilot's cell environment no longer matches Claude's and Codex's. Its profile sets `user_home_vars: [HOME, USERPROFILE]` (the cell home, as for Grok and agy) and passes `--add-dir {home}`, so a model command naming `$env:USERPROFILE` or `~` stays inside the cell and Copilot's own path verification does not deny it (HB-VAL-012: 7 of 9 cells in the W9 sample). Claude and Codex keep the operator's HOME. `APPDATA` and `LOCALAPPDATA` stay the operator's, because uv's Python store lives there. Spike: `docs/notes/spike-copilot-home-vars.md`.*
+
 **3. Dropped for authored tasks.** None of these is replaced:
 - containers and images;
 - the per-cell network and egress proxy;

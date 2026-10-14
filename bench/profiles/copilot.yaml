@@ -9,8 +9,15 @@ home_env: COPILOT_HOME
 credential: null
 credential_kind: "subscription login (credential store)"
 files: {}
-command: ["{python}", "{adapter}", "--exe", "{exe}", "--", "--output-format", "json", "--model", "{model}", "--reasoning-effort", "{effort}", "{context_arg}", "--allow-tool", "shell", "--allow-tool", "write", "--no-ask-user", "--disable-builtin-mcps", "--log-level", "debug", "--log-dir", "{home}/logs", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
+command: ["{python}", "{adapter}", "--exe", "{exe}", "--", "--output-format", "json", "--model", "{model}", "--reasoning-effort", "{effort}", "{context_arg}", "--allow-tool", "shell", "--allow-tool", "write", "--add-dir", "{home}", "--no-ask-user", "--disable-builtin-mcps", "--log-level", "debug", "--log-dir", "{home}/logs", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
 shutdown_grace_seconds: 10
+# instr/w16, owner decision 2026-10-14: HOME and USERPROFILE are the cell home, as for Grok and agy. Measured before
+# (W9): 7 of 9 HB-VAL-012 cells were a command naming $env:USERPROFILE, which pointed at the operator's profile outside
+# the cell, and Copilot's path verification denied it. Spike 2026-10-14 (copilot 1.0.89-1, gpt-6.1-sol served, login
+# kept): with the home vars at the cell home, `$env:USERPROFILE` is still denied unless the cell home is an allowed
+# directory (only the cwd and the system temp folder are by default), so `--add-dir {home}` is in both commands.
+# APPDATA and LOCALAPPDATA stay the operator's: uv's Python store lives under them and moving them hides it.
+user_home_vars: [HOME, USERPROFILE]
 env:
   COPILOT_AUTO_UPDATE: "false"
 mode: null
@@ -38,5 +45,5 @@ settings:
 # model is in argv, and HB-VAL-002 judges the served model from the record.
 transports:
   acp:
-    command: ["{exe}", "--acp", "--model", "{model}", "--reasoning-effort", "{effort}", "--allow-tool", "shell", "--allow-tool", "write", "--disable-builtin-mcps", "--log-level", "debug", "--log-dir", "{home}/logs", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
+    command: ["{exe}", "--acp", "--model", "{model}", "--reasoning-effort", "{effort}", "--allow-tool", "shell", "--allow-tool", "write", "--add-dir", "{home}", "--disable-builtin-mcps", "--log-level", "debug", "--log-dir", "{home}/logs", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
     contexts: ["default"]

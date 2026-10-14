@@ -43,12 +43,14 @@ PROFILE_RECORD_HASHES = {
     # instr/w10, deliberate: codex.yaml adds host_skill_roots (the operator's ~/.agents/skills is disabled in every cell)
     "codex": "cd36213bee96812b357776ae560ed0709f6af39a6c7186f6cbbafac419a4e9c6",
     # instr/w12, deliberate: copilot.yaml declares `transports.acp` (plan row A3, the ACP transport control); was 62a87c2..eac
-    "copilot": "7b5b5b339c75c201abc855c3cbac5eb9de18fdc57ed55b58d52e8e2b5cb58d30",
+    # instr/w16, deliberate (owner decision 2026-10-14): copilot.yaml sets user_home_vars [HOME, USERPROFILE] and adds
+    # `--add-dir {home}` to both launches, so a command naming $env:USERPROFILE stays in the cell; was 7b5b5b33..58d30
+    "copilot": "eb69a867622b910991de7a292434cddeee8ea3b5b7634a68f09a7b132bce7d7a",
 }
 # The new fields each existing profile now sets (R-SETTINGS: settings, Claude's session_meta; Ruling 120: copilot -p
 # cannot answer a scripted user); every other new field is still at its default.
 SET_BY_WAVE_1 = {"claude-code": {"settings", "session_meta", "model_aliases"}, "codex": {"settings", "host_skill_roots"},
-                 "copilot": {"settings", "scripted_user", "transports"}}
+                 "copilot": {"settings", "scripted_user", "transports", "user_home_vars"}}
 NEW_FIELDS = {"settings": {}, "transport": "acp", "session_meta": {}, "user_home_vars": (), "seed_files": {},
               "credential_home_env": None, "model_aliases": {}, "scripted_user": "supported", "host_skill_roots": (),
               "transports": {}}
