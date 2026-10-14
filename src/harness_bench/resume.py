@@ -20,6 +20,7 @@ from harness_bench import (
     lifecycle,
     oslock,
     profiles,
+    workspace,
 )
 from harness_bench import plan as plan_module
 from harness_bench.errors import BenchError, Cause
@@ -339,7 +340,7 @@ class _Resume:
         if self._alive(cid, cell_rows):
             return []
         if rule == "C6" and not self.stopped:  # D-K3: the folder is discarded, the cell launches once
-            folder = self.eng.cfg.cells_root / self.plan["run_id"] / cid
+            folder = workspace.cell_dir(self.eng.cfg.cells_root, self.plan["run_id"], cid)
             if folder.exists():
                 write_back_credentials(self.eng.cfg.launchers[cell["harness"]], folder / "home")  # ADR-0025 s7, as in C1
                 shutil.rmtree(folder, onexc=atomic.make_writable)
@@ -380,7 +381,7 @@ class _Resume:
         """W1-K 3.4: publish (or adopt the published folder), append the missing rows, then the event. Three tries."""
         eng, cid = self.eng, cell["cell_id"]
         folder = archive.snapshot_folder(self.run_dir, cid, turn)
-        cell_dir = eng.cfg.cells_root / self.plan["run_id"] / cid
+        cell_dir = workspace.cell_dir(eng.cfg.cells_root, self.plan["run_id"], cid)
         tag = f"turn-{turn}"
         present = [r for r in self.rows["archive_files"] if r.get("cell_id") == cid and r.get("archive_attempt") == 1
                    and archive.snapshot_of(r) == tag]
@@ -415,7 +416,7 @@ class _Resume:
         """C1: recover or write the final archive of a cell whose outcome stands; never re-run the cell."""
         eng, cid = self.eng, cell["cell_id"]
         launcher = eng.cfg.launchers[cell["harness"]]
-        cell_dir = eng.cfg.cells_root / self.plan["run_id"] / cid
+        cell_dir = workspace.cell_dir(eng.cfg.cells_root, self.plan["run_id"], cid)
         if (cell_dir / "home").exists():
             write_back_credentials(launcher, cell_dir / "home")  # ADR-0025 s7: a refreshed token outlives its dead cell
             launcher.clean(cell_dir / "home")  # DS 11: seeded credentials never reach the archive

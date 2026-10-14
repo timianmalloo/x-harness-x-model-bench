@@ -311,17 +311,19 @@ def delete_after_verify(cell_dir: Path, folder: Path, rows: list[dict], retries:
     return False
 
 
-def teardown(run_cells: Path, archived: set[str]) -> tuple[list[str], list[str]]:
-    """Remove the archived cells' folders under `run_cells`; return (removed, kept) cell ids."""
+def teardown(run_cells: Path, archived: set[str], only: set[str] | None = None) -> tuple[list[str], list[str]]:
+    """Remove the archived cells' folders under `run_cells`; return (removed, kept) cell ids. `only` names the run's
+    cells when `run_cells` also holds shared folders (`grading`, `.sources`: a cells root named for the run, B10);
+    those are neither removed nor kept, and the root stays."""
     removed, kept = [], []
     if not run_cells.is_dir():
         return removed, kept
-    for folder in sorted(p for p in run_cells.iterdir() if p.is_dir()):
+    for folder in sorted(p for p in run_cells.iterdir() if p.is_dir() and (only is None or p.name in only)):
         if folder.name in archived:
             shutil.rmtree(folder, onexc=make_writable)
             removed.append(folder.name)
         else:
             kept.append(folder.name)
-    if not any(run_cells.iterdir()):
+    if only is None and not any(run_cells.iterdir()):
         run_cells.rmdir()
     return removed, kept

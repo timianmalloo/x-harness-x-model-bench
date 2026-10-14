@@ -101,11 +101,47 @@
  {
   "name": "TA9: tool_call_rows without outcome_code",
   "file": "src/harness_bench/telemetry/normalize.py",
-  "find": "             \"ok\": None if t.ok is None else int(t.ok), \"outcome_code\": t.outcome_code} for t in ex.tool_calls]",
-  "replace": "             \"ok\": None if t.ok is None else int(t.ok)} for t in ex.tool_calls]",
+  "find": "             \"ok\": None if t.ok is None else int(t.ok), \"outcome_code\": t.outcome_code,\n             \"denial_basis\": t.denial_basis} for t in ex.tool_calls]",
+  "replace": "             \"ok\": None if t.ok is None else int(t.ok),\n             \"denial_basis\": t.denial_basis} for t in ex.tool_calls]",
   "tests": [
    "tests/test_telemetry_copilot.py::test_us14_one_denial_among_successes_is_not_valid",
    "tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"
+  ]
+ },
+ {
+  "name": "B10: tool_call_rows without denial_basis",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "             \"denial_basis\": t.denial_basis} for t in ex.tool_calls]",
+  "replace": "             } for t in ex.tool_calls]",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_a_denied_call_whose_permission_request_was_a_path_check_carries_the_path_basis"
+  ]
+ },
+ {
+  "name": "B10: a hook denial is marked as a path denial",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "                basis = PATH_VERIFICATION if outcome_code == \"denied\" and tool_call_id in path_denied else None\n",
+  "replace": "                basis = PATH_VERIFICATION if outcome_code == \"denied\" else None\n",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_a_denied_call_with_no_permission_rows_is_a_hook_denial"
+  ]
+ },
+ {
+  "name": "B10: a denied non-path permission request is marked as a path denial",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "            if request_id is not None and as_dict(data.get(\"promptRequest\")).get(\"kind\") == \"path\":\n",
+  "replace": "            if request_id is not None:\n",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_a_denied_call_whose_permission_request_was_not_a_path_check_has_no_path_basis"
+  ]
+ },
+ {
+  "name": "B10: an approved path request marks the call as a path denial",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "            denied = (as_str(as_dict(data.get(\"result\")).get(\"kind\")) or \"\").startswith(\"denied\")\n",
+  "replace": "            denied = True\n",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_an_approved_path_request_does_not_mark_a_later_hook_denial"
   ]
  },
  {

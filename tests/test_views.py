@@ -426,6 +426,43 @@ def test_a_hook_denial_outranks_an_unreadable_record(root, tmp_path):  # a kille
     assert cell.tokens_reason == "not recorded (native record fields missing: session.shutdown)"
 
 
+def _path_denial(events, nth: int = 0):
+    """B10: the real shape of Copilot's own path verification denying the nth tool call (lean runs of 2026-10-13)."""
+    start = [e for e in events if e["type"] == "tool.execution_start"][nth]
+    call_id = start["data"]["toolCallId"]
+    done = next(e for e in events if e["type"] == "tool.execution_complete" and e["data"]["toolCallId"] == call_id)
+    done["data"].update(success=False, error={"code": "denied", "message": "Permission denied and could not request permission"})
+    request = {"type": "permission.requested", "timestamp": start["timestamp"], "data": {
+        "requestId": f"req-{nth}", "permissionRequest": {"kind": "shell", "toolCallId": call_id},
+        "promptRequest": {"kind": "path", "accessKind": "shell", "paths": ["C:\\Users\\someone"], "toolCallId": call_id}}}
+    verdict = {"type": "permission.completed", "timestamp": start["timestamp"], "data": {
+        "requestId": f"req-{nth}", "toolCallId": call_id, "decisionSource": "unattended_fallback",
+        "result": {"kind": "denied-no-approval-rule-and-could-not-request-from-user"}}}
+    events.insert(events.index(done), request)
+    events.insert(events.index(done), verdict)
+    return events
+
+
+HARNESS_PATH_LIMIT = ("invalid (harness path limit)", "HB-VAL-012")
+
+
+def test_a_path_verification_denial_is_a_harness_path_limit_not_a_hook_denial(root, tmp_path):  # B10
+    cell = _cell(views.load(_copilot_run(root, tmp_path, _path_denial)), "a")
+    assert (cell.validity, cell.validity_code) == HARNESS_PATH_LIMIT
+    assert "path verification" in cell.validity_detail
+
+
+def test_a_hook_denial_beside_a_path_denial_stays_a_hook_denial(root, tmp_path):  # B10: the pack's finding keeps its code
+    def both(events):
+        events = _path_denial(events, 0)
+        done = [e for e in events if e["type"] == "tool.execution_complete"][1]
+        done["data"].update(success=False, error={"code": "denied", "message": "Denied by preToolUse hook"})
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, both)), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (tools denied by hook)", "HB-VAL-004")
+
+
 def test_an_ordinary_tool_failure_is_not_a_hook_denial(root, tmp_path):  # the rev-95 capture holds one (code not "denied")
     run_dir = _copilot_run(root, tmp_path, arm="on")
     assert any(r["ok"] == 0 for r in views.rows(run_dir, "tool_calls"))

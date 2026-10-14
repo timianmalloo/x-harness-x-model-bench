@@ -25,6 +25,7 @@ from pathlib import Path
 
 from harness_bench.errors import Cause
 from harness_bench.telemetry import (
+    PATH_VERIFICATION,
     READER_NOT_BUILT,
     SERVED_FIELDS,
     Extraction,
@@ -132,10 +133,17 @@ def served_models(source: str, ex: Extraction, usage: list[TurnUsage]) -> set[st
 HOOK_DENIED = "denied"  # a tool call's native outcome_code when a hook denied it (Copilot, R-27; design section 13)
 
 
+def path_denials(tool_rows: list[dict]) -> int:
+    """Tool calls the harness's own path verification denied (B10): `denied`, with the path basis. A row written before
+    the basis existed has none, so it reads as a hook denial, as it always did."""
+    return sum(1 for r in tool_rows if r.get("outcome_code") == HOOK_DENIED and r.get("denial_basis") == PATH_VERIFICATION)
+
+
 def hook_denials(tool_rows: list[dict]) -> int:
     """Tool calls a native hook denied, from `tool_calls` ledger rows (R-27 c2: 0 in a valid cell). An ordinary tool
-    failure carries another code, or none. `copilot.us14_valid` states the same rule for the exit E2E."""
-    return sum(1 for r in tool_rows if r.get("outcome_code") == HOOK_DENIED)
+    failure carries another code, or none, and a path-verification denial (B10) is counted by `path_denials`.
+    `copilot.us14_valid` states the stricter rule for the exit E2E: no denial of either kind."""
+    return sum(1 for r in tool_rows if r.get("outcome_code") == HOOK_DENIED and r.get("denial_basis") != PATH_VERIFICATION)
 
 
 def record_unreadable(ex: Extraction) -> str | None:
@@ -247,4 +255,5 @@ def stream_reason(value) -> str | None:
 def tool_call_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, extraction: str) -> list[dict]:
     return [{"kind": "tool_call", "run_id": run_id, "extraction_id": extraction, "cell_id": cell_id, "native_session_id": session_id,
              "native_ordinal": t.native_ordinal, "name": t.name, "tool_class": t.tool_class, "start": t.start, "end": t.end,
-             "ok": None if t.ok is None else int(t.ok), "outcome_code": t.outcome_code} for t in ex.tool_calls]
+             "ok": None if t.ok is None else int(t.ok), "outcome_code": t.outcome_code,
+             "denial_basis": t.denial_basis} for t in ex.tool_calls]

@@ -138,6 +138,9 @@ RUN_CODES: dict[str, str] = {
     # ADR-0024 s4: the served-settings read-back (`served` rows judged against the pin or `default_serves`).
     "HB-VAL-010": "validity: served setting differs from the expected value (effort or context; names the setting, expected, served and source)",
     "HB-VAL-011": "warning: served setting not recorded (the expected value is pinned or declared, and no source records it)",
+    # B10: Copilot's own path verification (a `permission.requested` row with `promptRequest.kind` "path", denied by
+    # `unattended_fallback`) refused a call: a harness limit, not a hook (HB-VAL-004), the pack or the model.
+    "HB-VAL-012": "validity: harness path limit (the harness's own path verification denied a call: a path outside the cell, or over the path-length limit)",
     "HB-SEC-001":"credential value found in a report to be published",
     "HB-USR-001": "unknown run id",
     "HB-USR-002": "invalid input",
