@@ -69,6 +69,9 @@ Answer each question by running the CLI, and keep the evidence (command, output 
   If the CLI loads operator-level files from the user home, set `user_home_vars: [HOME, USERPROFILE]` (Grok, agy), and
   then check a real record: Codex finds `~/.agents/skills` through the Windows known folder, so the variables did not
   hide it; its profile lists `host_skill_roots` instead (each skill file there is disabled in the cell config).
+  Since 2026-10-14 (instr/w16, owner decision) Copilot sets `user_home_vars` too, so its environment now differs from
+  Claude's and Codex's: a harness that denies paths outside its allowed directories also needs the cell home allowed
+  (`--add-dir {home}`), or `$env:USERPROFILE` is still refused. Leave `APPDATA`/`LOCALAPPDATA` alone (uv's Python store).
 - **Build.** Vendored route (an installed exe): add `<name>: {exe: "<file name>{suffix}"}` to
   `bench/tools/builds.yaml`, add `{version, sha256}` of the exe to `bench/tools/vendored.json`, then
   `uv run bench tools install --vendored <path to the exe>`. Pin the real binary, not a `.cmd` or `.ps1` launcher.

@@ -112,7 +112,7 @@ def test_the_launcher_seeds_the_worktree_beside_the_cell_home(tmp_path):
     assert (tmp_path / "cell" / "home" / "t.toml").read_text(encoding="utf-8") == f"path = '{tmp_path / 'cell' / 'ws'}'\n"
 
 
-@pytest.mark.parametrize("harness", ["claude-code", "codex", "copilot"])
+@pytest.mark.parametrize("harness", ["claude-code", "codex"])  # Copilot differs since instr/w16 (owner decision 2026-10-14)
 def test_the_existing_profiles_declare_no_home_vars_or_seed_files(tmp_path, harness):
     p = profiles.load(ROOT, harness, credential_source=tmp_path / "absent")
     assert (p.user_home_vars, p.seed_files) == ((), {})
