@@ -74,7 +74,9 @@ def test_copilot_scripted_cell_uses_launch_config_and_never_session_mcp_servers(
     assert end["note"] == "tool not reached" and end["tool_listed"] is False
 
 
-def test_copilot_argv_is_exact_for_scripted_and_ordinary_cells(tmp_path):
+def test_copilot_argv_is_exact_for_scripted_and_ordinary_cells(tmp_path, monkeypatch):
+    # W17: `{uv_python_arg}` adds the host's uv store only when it exists; a missing store keeps this argv host-free
+    monkeypatch.setenv("UV_PYTHON_INSTALL_DIR", str(tmp_path / "no-uv-store"))
     profile = profiles.load(ROOT, "copilot")
     # Ruling 120 / ADR-0028 s3: copilot -p behind the local adapter; the tool list stays last so this append extends it
     build = tools.Build("copilot", "1.0.89-1", tmp_path / "copilot.exe", "a" * 64, tmp_path / "copilot_p_acp.py",
@@ -82,6 +84,7 @@ def test_copilot_argv_is_exact_for_scripted_and_ordinary_cells(tmp_path):
     home = tmp_path / "home"
     base = [sys.executable, str(build.adapter), "--exe", str(build.exe), "--", "--output-format", "json",
             "--model", "gpt-6-sol", "--reasoning-effort", "high", "--allow-tool", "shell", "--allow-tool", "write",
+            "--add-dir", str(home),  # W16: the cell home is an allowed directory
             "--no-ask-user", "--disable-builtin-mcps", "--log-level", "debug", "--log-dir", f"{home}/logs",
             "--available-tools", "powershell", "list_powershell", "read_powershell",
             "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]

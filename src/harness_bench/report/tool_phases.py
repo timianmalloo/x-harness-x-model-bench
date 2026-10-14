@@ -38,7 +38,8 @@ _VERIFY = re.compile(r"\b(?:" + "|".join(VERIFY_COMMANDS) + r")\b")
 PACK_PATHS = (
     ".claude/knowledge/", ".claude/skills/", ".claude/agents/",
     ".github/instructions/", ".github/knowledge/", ".github/agents/", ".github/prompts/",
-    ".agents/skills/", ".grok/", "docs/ai-forward-pack/", "AGENTS.md",
+    ".agents/skills/", ".agents/rules/", ".agents/hooks.json",  # agy's surfaces (pack-doctor check_surface; 2026-10-14)
+    ".grok/", "docs/ai-forward-pack/", "AGENTS.md",
 )
 PACK_SCRIPTS = ("audit-log.py", "prompt-log.py", "docs-graph.py", "coord-core.py", "pack-doctor.py")
 TEST_PATH = re.compile(r"(^|/)tests?/|Tests?\.cs$|(^|/)test_[^/]*\.py$|_test\.py$")

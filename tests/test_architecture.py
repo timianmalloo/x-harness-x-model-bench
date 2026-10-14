@@ -134,8 +134,14 @@ def _string_constants(path: Path) -> set[str]:
     return {n.value for n in ast.walk(_tree(path)) if isinstance(n, ast.Constant) and isinstance(n.value, str)}
 
 
+# Readers that name `git` only as text in a recorded shell command and never start a process (track W2, 2026-10-14:
+# Codex's `git apply` is an edit). They cannot run git: only procs.py calls subprocess (test_only_procs_*, D3).
+GIT_TEXT_READERS = frozenset({"codex.py"})
+
+
 def test_only_gitsafe_runs_git():
-    assert [p.name for p in MODULES if {"git", "git.exe"} & _string_constants(p)] == ["gitsafe.py"]
+    named = [p.name for p in MODULES if {"git", "git.exe"} & _string_constants(p)]
+    assert [n for n in named if n not in GIT_TEXT_READERS] == ["gitsafe.py"]
 
 
 ACP_SERVERS = frozenset({"synthetic_agent.py"})  # the ACP *server* of W1-E 5.1; req-01M451WM4JKQSA22RW4DAF31YE

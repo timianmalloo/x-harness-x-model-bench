@@ -645,7 +645,23 @@ _BACKTICK = re.compile(r"`([^`]+)`")
 # tables) -- scanned per-line so a triple-backtick code fence elsewhere in the file can never shift
 # backtick pairing across the whole document (verified: a whole-file scan mis-pairs after the file's
 # earlier fenced examples and silently finds zero `.github/...` tokens -- checked, not assumed).
-_DEPLOYMENT_TABLE_LINE_RANGES = ((251, 267), (408, 413), (428, 433), (447, 455))
+# Found by their headings, never by line number: fixed line ranges went stale when pack revision 102 grew INSTALL.md
+# (2026-10-14) and a range landed on prose ("... share that .git/config and inherit the registration)/").
+_DEPLOYMENT_HEADINGS = ("## 1. What goes where", "### 1.7 Grok Build surface", "### 1.8 Antigravity", "### 1.9 Codex surface")
+
+
+def _deployment_table_lines(lines: list[str]) -> list[str]:
+    """The rows of the first table under each deployment heading (each heading must be found, and must have a table)."""
+    out: list[str] = []
+    for heading in _DEPLOYMENT_HEADINGS:
+        start = next(i for i, line in enumerate(lines) if line.startswith(heading))
+        first = next(i for i in range(start + 1, len(lines)) if lines[i].startswith("|"))
+        end = next((i for i in range(first, len(lines)) if not lines[i].startswith("|")), len(lines))
+        out += lines[first:end]
+    return out
+
+
+
 _SURFACE_ROOTS = (".claude/", ".github/", ".agents/", ".grok/", "docs/", "AGENTS.md")
 # Two bare-root mentions the tables use generically ("`.claude/`" as "the whole client config dir",
 # "`docs/`" as "the repo's own docs tree") rather than as a specific pack-content surface -- design
@@ -657,28 +673,28 @@ _GENERIC_ROOTS = {".claude/", "docs/"}
 def _install_md_surface_prefixes() -> set[str]:
     lines = _INSTALL_MD.read_text(encoding="utf-8").splitlines()
     prefixes: set[str] = set()
-    for lo, hi in _DEPLOYMENT_TABLE_LINE_RANGES:
-        for line in lines[lo - 1 : hi]:
-            if not line.startswith("|"):
+    for line in _deployment_table_lines(lines):
+        for tok in _BACKTICK.findall(line):
+            if tok != "AGENTS.md" and not any(tok.startswith(root) for root in _SURFACE_ROOTS):
                 continue
-            for tok in _BACKTICK.findall(line):
-                if tok != "AGENTS.md" and not any(tok.startswith(root) for root in _SURFACE_ROOTS):
-                    continue
-                if tok == "AGENTS.md":
-                    prefixes.add(tok)
-                    continue
-                cut = re.split(r"[<*]", tok, maxsplit=1)[0]
-                if cut != tok:  # had a `<name>` or `*` placeholder: the directory up to it is the surface
-                    prefixes.add(cut)
-                elif tok.endswith("/"):  # a bare directory reference
-                    prefixes.add(tok)
-                # else: a single concrete file (e.g. `.claude/settings.json`) -- not a surface prefix
+            if tok == "AGENTS.md":
+                prefixes.add(tok)
+                continue
+            cut = re.split(r"[<*]", tok, maxsplit=1)[0]
+            if cut != tok:  # had a `<name>` or `*` placeholder: the directory up to it is the surface
+                prefixes.add(cut)
+            elif tok.endswith("/"):  # a bare directory reference
+                prefixes.add(tok)
+            # else: a single concrete file (e.g. `.claude/settings.json`) -- not a surface prefix
     return prefixes - _GENERIC_ROOTS
 
 
 def _pack_doctor_surface_prefixes() -> set[str]:
     lines = _PACK_DOCTOR.read_text(encoding="utf-8").splitlines()
-    targets = lines[732:734]  # pack-doctor.py:733-734, 1-indexed, cited verbatim by R-85 DR-PI-3
+    # R-85 DR-PI-3 cited pack-doctor.py:733-734, the `check_surface(root, ...)` calls; by 2026-10-14 those lines were
+    # prose, so the cite read nothing (and a later revision put a path-like phrase there). Found by content instead.
+    targets = [line for line in lines if "check_surface(root," in line]
+    assert len(targets) >= 4, "pack-doctor's check_surface calls were not found -- the scan would test nothing"
     prefixes: set[str] = set()
     for line in targets:
         for tok in re.findall(r'"([^"]+)"', line):

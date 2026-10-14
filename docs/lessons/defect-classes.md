@@ -2348,3 +2348,20 @@ registers both.*
 - **Control:** `tests/test_reader_grok.py::test_a_call_grok_denied_by_its_permission_policy_is_ok_0_denied_and_views_reads_it_as_refused`
   (seen red). Rung: test. Upgrade trigger: a Grok record showing another refusal wording.
 - **Status:** `controlled`
+
+### CITE-A: a test reads another component's file by fixed line numbers, so it silently tests nothing once the file moves (candidate)
+- **Signature:** a test slices a vendored or generated file at hard-coded line numbers (`lines[732:734]`, line ranges
+  of a table). When that file is updated, the slice lands on other text. Either it finds nothing and passes (the check
+  is dead), or it picks up prose and fails for a reason unrelated to the rule.
+- **Instance:** `2026-10-14` (the integration's full suite after pack revision 102; observed):
+  `tests/test_pack_improvement.py::test_dr_pi_3_pack_paths_covers_install_md_and_pack_doctor_surfaces` sliced
+  `INSTALL.md` by four line ranges and `pack-doctor.py` at 733-734. On `main` (revision 99) the pack-doctor slice was
+  already prose, so that half had been testing nothing; revision 102 put a path-like phrase there and the test failed.
+  Restored to find the tables by heading and the `check_surface(root, ...)` calls by content, it found a real gap at
+  once: `tool_phases.PACK_PATHS` lacked agy's `.agents/rules/` and `.agents/hooks.json`, so agy's pack reads were not
+  counted as pack reads (fixed).
+- **Sweep:** tests that slice a file by literal line numbers (search `lines[N:M]` and `LINE_RANGES` in `tests/`): none left after this fix.
+- **Control:** the test now asserts it found at least four `check_surface` calls and every named heading, so a moved
+  file fails loudly instead of passing on nothing. Rung: test. Upgrade trigger: a second instance; then a lint over
+  `tests/` for literal line-number slices of files outside `tests/`.
+- **Status:** `controlled`
