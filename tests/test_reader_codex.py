@@ -222,3 +222,63 @@ def test_a_call_with_no_output_row_returns_no_bytes(tmp_path):
         "type": "custom_tool_call", "call_id": "c1", "name": "exec",
         "input": 'tools.exec_command({cmd:"cat a.txt"})'}}) + "\n", encoding="utf-8")
     assert [(c.paths, c.bytes_returned) for c in codex.tool_inputs(record).calls] == [(("a.txt",), None)]
+
+
+# --- 6. shell command class (B1 / I1): read, edit, test or other per call, with the read targets -----------------------
+# Every command below is a shape that occurs in the 2026-10-13 Codex lean run's archives (76 rollouts, 1,241 commands).
+
+SHELL_CLASS = [
+    ("Get-Content docs/ai-forward-pack/codex.md; Get-Content x.md; git status --short", "read", ("docs/ai-forward-pack/codex.md", "x.md")),
+    ("Get-Content a.py | Select-Object -Skip 10 -First 5", "read", ("a.py",)),
+    ("rg --files vendor/quotakit src tests; Get-Content pyproject.toml -ErrorAction SilentlyContinue", "read",
+     ("vendor/quotakit", "src", "tests", "pyproject.toml")),
+    ("rg -l TODO", "read", ()),  # a read that names no path
+    ("# Intent: read the guide\nGet-Content README.md", "read", ("README.md",)),  # a comment line is not a statement
+    ("Get-Content a.py; python -m pytest tests -q", "test", ("a.py",)),
+    ("python -m pytest tests/test_limiter.py -q", "test", ()),
+    ("$env:PYTHONPATH = 'src;vendor/quotakit'; python -m pytest tests/test_limiter.py -q", "test", ()),
+    ("py -3.12 -m pytest humanfriendly/tests.py -q", "test", ()),
+    ("uv run --python 3.9 --with-requirements requirements-tests.txt python -m pytest humanfriendly/tests.py", "test", ()),
+    ("wsl -d Ubuntu-24.04 --cd /mnt/c/x python3 -m pytest tests -q", "test", ()),
+    (".tox/format-dollars/Scripts/python.exe -m pytest humanfriendly/tests.py -k format_dollars -q", "test", ()),
+    ("python -W error::ResourceWarning -m unittest test.test_taskboard -q", "test", ()),
+    ("python tests/test_notes.py", "test", ()),
+    ("dotnet test; go test ./...; cargo test; npm test; pnpm run test", "test", ()),
+    ("python -m pytest --version", "other", ()),  # asks for the version; runs no test
+    ("Remove-Item -LiteralPath .agents/log/x.txt, .agents/log/y.txt", "edit", ()),
+    ("Move-Item -LiteralPath .agents/log/audit/.run-starts.json -Destination docs/audit/.run-starts.json", "edit", ()),
+    ("Copy-Item -LiteralPath docs/t.template.html -Destination docs/index.html", "edit", ()),
+    ("New-Item -ItemType File -Path notes/a.txt", "edit", ()),
+    ("Set-Content notes/a.txt 'x'", "edit", ()),
+    ("Get-Content a.py | Set-Content b.py", "edit", ()),  # a write at the end of a pipeline is not a read
+    ("echo hi > out.txt", "edit", ()),
+    ("sed -i s/a/b/ f.py", "edit", ()),
+    ("Get-Content a.py; Set-Content b.py x", "edit", ("a.py",)),
+    ("python -c \"open('a.txt', 'w').write('x')\"", "edit", ()),
+    (r"Remove-Item $env:TEMP\scratch", "other", ()),  # unknown or outside target: never an edit
+    (r"Remove-Item C:\tmp\scratch", "other", ()),
+    ("New-Item -ItemType Directory -Path docs/audit -Force | Out-Null", "other", ()),
+    ("git status --short; git diff --check", "other", ()),
+    ("python docs/ai-forward-pack/scripts/audit-log.py start --help", "other", ()),
+    ("python -c 'import cachetools'", "other", ()),
+    ("if (Test-Path x) { Write-Output y }", "other", ()),
+    ("Get-Content 'unbalanced", "other", ()),
+    ("", "other", ()),
+    (None, "other", ()),
+]
+
+
+def test_a_shell_command_is_one_of_read_edit_test_or_other_with_the_paths_its_reads_name():
+    assert [(c, *codex.shell_command_class(c)) for c, _, _ in SHELL_CLASS] == SHELL_CLASS
+
+
+def test_an_exec_call_batching_several_commands_names_them_all_and_unescapes_the_javascript_string(tmp_path):
+    """Observed in the lean run: 297 of 955 `exec` calls hold two to five commands (Promise.allSettled batches)."""
+    record = tmp_path / "r.jsonl"
+    js = (r'const r = await Promise.allSettled([tools.exec_command({cmd:"Get-Content tests\\a.py"}), '
+          r'tools.exec_command({cmd:"# why\nrg -n Gate vendor/q\npython -m pytest -q"})]);')  # JS source: \\ and \n escapes
+    record.write_text(json.dumps({"type": "response_item", "payload": {
+        "type": "custom_tool_call", "call_id": "c1", "name": "exec", "input": js}}) + "\n", encoding="utf-8")
+    (call,) = codex.tool_inputs(record).calls
+    assert call.command == "Get-Content tests" + chr(92) + "a.py\n# why\nrg -n Gate vendor/q\npython -m pytest -q"
+    assert codex.shell_command_class(call.command) == ("test", ("tests" + chr(92) + "a.py", "vendor/q"))

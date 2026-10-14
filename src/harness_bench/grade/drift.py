@@ -249,7 +249,9 @@ def _attention(inp: CellInput, hood: _Hood) -> Score:
     """attention_drift: outside targets / read and search targets, over the cell's main and sub-agent records.
 
     A read or search call is one whose tool the reader classes `read` (the `tool_calls` rows' `tool_class`, one
-    definition); a shell call is not one (stated limit: Codex reads through its shell, so its cells are NA).
+    definition). A shell call is not one, except for a reader that classifies its shell commands per call
+    (`shell_command_class`; Codex, which reads through its shell, B1 / I1): there each call contributes the targets
+    of its read and list statements, whatever else it does, and a read that names no path is `no-path`.
     """
     session = next((e.get("session_id") for e in reversed(inp.events) if e.get("kind") == "attempt.session_opened"), "")
     if not session:
@@ -264,13 +266,21 @@ def _attention(inp: CellInput, hood: _Hood) -> Score:
     if len(mains) != 1:  # the runner's own rule (`_extract`)
         return Score(None, NO_RECORD)
     records = [mains[0], *(p for p in profiles.find_records(home, profile.get("subagent_glob") or "", session) if p != mains[0])]
+    module = inspect.getmodule(reader)
+    shell_class, shell_names = getattr(module, "shell_command_class", None), getattr(module, "SHELL_NAMES", ())
     classes = {row["name"]: row["tool_class"] for row in inp.tool_calls}
     counts, log = {"inside": 0, "outside": 0, "no-path": 0}, []
     for record in records:
         for call in tool_inputs(record).calls:
-            if call.is_write or classes.get(call.name) != "read":
+            if shell_class is not None and call.name in shell_names:  # one name, many classes: decided per call
+                kind, paths = shell_class(call.command)
+                if kind != "read" and not paths:
+                    continue
+            elif call.is_write or classes.get(call.name) != "read":
                 continue
-            for target in [_target(p, inp.cell["cell_id"]) for p in call.paths] or [None]:
+            else:
+                paths = call.paths
+            for target in [_target(p, inp.cell["cell_id"]) for p in paths] or [None]:
                 where = "no-path" if target is None else "inside" if hood.holds(target) else "outside"
                 counts[where] += 1
                 log.append(f"{record.name}\t{call.native_ordinal}\t{call.name}\t{'-' if target is None else _shown(target)}\t{where}\n")

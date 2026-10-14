@@ -316,21 +316,33 @@ def read(path: Path) -> Extraction:
     return ex
 
 
+_JS_ESCAPE = re.compile(r"\\(u[0-9a-fA-F]{4}|.)", re.DOTALL)
+_JS_WHITESPACE = {"n": "\n", "t": "\t", "r": "\r"}
+
+
+def _js_unescape(value: str) -> str:
+    """A JavaScript string literal's text as the program sees it: `\\n`, `\\t`, `\\r`, `\\uXXXX`, and `\\` before any other
+    character is that character (so `\\\\` is one backslash and `\\"` a quote)."""
+    return _JS_ESCAPE.sub(lambda m: chr(int(m.group(1)[1:], 16)) if len(m.group(1)) == 5
+                          else _JS_WHITESPACE.get(m.group(1), m.group(1)), value)
+
+
 def _kv_fields(text: str) -> tuple[tuple[str, ...], str | None]:
     """`path`/`file_path`/`cmd`/`command` values from a call's own input text, plus any
-    `apply_patch` header paths (design section 4.3). The first `cmd`/`command` match wins;
-    every `path`/`file_path` match is kept."""
+    `apply_patch` header paths (design section 4.3). Every `path`/`file_path` match is kept, and so is every
+    `cmd`/`command`: one `exec` batches several `exec_command` calls (297 of 955 in the 2026-10-13 lean run), and the
+    command is those values joined by a newline (the shell reader splits statements there). Values are unescaped as
+    the JavaScript string they are."""
     paths: list[str] = []
-    command: str | None = None
+    commands: list[str] = []
     for m in _KV.finditer(text):
-        quote = m.group("q")
-        value = m.group("val").replace(f"\\{quote}", quote)
+        value = _js_unescape(m.group("val"))
         if m.group("key") in ("path", "file_path"):
             paths.append(value)
-        elif command is None:
-            command = value
+        else:
+            commands.append(value)
     paths.extend(patch_header_paths(text))
-    return tuple(paths), command
+    return tuple(paths), "\n".join(commands) if commands else None
 
 
 # --- The shell-read classifier (R-READ-CODEX; Leader ruling on R-DRIFT's DR2) ---------------------------------------
@@ -360,9 +372,9 @@ _PS_STRICT = {"gc", "get-content", "gci", "get-childitem", "select-string", "sls
 # PowerShell parameters (lower case): the ones whose value is a path, other value-taking ones, and switches.
 _PS_PATH = {"-path", "-literalpath", "-lp", "-pspath"}
 _PS_VALUE = {"content": {"-totalcount", "-head", "-first", "-tail", "-last", "-readcount", "-encoding", "-delimiter",
-                         "-stream", "-filter", "-include", "-exclude"},
-             "list": {"-filter", "-include", "-exclude", "-depth", "-attributes"},
-             "sls": {"-pattern", "-encoding", "-context", "-include", "-exclude"}}
+                         "-stream", "-filter", "-include", "-exclude", "-erroraction", "-ea"},
+             "list": {"-filter", "-include", "-exclude", "-depth", "-attributes", "-erroraction", "-ea"},
+             "sls": {"-pattern", "-encoding", "-context", "-include", "-exclude", "-erroraction", "-ea"}}
 _PS_SWITCH = {"content": {"-raw", "-wait", "-force", "-asbytestream"},
               "list": {"-recurse", "-force", "-file", "-directory", "-name", "-hidden", "-readonly", "-system",
                        "-followsymlink"},
@@ -421,8 +433,14 @@ def _drop_null_redirects(stage: list[str]) -> list[str]:
     return out
 
 
+def _csv(argument: str) -> list[str]:
+    """A PowerShell array argument (`a.md, b.md` lexes as `a.md,` and `b.md`; `a.md,b.md` as one token) as its items."""
+    return [item for item in argument.split(",") if item]
+
+
 def _ps_args(args: list[str], family: str, strict: bool) -> list[str]:
-    """Path arguments of a PowerShell-style command: `-Path`/`-LiteralPath` values and positionals."""
+    """Path arguments of a PowerShell-style command: `-Path`/`-LiteralPath` values and positionals, each comma list
+    split into its items."""
     paths, i = [], 0
     while i < len(args):
         a, low = args[i], args[i].lower()
@@ -431,7 +449,7 @@ def _ps_args(args: list[str], family: str, strict: bool) -> list[str]:
             break
         if low.startswith("-") and len(low) > 1:
             if low in _PS_PATH and i + 1 < len(args):
-                paths.append(args[i + 1])
+                paths.extend(_csv(args[i + 1]))
                 i += 2
                 continue
             if low in _PS_VALUE[family]:
@@ -441,7 +459,7 @@ def _ps_args(args: list[str], family: str, strict: bool) -> list[str]:
                 i += 1
                 continue
             raise _Unparsed
-        paths.append(a)
+        paths.extend(_csv(a))
         i += 1
     return paths
 
@@ -474,18 +492,28 @@ def _value_of(args: list[str], flags: tuple[str, ...]) -> bool:
     return any(a in flags or a.startswith(tuple(f"{f}=" for f in flags if f.startswith("--"))) for a in args)
 
 
-def _stage(stage: list[str]) -> tuple[str, tuple[str, ...]] | None:
-    """(kind, paths) of one statement's first stage, or None when it is not a read or a list."""
-    name, args = Path(stage[0].replace("\\", "/")).name.lower().removesuffix(".exe"), stage[1:]
+def _name(token: str) -> str:
+    """A command word as a lower-case program name: no directory, no `.exe`."""
+    return Path(token.replace("\\", "/")).name.lower().removesuffix(".exe")
+
+
+def _wrapped(stage: list[str]) -> str | None:
+    """The command text a shell wrapper runs (`bash -c`, `pwsh -Command`, `cmd /c`), else None."""
+    name, args = _name(stage[0]), stage[1:]
     if name in ("bash", "sh", "zsh") and len(args) == 2 and args[0] in ("-c", "-lc"):
-        return _statement_kind(args[1])
+        return args[1]
     if name in ("pwsh", "powershell"):
         rest = [a for a in args if a.lower() not in ("-noprofile", "-nologo", "-noninteractive")]
-        if rest and rest[0].lower() in ("-command", "-c"):
-            return _statement_kind(" ".join(rest[1:]))
-        return None
-    if name == "cmd" and args and args[0].lower() == "/c":
-        return _statement_kind(" ".join(args[1:]))
+        return " ".join(rest[1:]) if rest and rest[0].lower() in ("-command", "-c") else None
+    return " ".join(args[1:]) if name == "cmd" and args and args[0].lower() == "/c" else None
+
+
+def _stage(stage: list[str]) -> tuple[str, tuple[str, ...]] | None:
+    """(kind, paths) of one statement's first stage, or None when it is not a read or a list."""
+    name, args = _name(stage[0]), stage[1:]
+    if name in ("bash", "sh", "zsh", "pwsh", "powershell", "cmd"):
+        inner = _wrapped(stage)
+        return None if inner is None else _statement_kind(inner)
     if name in _CONTENT:
         return "read", tuple(_ps_args(args, "content", name in _PS_STRICT))
     if name in _HEAD_TAIL:
@@ -528,25 +556,28 @@ def _statement_kind(command: str) -> tuple[str, tuple[str, ...]] | None:
     return ("read" if "read" in kinds else "list"), tuple(p for r in results for p in r[1])
 
 
+def _read_statement(statement: list[str]) -> tuple[str, tuple[str, ...]] | None:
+    """(kind, paths) of one statement when it is a read or a list, else None."""
+    try:
+        stages = [_drop_null_redirects(s) for s in _split(statement, {"|"})]
+        later = [_name(s[0]) for s in stages[1:] if s]
+        return _stage(stages[0]) if stages and stages[0] and all(n in _FILTERS for n in later) else None
+    except _Unparsed:
+        return None
+
+
+def _uncommented(command: str) -> str:
+    """The command without its comment lines (a line whose first character is `#`): they are no statement."""
+    return "\n".join(line for line in command.split("\n") if not line.lstrip().startswith("#"))
+
+
 def _statements(command: str) -> list[tuple[str, tuple[str, ...]] | None]:
     """One (kind, paths) or None per statement of `command`."""
     try:
-        tokens = _lex(command)
+        tokens = _lex(_uncommented(command))
     except _Unparsed:
         return [None]
-    out: list[tuple[str, tuple[str, ...]] | None] = []
-    for statement in _split(tokens, _SEPARATORS):
-        try:
-            stages = [_drop_null_redirects(s) for s in _split(statement, {"|"})]
-        except _Unparsed:
-            out.append(None)
-            continue
-        later = [Path(s[0].replace("\\", "/")).name.lower().removesuffix(".exe") for s in stages[1:] if s]
-        try:
-            out.append(_stage(stages[0]) if stages and stages[0] and all(n in _FILTERS for n in later) else None)
-        except _Unparsed:
-            out.append(None)
-    return out
+    return [_read_statement(statement) for statement in _split(tokens, _SEPARATORS)]
 
 
 def shell_read_paths(command: str | None) -> tuple[str, ...]:
@@ -560,6 +591,167 @@ def shell_read_kind(command: str | None) -> str | None:
     """The read classifier for a Codex shell call: "read", "list" or None (see the rule above)."""
     found = _statement_kind(command) if command else None
     return found[0] if found else None
+
+
+# --- The shell command class (B1 / I1) ----------------------------------------------------------------------------------
+# One `exec` call is one class, so a count of reads, edits and tests is per call, never per tool name. Each statement of
+# the command (split as above, a wrapper such as `bash -c` unwrapped) is one of:
+# - read / list: as the rule above, the only definition of a read;
+# - edit: a write, move, copy or delete whose every target is a workspace-relative path (no drive, no leading `/` or
+#   `~`, no `$` variable, no `..`): Set/Add/Clear-Content, Out-File, tee, touch, Remove/Move/Copy/Rename-Item and their
+#   aliases, `New-Item -ItemType File`, `sed -i`, `apply_patch`, `git apply`, a `>` or `>>` redirect to such a path
+#   (not a null sink), and `python -c` that opens a literal path for writing or calls `write_text`/`write_bytes`;
+# - test: pytest, tox, nox, `python -m pytest|unittest|tox|nox`, `python test_*.py`, `dotnet|go|cargo|mvn|make test`,
+#   `npm|pnpm|yarn|bun [run] test`, `npx jest|vitest|mocha`, through a leading `VAR=x`, `uv run` and `wsl` prefix; a
+#   `--version` or `--help` call runs no test;
+# - other: everything else, and every statement the rule cannot read (never a guess).
+# The call's class is the first present of edit, test, read (a read or a list), other; its paths are the targets of
+# every read or list statement, so a call that tests and also reads still names what it read. Stated limits: git
+# diff/show/log are `other` (the read rule is the single definition), a script run from a file or a here-string is
+# `other`, and a write through an absolute path into the workspace is `other`.
+_WRITERS = {"set-content", "sc", "add-content", "ac", "clear-content", "out-file", "tee", "tee-object", "touch"}
+_MOVERS = {"remove-item", "ri", "rm", "del", "erase", "move-item", "mi", "mv", "move", "copy-item", "cpi", "cp", "copy",
+           "rename-item", "rni", "ren"}
+_PS_TARGET = _PS_PATH | {"-filepath", "-destination", "-name"}
+_PS_WRITE_VALUE = {"-value", "-encoding", "-itemtype", "-type", "-newname", "-filter", "-include", "-exclude",
+                   "-erroraction", "-ea", "-stream", "-inputobject", "-width", "-depth"}
+_ENV_ASSIGN = re.compile(r"[A-Za-z_]\w*=")
+_PYTHON = re.compile(r"python[\d.]*|py")
+_TEST_MODULES = {"pytest", "unittest", "tox", "nox"}
+_TEST_SCRIPT = re.compile(r"(?:.*[\\/])?(?:test_[^\\/]*|[^\\/]*_test)\.py")
+_UV_VALUE = {"--python", "-p", "--with", "--with-requirements", "--project", "--directory", "--extra", "--group",
+             "--env-file", "--package"}
+_WSL_VALUE = {"-d", "--distribution", "--cd", "-u", "--user"}
+_SED_IN_PLACE = re.compile(r"-[A-Za-z]*i\S*|--in-place(?:=.*)?")
+_PY_WRITE = re.compile(r"\.write_(?:text|bytes)\(")
+
+
+def _in_workspace(target: str) -> bool:
+    """A path the agent can only mean inside the working copy: relative, no variable, no parent hop."""
+    return bool(target) and not (target.startswith(("/", "\\", "~", "$", "%", "@")) or re.match(r"[A-Za-z]:", target)
+                                 or ".." in re.split(r"[\\/]", target))
+
+
+def _write_targets(args: list[str]) -> list[str]:
+    """The paths a write, move, copy or delete command names: PowerShell `-Path`-style values and positionals."""
+    out, i = [], 0
+    while i < len(args):
+        low = args[i].lower()
+        if low.startswith("-") and len(low) > 1:
+            if low in _PS_TARGET and i + 1 < len(args):
+                out.extend(_csv(args[i + 1]))
+                i += 2
+            else:
+                i += 2 if low in _PS_WRITE_VALUE else 1
+        else:
+            out.extend(_csv(args[i]))
+            i += 1
+    return out
+
+
+def _redirects_to_workspace(tokens: list[str]) -> bool:
+    for i, t in enumerate(tokens):
+        if t in (">", ">>") and not (i and tokens[i - 1] == "2") and i + 1 < len(tokens):
+            target = tokens[i + 1]
+            if target.lower() not in _NULL_SINKS and _in_workspace(target):
+                return True
+    return False
+
+
+def _is_edit(stage: list[str]) -> bool:
+    if _redirects_to_workspace(stage):
+        return True
+    tokens = _without_env(stage)
+    if not tokens:
+        return False
+    name, args = _name(tokens[0]), tokens[1:]
+    if name in _WRITERS | _MOVERS:
+        targets = _write_targets(args)
+        return bool(targets) and all(_in_workspace(t) for t in targets)
+    if name in ("new-item", "ni"):
+        kind = next((args[i + 1].lower() for i, a in enumerate(args[:-1]) if a.lower() in ("-itemtype", "-type")), None)
+        targets = _write_targets(args)
+        return kind == "file" and bool(targets) and all(_in_workspace(t) for t in targets)
+    if name == "sed":
+        return any(_SED_IN_PLACE.fullmatch(a) for a in args)
+    if name == "apply_patch":
+        return True
+    if name == "git":
+        return args[:1] == ["apply"]
+    if _PYTHON.fullmatch(name) and "-c" in args and args.index("-c") + 1 < len(args):
+        code = args[args.index("-c") + 1]
+        return any(set(m.group(4) or "r") & set("wax+") for m in _OPEN.finditer(code)) or bool(_PY_WRITE.search(code))
+    return False
+
+
+def _without_env(stage: list[str]) -> list[str]:
+    """The stage without its leading `VAR=value` words."""
+    i = 0
+    while i < len(stage) and _ENV_ASSIGN.match(stage[i]):
+        i += 1
+    return stage[i:]
+
+
+def _is_test(stage: list[str]) -> bool:
+    tokens = _without_env(stage)
+    if not tokens:
+        return False
+    name, args = _name(tokens[0]), tokens[1:]
+    if any(a in ("--version", "--help", "-h", "-V") for a in args):
+        return False
+    if name in ("wsl", "uv"):
+        if name == "uv":
+            if args[:1] != ["run"]:
+                return False
+            args = args[1:]
+        value, i = (_WSL_VALUE if name == "wsl" else _UV_VALUE), 0
+        while i < len(args) and args[i].startswith("-"):
+            i += 2 if args[i] in value else 1
+        return bool(args[i:]) and _is_test(args[i:])
+    if name in ("pytest", "py.test", "tox", "nox", "ctest"):
+        return True
+    if _PYTHON.fullmatch(name):
+        if any(a == "-m" and args[i + 1] in _TEST_MODULES for i, a in enumerate(args[:-1])):
+            return True
+        script = next((a for a in args if not a.startswith("-")), None) if "-m" not in args and "-c" not in args else None
+        return script is not None and bool(_TEST_SCRIPT.fullmatch(script))
+    if name in ("dotnet", "go", "cargo", "mvn", "make", "gradle", "gradlew"):
+        return args[:1] == ["test"]
+    if name in ("npm", "pnpm", "yarn", "bun"):
+        return args[:1] == ["test"] or args[:2] == ["run", "test"]
+    return name in ("npx", "bunx") and args[:1] in (["jest"], ["vitest"], ["mocha"])
+
+
+def _classify(command: str) -> list[tuple[str, tuple[str, ...]]]:
+    """(kind, read paths) per statement of `command`; kind is read, list, edit, test or other."""
+    try:
+        tokens = _lex(_uncommented(command))
+    except _Unparsed:
+        return [("other", ())]
+    out: list[tuple[str, tuple[str, ...]]] = []
+    for statement in _split(tokens, _SEPARATORS):
+        stages = _split(statement, {"|"})
+        inner = _wrapped(stages[0]) if stages else None
+        read = None if inner is not None else _read_statement(statement)
+        if inner is not None:
+            out.extend(_classify(inner))
+        elif read is not None:
+            out.append(read)
+        else:
+            out.append(("edit" if any(_is_edit(s) for s in stages) else "test" if any(_is_test(s) for s in stages)
+                        else "other", ()))
+    return out
+
+
+def shell_command_class(command: str | None) -> tuple[str, tuple[str, ...]]:
+    """(class, read paths) of one shell call's command text: class is "edit", "test", "read" or "other" (see the rule
+    above), paths the verbatim targets of its read and list statements. No command is "other"."""
+    if not command:
+        return "other", ()
+    found = _classify(command)
+    kinds = {kind for kind, _ in found}
+    cls = "edit" if "edit" in kinds else "test" if "test" in kinds else "read" if kinds & {"read", "list"} else "other"
+    return cls, tuple(p for _, paths in found for p in paths)
 
 
 def _output_bytes(payload: dict) -> int | None:
