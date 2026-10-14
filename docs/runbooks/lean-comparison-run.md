@@ -13,7 +13,7 @@ summary: >-
   What the operator needs to run Prompt 1 for a like-for-like comparison: the context window each CLI is pinned at
   (measured), the folder to start the CLI in so no pack file loads, how many interactive sessions to run per CLI and how
   the hand-off identifies them, and why Copilot over ACP cannot run at the pinned window (and how to run it at the
-  default window as a manual transport control).
+  default window as a transport control: a combo with `transport: acp`).
 ---
 
 # Runbook: the lean comparison run
@@ -82,18 +82,30 @@ model and effort over native ACP. What the bench can do today:
   `--context long_context` and `settings.json` `{"contextTier": "long_context"}` serve `usage_update` size 272,000, and
   `session.start.contextTier` is null (probe 2026-10-14, one trivial prompt each; ADR-0024 and ADR-0028 record the same
   for 1.0.89-1 and 1.0.92-4). ACP cannot reach 922k.
-- **Not as a combo option.** `harness: copilot` always loads `bench/profiles/copilot.yaml` (the `-p` adapter command),
-  and `views._prompt_mode(plan, harness)` reads one `adapter_version` per harness for the whole plan. A per-combo
-  `transport` would change `config.py` (combo schema), `plan.py` (cell and build records), `profiles.py` (a second
-  command) and `views.py` (a per-cell `_prompt_mode`). Those files are outside this track.
-- **A manual control at the default window works at plan level.** Both transports at context `default` (272,000) compare
-  like for like. On a control branch: copy `bench/profiles/controls/copilot-acp.yaml` over `bench/profiles/copilot.yaml`;
-  delete the `adapter_pin` line of the `copilot` entry in `bench/tools/builds.yaml`; run a matrix with a Copilot combo
-  `context: default`. `bench plan` accepted this on 2026-10-14 (12 cells, build 1.0.89-1). Run the `-p` side from `main`
-  with the same combo at `context: default`, and compare the two runs.
-- **Not verified:** a whole cell or run through the ACP profile, the Copilot reader on an ACP record (the reader's debug-log
-  source is written for `-p` turn logs), and `--log-level debug --log-dir` under `--acp`. Run one task first and read
-  `bench status --check-ended` before spending a full run.
+- **A combo option, no file edits.** A bench-matrix/3 combo may name `transport: acp`. `bench/profiles/copilot.yaml`
+  declares that launch under `transports.acp` (native `copilot --acp`, same model, effort, tools and debug logs, no
+  adapter). A combo without `transport` runs the profile's own `-p` command, as every lean run does. Put both combos in
+  one matrix, both at `context: default` (272,000), so they share the plan, the build and the launch order:
+  ```yaml
+  combos:
+    - {id: copilot-sol-p-default,   harness: copilot, model: gpt-6.1-sol, effort: high, context: default}
+    - {id: copilot-sol-acp-default, harness: copilot, model: gpt-6.1-sol, effort: high, context: default, transport: acp}
+  ```
+- **What follows the transport.** The cell carries `transport` (it joins the cell id only when set). The launcher swaps
+  the command (`Profile.for_transport`). The view judges an ACP cell as ACP: HB-VAL-005 cross-checks the ACP turn total
+  instead of reading `not recorded` (`views._prompt_mode(plan, harness, combo)`), and the report pages label it `acp`
+  (`tool_phases.transport`). The reader, the home, the instruction probe (HB-PRE-008) and the validity codes are the
+  harness's own, so both cells are read and judged by the same Copilot rules.
+- **Refused at plan (HB-PRE-010):** a transport the profile does not declare, and `transport: acp` with any context but
+  `default` (the launch declares `contexts: ["default"]`).
+- **Verified, 2026-10-14** (run `w12-transport-a3`: task X1, pack off, one cell per transport, build 1.0.89-1):
+  `bench status --check-ended` read both cells valid; warnings HB-VAL-006 (no plan-time agent_version) and HB-VAL-011
+  (no record shows a context token count) on both, HB-VAL-005 `not recorded` on the `-p` cell only. The Copilot reader
+  read the ACP record: one debug process log, 6 model calls, 9 tool calls (`powershell`, `view`, `glob`,
+  `apply_patch`), served `gpt-6.1-sol` / effort `high` from `session.start` and the debug log, `contextTier` null. The
+  ACP turn total (input 38,745, cache read 31,312, cache write 7,415, output 1,061) equals both the sum of the reader's
+  model calls and the record's `session.shutdown` `modelMetrics`, so HB-VAL-005 passed. Tokens: ACP cell 39,806,
+  `-p` cell 35,306 (5 model calls, 7 tool calls). One task, one repetition: no conclusion on A3 from these two cells.
 
 Spike cost, 2026-10-14: Codex three runs of about 10.2k tokens each (30.7k); Copilot three runs of about 3.3k to 4.2k
 tokens each (the `-p` run used the account default model by mistake: 4.2k).

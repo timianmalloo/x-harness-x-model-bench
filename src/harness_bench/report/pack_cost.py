@@ -602,7 +602,7 @@ def build(views: Sequence[RunView]) -> PackCost:
     run_views = views
     plan = run_views[0].plan if run_views else {}
     src = pack_source(plan)
-    transports = {c.harness: tool_phases.transport(v.plan, c.harness) for v in run_views for c in v.cells}
+    transports = {c.harness: tool_phases.transport(v.plan, c.harness, c.combo) for v in run_views for c in v.cells}
     pairs = [_pair(v, on, off, cell_facts) for v in run_views for on, off in _pairs(v)]
     classes: dict[str, str] = {}
     pack_files = sorted(set().union(*(p.pack_files for p in pairs)) if pairs else set())

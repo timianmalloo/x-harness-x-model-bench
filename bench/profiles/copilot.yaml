@@ -31,3 +31,12 @@ settings:
     args:
       "default": []
       "922000": ["--context", "long_context"]
+# Plan row A3, the transport control (docs/runbooks/lean-comparison-run.md s4): a combo with `transport: acp` launches
+# native `copilot --acp` (no adapter) with the same model, effort, tools and debug logs; everything else above is shared.
+# Over ACP 1.0.89-1 serves 272000 whatever the tier flag or settings.json say (probe 2026-10-14), so the plan refuses any
+# context but default, and the control pair is ACP against `-p` both at context default. set_model stays false: the
+# model is in argv, and HB-VAL-002 judges the served model from the record.
+transports:
+  acp:
+    command: ["{exe}", "--acp", "--model", "{model}", "--reasoning-effort", "{effort}", "--allow-tool", "shell", "--allow-tool", "write", "--disable-builtin-mcps", "--log-level", "debug", "--log-dir", "{home}/logs", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
+    contexts: ["default"]

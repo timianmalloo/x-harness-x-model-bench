@@ -149,6 +149,14 @@ class ModelCatalog:
 
 
 @dataclass(frozen=True)
+class Launch:
+    """Plan row A3: a launch a combo selects with `transport: <name>` in place of the profile's `command` (Copilot's
+    native `--acp`, the control against `copilot -p`). `contexts`: the only context values it serves; empty = any."""
+    command: tuple[str, ...]
+    contexts: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class Profile:
     harness: str
     home_env: str
@@ -182,6 +190,17 @@ class Profile:
     credential_home_env: str | None = None
     model_aliases: dict[str, tuple[str, ...]] = field(default_factory=dict)
     scripted_user: str = "supported"
+    transports: dict[str, Launch] = field(default_factory=dict)  # plan row A3: the launches a combo may name
+
+    def for_transport(self, name: str | None) -> Profile:
+        """This profile launching the combo's `transport` (plan row A3): its `command` swapped for that launch's; None
+        is the profile as written. Everything else (home, record, reader, settings) is the harness's own."""
+        if name is None:
+            return self
+        if name not in self.transports:
+            raise BenchError("HB-USR-002", f"{self.harness}: no transport {name!r} in the profile "
+                                           f"(declared: {', '.join(self.transports) or 'none'})")
+        return dataclasses.replace(self, command=self.transports[name].command)
 
     def expand_settings(self, text: str, where: str, effort=DEFAULT, context=DEFAULT) -> str:
         """`{effort}` and `{context_tokens}` become the cell's values; "default" expands nothing. A placeholder left in
@@ -423,13 +442,27 @@ def _model_catalog(harness: str, folder: Path, data) -> ModelCatalog | None:
                         delegate_field=values["delegate_field"])
 
 
+def _command(harness: str, key: str, command) -> tuple[str, ...]:
+    if not isinstance(command, list) or not command or any(not isinstance(part, str) or not part for part in command):
+        raise BenchError("HB-USR-002", f"{harness}: profile {key} must be a nonempty list of strings")
+    return tuple(command)
+
+
+def _transports(harness: str, data) -> dict[str, Launch]:
+    """Plan row A3: `transports: {<name>: {command, contexts}}`; absent means a combo can name none."""
+    out = {}
+    for name, entry in _mapping(harness, "transports", data).items():
+        entry = _mapping(harness, f"transports.{name}", entry)
+        out[str(name)] = Launch(command=_command(harness, f"transports.{name}.command", entry.get("command")),
+                                contexts=_str_tuple(harness, f"transports.{name}.contexts", entry.get("contexts") or []))
+    return out
+
+
 def load(root: Path, harness: str, credential_source: Path | None = None) -> Profile:
     if harness not in HARNESSES:
         raise ValueError(f"no profile for harness {harness!r} (have {HARNESSES})")
     data = config.load_yaml(root / "bench" / "profiles" / f"{harness}.yaml")
-    command = data.get("command")
-    if not isinstance(command, list) or not command or any(not isinstance(part, str) or not part for part in command):
-        raise BenchError("HB-USR-002", f"{harness}: profile command must be a nonempty list of strings")
+    command = _command(harness, "command", data.get("command"))
     cred = data["credential"]
     vendor = data.get("vendor")
     if not isinstance(vendor, str) or not vendor.strip():
@@ -476,6 +509,7 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         model_aliases={str(k): _str_tuple(harness, f"model_aliases.{k}", v)
                        for k, v in _mapping(harness, "model_aliases", data.get("model_aliases") or {}).items()},
         scripted_user=scripted_user,
+        transports=_transports(harness, data.get("transports") or {}),
     )
 
 
@@ -582,7 +616,7 @@ class ProfileLauncher:
             raise RuntimeError("check_build must run before argv_env")
         # A plan written before the lean re-run has no effort or context on its cells: both read as "default".
         effort, context = cell.get("effort", DEFAULT), cell.get("context", DEFAULT)
-        return self.profile.argv(self.build, cell["model"], mcp_config=cell.get("mcp_config"),
+        return self.profile.for_transport(cell.get("transport")).argv(self.build, cell["model"], mcp_config=cell.get("mcp_config"),
                                  scenario=cell.get("scenario"), effort=effort, context=context, home=home), \
             self.profile.cell_env(dict(os.environ), home, self.build, cell["model"], traceparent,
                                   oauth_token=self._oauth_token, effort=effort, context=context)

@@ -158,6 +158,19 @@
   </div>
 
   <div class="card">
+    <h2>Optional: the Copilot transport control</h2>
+    <p style="margin-top:0">Does Copilot make more tool calls because <code>copilot -p</code> starts a new process each
+      turn? The control runs the same model over native ACP. ACP serves only the default window (272k), so the pair runs
+      both transports at <code>context: default</code>. It is a separate run, not a paste of this prompt: a matrix like
+      STEP 5's with these two combos in place of the one combo, then STEPS 6-8. The plan refuses
+      <code>transport: acp</code> at any other context. Details: <code>docs/runbooks/lean-comparison-run.md</code>,
+      section 4.</p>
+<pre id="control" style="margin:0;overflow-x:auto">combos:
+  - {id: copilot-sol-p-default,   harness: copilot, model: gpt-6.1-sol, effort: high, context: default}
+  - {id: copilot-sol-acp-default, harness: copilot, model: gpt-6.1-sol, effort: high, context: default, transport: acp}</pre>
+  </div>
+
+  <div class="card">
     <h2>How a run is named</h2>
     <p style="margin-top:0"><code>RUN_ID = lean-&lt;UTC yyyymmddThhmmss&gt;-&lt;4 random hex&gt;-&lt;COMBO_ID&gt;</code>,
       where <code>COMBO_ID = &lt;harness&gt;-&lt;model&gt;-&lt;effort&gt;-&lt;context&gt;</code>. Example:

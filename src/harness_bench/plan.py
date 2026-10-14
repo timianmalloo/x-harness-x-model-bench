@@ -89,6 +89,7 @@ class Cell:
     # ADR-0024 s2: the combo's settings, frozen on every cell; "default" for every bench-matrix/2 combo.
     effort: str = profiles.DEFAULT
     context: str | int = profiles.DEFAULT
+    transport: str | None = None  # plan row A3: a launch the profile declares under `transports`; None = its `command`
 
     @property
     def id(self) -> str:
@@ -97,7 +98,14 @@ class Cell:
         # RECID-A: the settings join the recipe only when one is pinned, so every existing cell id is unchanged.
         if self.effort != profiles.DEFAULT or self.context != profiles.DEFAULT:
             ingredients |= {"effort": self.effort, "context": self.context}
+        if self.transport is not None:  # likewise: only a named transport joins it
+            ingredients["transport"] = self.transport
         return hashlib.sha256(canonical(ingredients)).hexdigest()[:16]
+
+    def record(self) -> dict:
+        """The plan's cell row: every field, with `transport` only when the combo names one (earlier rows unchanged)."""
+        return {"cell_id": self.id, "label": self.label,
+                **{k: v for k, v in asdict(self).items() if k != "transport" or v is not None}}
 
     @property
     def label(self) -> str:
@@ -149,7 +157,8 @@ def expand(matrix: dict, bom: dict, task_versions: dict[str, str] | None = None)
                 for c in matrix["combos"]:
                     cells.append(Cell(t["id"], versions.get(t["id"], t["id"]), t["scenario"], c["id"], c["harness"],
                                       c["model"], arm["id"], rep, t["budget_minutes"] * 60,
-                                      c.get("effort", profiles.DEFAULT), c.get("context", profiles.DEFAULT)))
+                                      c.get("effort", profiles.DEFAULT), c.get("context", profiles.DEFAULT),
+                                      c.get("transport")))
     return cells
 
 
@@ -184,6 +193,23 @@ def _setting_problem(combo: dict, profile: profiles.Profile, name: str) -> str |
     return None
 
 
+def _transport_problem(combo: dict, profile: profiles.Profile) -> str | None:
+    """Plan row A3: why `combo`'s transport cannot run on `profile`, or None. It must be one the profile declares, and
+    the combo's context one that launch serves (Copilot over ACP serves 272000 only, docs/runbooks/lean-comparison-run.md)."""
+    name = combo.get("transport")
+    if name is None:
+        return None
+    declared = getattr(profile, "transports", {})  # getattr: the instruction-probe tests' stub profile has none
+    if name not in declared:
+        return (f"combo {combo['id']}: transport {name!r} is not declared by the {combo['harness']} profile "
+                f"(declared: {', '.join(declared) or 'none'})")
+    contexts, value = declared[name].contexts, str(combo.get("context", profiles.DEFAULT))
+    if contexts and value not in contexts:
+        return (f"combo {combo['id']}: context {value!r} is not served over transport {name!r} "
+                f"(served: {', '.join(contexts)})")
+    return None
+
+
 def _model_id_marker(name: str, value: str) -> str | None:
     """The model-id suffix that carries a `model_id` setting's value; None when no such marker is known (then a pinned
     value cannot be checked, and is refused)."""
@@ -215,8 +241,8 @@ def require_combo_settings(root: Path, matrix: dict, tasks: list[dict]) -> None:
                       if config.load_yaml(root / "tasks" / t["id"] / "task.yaml").get("scripted_user") is True)
     for combo in (c for c in matrix["combos"] if c["harness"] != "synthetic"):  # a synthetic combo has no profile
         profile = profiles.load(root, combo["harness"])
-        for name in profiles.SETTINGS:
-            problem = _setting_problem(combo, profile, name)
+        for problem in [_setting_problem(combo, profile, name) for name in profiles.SETTINGS] + [
+                _transport_problem(combo, profile)]:
             if problem:
                 raise BenchError("HB-PRE-010", problem)
         if scripted and getattr(profile, "scripted_user", "supported") == "unsupported":
@@ -675,7 +701,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, a
         "price_list_hash": file_hash(root / "bench" / "prices.yaml"),
         "envelope_seconds": envelope_seconds(cells, parallelism),
         "harness_parallelism": caps,
-        "cells": [{"cell_id": c.id, "label": c.label, **asdict(c),
+        "cells": [{**c.record(),
                    **({"instruction_count": instruction_counts[c.task, c.arm]} if c.harness == "copilot" else {})} for c in cells],
     }
     if campaign is not None:
