@@ -11,6 +11,8 @@ Sources, each Verified on the frozen 1.0.41 spike sessions (tests/fixtures/grok/
   `agents_md_files` (the instruction files, inlined into the first user message's `<rules>` block).
 - `events.jsonl`: `tool_started` / `tool_completed` (`tool_call_id`, `outcome`) give a call's times and outcome.
 Hooks and compaction are Flagged (ADR-0026 s1): no record shows their shape, so `harness_events` is not recorded.
+`tool_inputs` (the report's and attention drift's trace) reads `chat_history.jsonl` alone: the assistant rows' calls, and
+the `tool_result` rows by `tool_call_id`.
 """
 
 from __future__ import annotations
@@ -25,10 +27,12 @@ from harness_bench.telemetry import (
     Extraction,
     MissingField,
     ModelCall,
+    ProcessTrace,
     PromptPart,
     ReasoningItem,
     ServedSettings,
     ToolCall,
+    ToolInput,
     as_dict,
     as_list,
     as_str,
@@ -207,6 +211,50 @@ def _served(d: Path, served: list[str], effort: list[str]) -> tuple[ServedSettin
     ids = served or [None]
     return tuple(ServedSettings(model_served=s if s else not_recorded("no model_id in chat_history.jsonl"),
                                 sources=sources, **common) for s in ids)
+
+
+# The parameters that name a file or directory, from the build's own tool_definitions.json (Verified, 1.0.41): read_file
+# `target_file`, list_dir `target_directory`, grep `path` (optional: absent means the workspace), search_replace and write
+# `file_path`. No other advertised tool takes one.
+_PATH_ARGS = ("target_file", "target_directory", "file_path", "path")
+
+
+def tool_inputs(path: Path) -> ProcessTrace:
+    """`ToolInput`s from the assistant rows' `tool_calls`, in native order, one per call id: the calls `read` counts, so
+    the two counts are equal (R-85 condition 1). `native_ordinal` is the call's 1-based position, as `read` gives it.
+    `bytes_returned` is the UTF-8 size of the call's `tool_result` content; None when the record has no result for it.
+    Reply text is the assistant rows' `content` (reasoning is its own row type, so none is counted); a blank row is no
+    message. A session with no `chat_history.jsonl` or a cut-short read gives no calls and no text counts (None)."""
+    ex = Extraction()
+    if not (d := path if path.is_dir() else path.parent).joinpath(CHAT).is_file():
+        return ProcessTrace(None)
+    pending: dict[str, tuple[str, dict]] = {}
+    sizes: dict[str, int] = {}
+    messages: list[str] = []
+    for _, row in rows(d / CHAT, ex):
+        if row.get("type") == "tool_result" and (call_id := as_str(row.get("tool_call_id"))) and isinstance(row.get("content"), str):
+            sizes.setdefault(call_id, len(row["content"].encode("utf-8")))
+        elif row.get("type") == "assistant":
+            if (text := as_str(row.get("content"))) and text.strip():
+                messages.append(text)
+            for call in as_list(row.get("tool_calls")):
+                call = as_dict(call)
+                call_id, arguments = as_str(call.get("id")), call.get("arguments")
+                if call_id is None or call_id in pending:
+                    continue
+                if isinstance(arguments, str):
+                    try:
+                        arguments = json.loads(arguments)
+                    except (ValueError, RecursionError):
+                        arguments = None
+                pending[call_id] = (as_str(call.get("name")) or "unknown", as_dict(arguments))
+    calls = []
+    for position, (call_id, (name, args)) in enumerate(pending.items(), 1):
+        paths = tuple(dict.fromkeys(v for k in _PATH_ARGS if isinstance(v := args.get(k), str) and v))
+        calls.append(ToolInput(position, name, paths, as_str(args.get("command")), tool_class(name) == "edit", sizes.get(call_id)))
+    counted = not ex.truncated
+    return ProcessTrace(messages[0] if messages else None, tuple(calls), sum(map(len, messages)) if counted else None,
+                        len(messages) if counted else None)
 
 
 def read(path: Path) -> Extraction:

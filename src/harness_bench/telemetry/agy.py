@@ -25,6 +25,8 @@ stream_driver.STREAM_RECORD) and the conversation store beside it, `<cell home>/
   gives the `system` part and one `instruction_file` part per `<RULE[<path>]>...</RULE[<path>]>` block (agy inlines
   AGENTS.md, GEMINI.md and the home rules that way; `path` is the label as stored, `chars` the body between the tags).
 - harness events: not read (steps are a Flagged source, ADR-0026 s1).
+- `tool_inputs` (the report's and attention drift's trace): the same tool steps as `read`, keyed by step index. A step's
+  parameters ride on its first line; its `output` on the closing line.
 """
 
 from __future__ import annotations
@@ -39,10 +41,12 @@ from harness_bench.telemetry import (
     Extraction,
     MissingField,
     ModelCall,
+    ProcessTrace,
     PromptPart,
     ReasoningItem,
     ServedSettings,
     ToolCall,
+    ToolInput,
     as_dict,
     as_str,
     is_count,
@@ -50,7 +54,7 @@ from harness_bench.telemetry import (
     rows,
 )
 
-__all__ = ["TOOL_CLASS", "read"]
+__all__ = ["TOOL_CLASS", "read", "tool_inputs"]
 
 # Every tool agy 1.3.3 advertises (its `init.tools`, 60 ids), in ADR-0004's classes. Only shell, file read and file edit
 # are in the profile. agy's grant kinds cannot deny every other class (Leader ruling on R-TRANSPORT seam 5): web search,
@@ -71,7 +75,7 @@ _OTHER = (
     # sub-agents (out of profile on every cell by the ruling, never `delegate`)
     "browser_subagent", "invoke_subagent", "define_subagent", "manage_subagents",
     # scheduling, messaging, tasks, workflows, plugins, knowledge
-    "schedule", "send_message", "manage_inbox", "run_workflow", "search_marketplace",
+    "send_message", "manage_inbox", "run_workflow", "search_marketplace",
     "list_plugin_accounts", "delete_knowledge", "notebook_execution",
     # permission requests (no scripted user on agy, ADR-0028 s7): they ask for a grant, so they stay out of profile
     "ask_permission", "ask_custom_permission",
@@ -79,7 +83,10 @@ _OTHER = (
 # Workspace-inert (Leader ruling agy-meta-rerun, as Grok's todo_write ruling J1A-FIX item 24 and ToolSearch R-54 (a),
 # claude_code.py): the task list, the question to an absent user, the grant listing and turn control touch nothing in
 # the workspace, so they are counted, never scored. Measured: probe-rerun-1's agy cells were HB-VAL-008 on manage_task only.
-_META = ("manage_task", "ask_question", "list_permissions", "finish", "wait", "wait_5_seconds")
+# Amendment 2026-10-14 (owner decision, lean runs of 2026-10-13 plan row B16): `schedule` is turn control too. NG1 pack-on
+# r1 called schedule(DurationSeconds=30, ...) as a timer to wait for its own background command; agy cancelled it at once.
+_META = ("manage_task", "ask_question", "list_permissions", "finish", "wait", "wait_5_seconds",
+         "schedule")  # B16, owner decision 2026-10-14: a `schedule` used as a wait touches nothing, as `wait` does
 TOOL_CLASS = (dict.fromkeys(_SHELL, "shell") | dict.fromkeys(_EDIT, "edit") | dict.fromkeys(_READ, "read")
               | dict.fromkeys(_META, "meta")
               | dict.fromkeys(_OTHER, "other"))
@@ -209,6 +216,56 @@ def _prompt_parts(gens: list[bytes]) -> list[PromptPart] | str:
     return [PromptPart(0, "system", None, len(text), "inlined", PROMPT_SOURCE)] + [
         PromptPart(n, "instruction_file", m["path"], len(m["body"]), "inlined", RULE_SOURCE)
         for n, m in enumerate(_RULE.finditer(text), 1)]
+
+
+# A parameter that names a file or directory. Verified on the lean agy run: view_file.AbsolutePath, write_to_file and
+# replace_file_content.TargetFile. Inferred for the tools that run did not call (list_dir, find_by_name, grep_search,
+# multi_replace_file_content...): agy ships no tool schema in any record, so the suffix rule stands in for it. Confirmed
+# by: one archived call of each; breaks if false: that tool's path is missed, so attention drift undercounts its targets.
+_PATH_PARAM = re.compile(r"(?:Path|File|Dir|Directory)$")
+# view_file's `output` is "<n> lines, <m> bytes": the viewed file's size, not what came back (a 175,676-byte file gave a
+# 61,837-byte step payload), so it is no result size.
+_FILE_STATS = re.compile(r"\d+ lines, \d+ bytes")
+
+
+def tool_inputs(path: Path) -> ProcessTrace:
+    """`ToolInput`s from the stream's tool steps, in native order (the line a step first appears on), plus the
+    user-visible reply text. The tool steps are `read`'s: one per step index, so the two counts are equal (R-85
+    condition 1). `bytes_returned` is the UTF-8 size of a step's `output` text (run_command, manage_task...); None when
+    the step has no output text or only the file-stats line. Reply text is the `text_delta`s of each `agent_response`
+    step joined (Verified on the lean agy run: a turn's `result.response` is exactly these joined, 72 of 72); thinking
+    is never streamed, so none is counted. A step whose text is blank is no message. None for both counts when the
+    stream shows no reply step or was cut short."""
+    ex = Extraction()
+    tools: dict[object, dict] = {}
+    replies: dict[object, list[str]] = {}
+    for n, row in rows(path, ex):
+        if row.get("event") != "step_update":
+            continue
+        step = as_dict(row.get("step_update"))
+        index = step.get("step_index") if type(step.get("step_index")) is int else None
+        if step.get("step_type") == "agent_response":
+            texts = replies.setdefault((step.get("conversation_id"), index), [])
+            if (delta := as_str(step.get("text_delta"))):
+                texts.append(delta)
+        elif step.get("step_type") == "tool":
+            info = as_dict(step.get("tool_info"))
+            tool = tools.setdefault(index if index is not None else ("line", n), {"n": n, "name": None, "params": {}, "output": None})
+            tool["name"] = tool["name"] or as_str(step.get("tool_name")) or as_str(info.get("name"))
+            tool["params"] = tool["params"] or as_dict(info.get("parameters"))
+            if (output := as_str(info.get("output"))) is not None:
+                tool["output"] = output
+    calls: list[ToolInput] = []
+    for tool in sorted(tools.values(), key=lambda t: t["n"]):
+        name, params, output = tool["name"] or "NOT_RECORDED", tool["params"], tool["output"]
+        paths = tuple(dict.fromkeys(v for k, v in params.items() if _PATH_PARAM.search(k) and isinstance(v, str) and v))
+        size = None if output is None or _FILE_STATS.fullmatch(output) else len(output.encode("utf-8"))
+        calls.append(ToolInput(tool["n"], name, paths, as_str(params.get("CommandLine")),
+                               TOOL_CLASS.get(name, "other") == "edit", size))
+    messages = ["".join(t) for t in replies.values() if "".join(t).strip()]
+    counted = bool(replies) and not ex.truncated
+    return ProcessTrace(messages[0] if messages else None, tuple(calls), sum(map(len, messages)) if counted else None,
+                        len(messages) if counted else None)
 
 
 def read(path: Path) -> Extraction:

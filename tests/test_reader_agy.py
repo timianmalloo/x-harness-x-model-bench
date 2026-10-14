@@ -51,7 +51,7 @@ OUT_OF_PROFILE = (
     "browser_input", "browser_list_network_requests", "browser_mouse_down", "browser_mouse_up", "browser_move_mouse",
     "browser_press_key", "browser_refresh_page", "browser_resize_window", "browser_scroll", "browser_scroll_dom",
     "browser_select_option", "browser_subagent", "search_web", "read_url_content", "generate_image", "invoke_subagent",
-    "define_subagent", "manage_subagents", "call_mcp_tool", "schedule", "send_message", "manage_inbox")
+    "define_subagent", "manage_subagents", "call_mcp_tool", "send_message", "manage_inbox")
 
 
 def _conversation_db(home: Path) -> Path:
@@ -201,7 +201,8 @@ def test_an_out_of_profile_tool_that_ran_fires_hb_val_008(tmp_path):
 
 # Leader ruling agy-meta-rerun (Grok's todo_write ruling, ToolSearch R-54 (a)): agy's workspace-inert task-list and
 # turn-control tools are `meta`, counted and never scored. The probe-rerun-1 agy cells were HB-VAL-008 on manage_task only.
-WORKSPACE_INERT = ("manage_task", "finish", "wait", "wait_5_seconds", "ask_question", "list_permissions")
+# Amended 2026-10-14 (owner decision, plan row B16): `schedule` used as a wait is turn control too.
+WORKSPACE_INERT = ("manage_task", "finish", "wait", "wait_5_seconds", "ask_question", "list_permissions", "schedule")
 
 
 def test_a_workspace_inert_task_list_or_turn_control_call_is_meta_not_hb_val_008(tmp_path):
@@ -218,6 +219,67 @@ def test_a_workspace_inert_task_list_or_turn_control_call_is_meta_not_hb_val_008
     error, warning = views._out_of_profile(normalize.tool_call_rows("run", "cell", "sid", ex, "x"), None)
     assert error is None and warning is None
     assert {agy.TOOL_CLASS[n] for n in ("ask_permission", "ask_custom_permission", "notebook_execution")} == {"other"}
+
+
+def _stream(tmp_path: Path, steps: list[dict]) -> Path:
+    cid = "00000000-0000-4000-8000-000000000003"
+    lines = [PACK_ON.read_text(encoding="utf-8").splitlines()[0]] + [
+        json.dumps({"event": "step_update", "step_update": {"conversation_id": cid} | s}) for s in steps]
+    path = tmp_path / "agy-stream.ndjson"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def _tool(index: int, name: str, params: dict, output: str | None = None, state: str = "DONE") -> list[dict]:
+    """A tool step as the stream writes it: an ACTIVE line with the parameters, then the closing line with the output."""
+    info = {"name": name, "parameters": params}
+    return [{"step_index": index, "state": "ACTIVE", "step_type": "tool", "tool_name": name, "tool_info": info},
+            {"step_index": index, "state": state, "step_type": "tool", "tool_name": name,
+             "tool_info": info | ({} if output is None else {"output": output})}]
+
+
+def _reply(index: int, *deltas: str) -> list[dict]:
+    steps = [{"step_index": index, "state": "ACTIVE", "step_type": "agent_response", "text_delta": d} for d in deltas]
+    return steps + [{"step_index": index, "state": "DONE", "step_type": "agent_response"}]
+
+
+def test_tool_inputs_reads_each_tool_steps_paths_command_write_class_and_result_size(tmp_path):
+    # Parameter names are the ones the lean agy run recorded: AbsolutePath (view_file), TargetFile (write_to_file,
+    # replace_file_content), CommandLine (run_command). SearchPath on grep_search is Inferred (no archived record has a
+    # grep_search call): the suffix rule is what covers every tool the run did not exercise.
+    stale = "C:\\ws\\a.py"
+    steps = (_tool(2, "view_file", {"AbsolutePath": stale}, "290 lines, 26789 bytes")
+             + _tool(3, "run_command", {"CommandLine": "pytest -q"}, "ok \u2713\n")
+             + _tool(4, "write_to_file", {"TargetFile": "C:\\ws\\b.py"})
+             + _tool(5, "grep_search", {"Query": "x", "SearchPath": "C:\\ws"})
+             + _tool(6, "view_file", {"AbsolutePath": "C:\\ws\\gone.py"}, state="ERROR"))
+    trace = agy.tool_inputs(_stream(tmp_path, steps))
+    assert [(c.native_ordinal, c.name, c.paths, c.command, c.is_write, c.bytes_returned) for c in trace.calls] == [
+        (2, "view_file", (stale,), None, False, None),  # "N lines, M bytes" is the file's size, not what came back
+        (4, "run_command", (), "pytest -q", False, len("ok \u2713\n".encode())),
+        (6, "write_to_file", ("C:\\ws\\b.py",), None, True, None),
+        (8, "grep_search", ("C:\\ws",), None, False, None),
+        (10, "view_file", ("C:\\ws\\gone.py",), None, False, None)]
+
+
+def test_tool_inputs_text_is_each_replys_deltas_summed_and_whitespace_only_steps_are_no_message(tmp_path):
+    # Verified on the lean agy run: a turn's result.response is exactly the deltas of its agent_response steps joined.
+    steps = (_reply(1, "**Goal", " state**") + _tool(2, "run_command", {"CommandLine": "ls"}, "x")
+             + _reply(3, "\n") + _reply(4) + _reply(5, "done", "."))
+    trace = agy.tool_inputs(_stream(tmp_path, steps))
+    assert (trace.first_assistant_text, trace.assistant_chars, trace.assistant_messages) == ("**Goal state**", 14 + 5, 2)
+
+
+def test_tool_inputs_text_is_not_recorded_when_the_stream_shows_no_reply_step(tmp_path):
+    trace = agy.tool_inputs(_stream(tmp_path, _tool(2, "run_command", {"CommandLine": "ls"}, "x")))
+    assert (trace.first_assistant_text, trace.assistant_chars, trace.assistant_messages) == (None, None, None)
+
+
+@pytest.mark.parametrize("name", ["pack-on", "pack-off", "turn1", "cached"])
+def test_tool_inputs_count_equals_the_readers_tool_call_count(name):
+    # R-85 condition 1: both projections walk the same tool steps, keyed by step index.
+    path = FIXTURES / name / "agy-stream.ndjson"
+    assert [c.native_ordinal for c in agy.tool_inputs(path).calls] == [c.native_ordinal for c in agy.read(path).tool_calls]
 
 
 @pytest.mark.parametrize("name", ["pack-on", "pack-off", "turn1", "cached"])

@@ -54,7 +54,7 @@ EDIT_TOOLS = frozenset(n for m in _CLASS_MAPS for n, c in m.items() if c == "edi
 NO_BYTES = "a tool result's size is not in the record"
 NO_CALLS = "no tool calls recorded"
 # The harnesses whose reader yields a `ToolInput` sequence (each module's `tool_inputs`).
-TRACE_READERS = {"claude-code": claude_code, "codex": codex, "copilot": copilot}
+TRACE_READERS = {"claude-code": claude_code, "codex": codex, "copilot": copilot, "agy": agy, "grok": grok}
 # ADR-0027 s0: ACP, a native stream (ADR-0025), or Copilot `-p` behind the local adapter (ADR-0028); one wording on
 # both report pages (cost_compare, pack_cost).
 TRANSPORTS = ("acp", "native stream", "copilot -p (local adapter)")
