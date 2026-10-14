@@ -516,8 +516,8 @@
  {
   "name": "R-54 (b): a hook-denied other call counts as an R-27 denial",
   "file": "src/harness_bench/views.py",
-  "find": "    denials = normalize.hook_denials([r for r in tools or [] if not _outside(r.get(\"tool_class\"), scenario)])\n",
-  "replace": "    denials = normalize.hook_denials(tools or [])\n",
+  "find": "    in_profile = [r for r in tools or [] if not _outside(r.get(\"tool_class\"), scenario)]\n",
+  "replace": "    in_profile = tools or []\n",
   "tests": [
    "tests/test_views.py::test_a_copilot_hook_denial_of_an_other_call_is_a_refused_attempt_not_hb_val_004"
   ]

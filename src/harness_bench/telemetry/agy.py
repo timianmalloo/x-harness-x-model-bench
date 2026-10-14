@@ -11,7 +11,9 @@ stream_driver.STREAM_RECORD) and the conversation store beside it, `<cell home>/
 - model calls: one per `agent_response` step in state DONE with `usage`, at that line. `reasoning` is
   `thinking_tokens`, a component of `output_tokens` (215 of 216 on the spike's one-word turn).
 - tool calls: one per tool step, at its first line. A DONE state is not success (the spike's turn1 `run_command` reached
-  DONE while agy denied it), so `ok` is None; an ERROR state is `ok` False with the native `error.type`.
+  DONE while agy denied it); an ERROR state is `ok` False with the native `error.type`. Otherwise `ok` comes from the
+  conversation db row of the same `step_index` (W13, `_outcome`): status 3 completed (a `run_command` by its exit code,
+  non-zero is `exit_<N>`), status 6 refused or cancelled (`status_6`); None when there is no db or the row does not say.
 - reasoning: decoded from `steps.step_payload` (row `idx` = the stream's `step_index`) by the stdlib protobuf wire
   decoder below. Field map, from the three spike dbs (agy 1.3.3, no published schema): field 20 is the planner
   response; 20.1 its reply text; 20.7 a tool call (20.7.2 the name, 20.7.3 the JSON arguments); 20.3, when present,
@@ -192,12 +194,42 @@ def _store(path: Path, conversation_id: str | None) -> Path | None:
     return db if db.is_file() else None
 
 
-def _read_store(db: Path) -> tuple[dict[int, bytes], list[bytes]]:
+def _read_store(db: Path) -> tuple[dict[int, bytes], list[bytes], dict[int, int]]:
     with closing(sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True)) as con:
-        steps = {idx: bytes(p) for idx, p in con.execute("select idx, step_payload from steps")
-                 if type(idx) is int and isinstance(p, bytes)}
+        rows_ = [(idx, st, p) for idx, st, p in con.execute("select idx, status, step_payload from steps")
+                 if type(idx) is int and isinstance(p, bytes)]
         gens = [bytes(d) for (d,) in con.execute("select data from gen_metadata order by idx") if isinstance(d, bytes)]
-    return steps, gens
+    return {idx: bytes(p) for idx, _, p in rows_}, gens, {idx: st for idx, st, _ in rows_ if type(st) is int}
+
+
+# `steps.status` (W13; Verified on the lean run of 2026-10-13: 1,900 tool steps): 3 the step completed, 7 it errored
+# (the stream says ERROR too), 6 it was refused or cancelled (the stream says DONE, as for the spike's denied run_command;
+# one real "context canceled" step). The result text of a completed run_command, field 140.2.1, opens with
+# "The command exited with code N." (every one of 752 completed run_commands). The stream carries neither.
+_EXIT = re.compile(r"\s*The command exited with code (-?\d+)\.")
+
+
+def _exit_code(payload: bytes | None) -> int | None:
+    try:
+        text = next((v.decode("utf-8") for v in _at(payload, 140, 2, 1)), "") if payload else ""
+    except (WireError, UnicodeDecodeError):
+        return None
+    found = _EXIT.match(text)
+    return int(found.group(1)) if found else None
+
+
+def _outcome(name: str, status: int | None, payload: bytes | None) -> tuple[bool | None, str | None]:
+    """`(ok, outcome_code)` of one tool step from the db row; a stream ERROR is decided by the caller. A failed command
+    (non-zero exit, a failing test run included) is `exit_<N>`, a refused or cancelled step `status_6`. None when the db
+    does not say: no db, an unknown status, or a run_command whose result names no exit code."""
+    if status == 6:
+        return False, "status_6"
+    if status != 3:
+        return None, None
+    if name != "run_command":
+        return True, None
+    code = _exit_code(payload)
+    return (None, None) if code is None else (True, None) if code == 0 else (False, f"exit_{code}")
 
 
 def _reasoning(calls: list[tuple[int | None, int, int | None]], steps: dict[int, bytes]) -> list[ReasoningItem]:
@@ -304,11 +336,22 @@ def read(path: Path) -> Extraction:
         elif step.get("step_type") == "tool":
             name = as_str(step.get("tool_name")) or as_str(info.get("name")) or "NOT_RECORDED"
             tool = tools.setdefault(index if index is not None else ("line", n), {"n": n, "name": name, "ok": None,
-                                                                                   "code": None})
+                                                                                   "code": None, "index": index})
             if state == "ERROR":
                 tool["ok"], tool["code"] = False, as_str(as_dict(info.get("error")).get("type"))
-    ex.tool_calls = [ToolCall(t["n"], t["name"], TOOL_CLASS.get(t["name"], "other"), None, None, t["ok"], t["code"])
-                     for t in sorted(tools.values(), key=lambda t: t["n"])]
+    db = _store(path, ex.session_id)
+    store, unread = None, NO_DB
+    if db is not None:
+        try:
+            store = _read_store(db)
+        except sqlite3.Error as exc:
+            unread = not_recorded(f"conversation db unreadable ({type(exc).__name__})")[1]
+    steps, gens, statuses = store or ({}, [], {})
+    ex.tool_calls = []
+    for t in sorted(tools.values(), key=lambda t: t["n"]):  # a stream ERROR decides; else the db row, if there is one
+        ok, code = (t["ok"], t["code"]) if t["ok"] is not None else _outcome(t["name"], statuses.get(t["index"]),
+                                                                           steps.get(t["index"]))
+        ex.tool_calls.append(ToolCall(t["n"], t["name"], TOOL_CLASS.get(t["name"], "other"), None, None, ok, code))
     no_context = not_recorded("the agy stream carries no context window")
     effort = _EFFORT_SUFFIX.search(model or "")
     sources = {"model_served": "agy-stream.ndjson init.model"} if model else {}
@@ -322,14 +365,8 @@ def read(path: Path) -> Extraction:
         reasoning_summary=not_recorded("the agy stream carries no reasoning-summary setting"),
         sources=sources)
     ex.harness_events = not_recorded("agy steps are a Flagged source for hooks, skills and compaction; not read")[1]
-    db = _store(path, ex.session_id)
-    if db is None:
-        ex.reasoning = ex.prompt_parts = NO_DB
-        return ex
-    try:
-        steps, gens = _read_store(db)
-    except sqlite3.Error as exc:
-        ex.reasoning = ex.prompt_parts = not_recorded(f"conversation db unreadable ({type(exc).__name__})")[1]
+    if store is None:
+        ex.reasoning = ex.prompt_parts = unread
         return ex
     ex.reasoning = _reasoning(calls, steps)
     ex.prompt_parts = _prompt_parts(gens)

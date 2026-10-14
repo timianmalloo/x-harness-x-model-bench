@@ -105,10 +105,10 @@ def test_the_runner_reads_the_cells_stream_although_session_opened_names_no_sess
 
 
 def test_tool_steps_give_tool_calls_at_their_first_line_closed_by_their_terminal_state():
-    # turn1's run_command reached DONE although agy denied it (its result lists the denial), so DONE is not success:
-    # ok stays None (not recorded), never True.
-    assert agy.read(TURN1).tool_calls == [ToolCall(4, "view_file", "read", None, None, None),
-                                          ToolCall(7, "run_command", "shell", None, None, None)]
+    # turn1's run_command reached DONE in the stream although agy denied it, so the stream's DONE is not success; the
+    # conversation db row says it (status 6, W13), and the view_file row completed (status 3).
+    assert agy.read(TURN1).tool_calls == [ToolCall(4, "view_file", "read", None, None, True),
+                                          ToolCall(7, "run_command", "shell", None, None, False, "status_6")]
 
 
 def test_reasoning_is_the_opaque_step_payload_as_encrypted_only_with_its_sha256():

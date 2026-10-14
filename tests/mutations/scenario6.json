@@ -203,8 +203,8 @@
  {
   "name": "R-73/R-74 (W3-S6): a hook-denied delegate call outside scenario 6 is an R-27 denial",
   "file": "src/harness_bench/views.py",
-  "find": "if not _outside(r.get(\"tool_class\"), scenario)])",
-  "replace": "if r.get(\"tool_class\") != OTHER])",
+  "find": "in_profile = [r for r in tools or [] if not _outside(r.get(\"tool_class\"), scenario)]",
+  "replace": "in_profile = [r for r in tools or [] if r.get(\"tool_class\") != OTHER]",
   "tests": [
    "tests/test_views.py::test_a_copilot_hook_denial_of_task_outside_scenario6_is_a_refused_attempt_not_hb_val_004"
   ]
