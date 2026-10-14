@@ -7,7 +7,8 @@ SRC = Path(__file__).resolve().parents[1] / "src/harness_bench"
 READERS = {"engine.py", "grade/runner.py", "report/credentials.py", "report/judges.py",
            "report/pack_improvement.py", "report/summaries.py", "report/html.py", "resume.py", "views.py",
            "report/tool_phases.py",  # cell_trace, moved from pack_improvement (R-DERIV)
-           "report/pack_cost.py"}  # the pre-turn tree of the archived working copy (R-PACKCOST, ADR-0029 s4)
+           "report/pack_cost.py",  # the pre-turn tree of the archived working copy (R-PACKCOST, ADR-0029 s4)
+           "early_check.py"}  # `status --check-ended`: each archived attempt, read by runner.read_record (2026-10-13)
 ANNOTATION = {"grade/__init__.py"}
 GIT_ARCHIVE = {"grade/_changes.py", "workspace.py"}
 
