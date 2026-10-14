@@ -38,7 +38,7 @@ import time
 import traceback
 from collections import Counter
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
 
@@ -228,6 +228,61 @@ def _abandoned(run_dir: Path, done: set[str], named: set[tuple[str, str]]) -> li
     return out
 
 
+@dataclass(frozen=True)
+class RecordRead:
+    """One cell's native record as a grading pass reads it; rows unstamped. `reason`: with no record read (`ex` None),
+    why (none, or more than one, for the session); with one read, a sub-agent record's that could not be read as a whole
+    (R-74 item 4, R-21 c2), else None."""
+
+    ex: Extraction | None
+    reason: str | None
+    model_rows: list = field(default_factory=list)
+    tool_rows: list = field(default_factory=list)
+    streams: dict[str, list] = field(default_factory=dict)  # READER_STREAMS -> rows
+    stream_reasons: dict[str, str] = field(default_factory=dict)  # a reader hook's whole-record reason (ADR-0026 s1)
+
+    @property
+    def unreadable(self) -> str | None:
+        """R-15: why the cell's usage record is not recorded, or None (the pass's `unreadable_records` entry)."""
+        return self.reason if self.ex is None else (normalize.record_unreadable(self.ex) or self.reason)
+
+
+def read_record(plan: Mapping, cell: Mapping, folder: Path, session_id: str, extraction: str) -> RecordRead:
+    """Read the cell's native record, and each sub-agent record of its session, from an archived attempt `folder`.
+    Pure over the archive: it writes nothing, so a read-only check (`early_check`) reads the record as the pass does."""
+    record = plan["profiles"][cell["harness"]]
+    records = profiles.find_records(folder / "home", record["record_glob"], session_id)
+    if len(records) != 1:
+        return RecordRead(None, "no native record for the session" if not records else "more than one native record for the session")
+    ex = profiles.READERS[cell["harness"]](records[0])
+    session_id = session_id or ex.session_id or ""  # agy: the record names its conversation, the event cannot
+    run_id, cid = plan["run_id"], cell["cell_id"]
+    model_rows = normalize.model_call_rows(run_id, cid, session_id, ex, extraction)
+    tool_rows = normalize.tool_call_rows(run_id, cid, session_id, ex, extraction)
+    streams = {s: build(run_id, cid, session_id, ex, extraction) for s, build in _STREAM_ROWS.items()}
+    reasons = {s: r for s in READER_STREAMS if (r := normalize.stream_reason(getattr(ex, s))) is not None}
+    # R-74 item 4: each sub-agent record of the session is read into the same facts, keyed by its own native session
+    # id, so the out-of-profile control and the served models see inside sub-agents. A plan from before the field
+    # names none. The main record stays the cell's extraction (the graders' input).
+    sub_reason = None
+    main = records[0]
+    for path in profiles.find_records(folder / "home", record.get("subagent_glob") or "", session_id):
+        if path == main:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once
+            continue
+        sub = profiles.READERS[cell["harness"]](path)
+        sid = profiles.subagent_session_id(path)
+        if cell["harness"] == "codex" and sub.session_id:  # R-74 item 5: the rollout's own session, not an agent- filename
+            sid = sub.session_id
+        model_rows += normalize.model_call_rows(run_id, cid, sid, sub, extraction)
+        tool_rows += normalize.tool_call_rows(run_id, cid, sid, sub, extraction)
+        for s, build in _STREAM_ROWS.items():
+            if s not in _MAIN_ONLY:
+                streams[s] += build(run_id, cid, sid, sub, extraction)
+        reason = normalize.record_unreadable(sub)
+        sub_reason = sub_reason or (f"sub-agent record {sid}: {reason}" if reason else None)
+    return RecordRead(ex, sub_reason, model_rows, tool_rows, streams, reasons)
+
+
 def run_pass(run_dir: Path, root: Path, judging: Mapping[str, GraderFn] | None = None,
              live_scan: tuple | None = None, *, cells_root: Path | None = None) -> PassResult:
     """One grading pass. `judging` replaces registered graders for this pass only (design phase3-gateway-judges
@@ -325,50 +380,21 @@ class _Pass:
                 w.close()
         return PassResult(self.grading_id, heads, graded, [f"{fact}/{r.segment_id}" for fact, r in abandoned])
 
-    def _extract(self, cell: dict, folder: Path, session_id: str, held: set) -> tuple[Extraction | None, str | None, list, list]:
-        """(the record as read, why it is not recorded, its model-call rows, its tool-call rows); rows unstamped. With a
-        record read, the reason is a sub-agent record's that could not be read as a whole (R-74 item 4, R-21 c2)."""
-        record = self.plan["profiles"][cell["harness"]]
-        records = profiles.find_records(folder / "home", record["record_glob"], session_id)
-        if len(records) != 1:
-            return None, "no native record for the session" if not records else "more than one native record for the session", [], []
-        ex = profiles.READERS[cell["harness"]](records[0])
-        session_id = session_id or ex.session_id or ""  # agy: the record names its conversation, the event cannot
+    def _extract(self, cell: dict, folder: Path, session_id: str, held: set) -> RecordRead:
+        """`read_record`, then its rows written once per extraction (the module docstring) and its stream reasons kept."""
+        read = read_record(self.plan, cell, folder, session_id, self.extraction)
         cid = cell["cell_id"]
-        model_rows = normalize.model_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
-        tool_rows = normalize.tool_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
-        streams = {s: build(self.plan["run_id"], cid, session_id, ex, self.extraction) for s, build in _STREAM_ROWS.items()}
-        reasons = {s: r for s in READER_STREAMS if (r := normalize.stream_reason(getattr(ex, s))) is not None}
-        if reasons:
-            self.streams_nr[cid] = reasons
-        # R-74 item 4: each sub-agent record of the session is read into the same facts, keyed by its own native session
-        # id, so the out-of-profile control and the served models see inside sub-agents. A plan from before the field
-        # names none. The main record stays the cell's extraction (the graders' input).
-        sub_reason = None
-        main = records[0]
-        for path in profiles.find_records(folder / "home", record.get("subagent_glob") or "", session_id):
-            if path == main:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once
-                continue
-            sub = profiles.READERS[cell["harness"]](path)
-            sid = profiles.subagent_session_id(path)
-            if cell["harness"] == "codex" and sub.session_id:  # R-74 item 5: the rollout's own session, not an agent- filename
-                sid = sub.session_id
-            model_rows += normalize.model_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
-            tool_rows += normalize.tool_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
-            for s, build in _STREAM_ROWS.items():
-                if s not in _MAIN_ONLY:
-                    streams[s] += build(self.plan["run_id"], cid, sid, sub, self.extraction)
-            reason = normalize.record_unreadable(sub)
-            sub_reason = sub_reason or (f"sub-agent record {sid}: {reason}" if reason else None)
-        if (cid, self.extraction) not in held:
-            for row in model_rows:
+        if read.stream_reasons:
+            self.streams_nr[cid] = read.stream_reasons
+        if read.ex is not None and (cid, self.extraction) not in held:
+            for row in read.model_rows:
                 self.append("model_calls", row)
-            for row in tool_rows:
+            for row in read.tool_rows:
                 self.append("tool_calls", row)
             for s in READER_STREAMS:
-                for row in streams[s]:
+                for row in read.streams[s]:
                     self.append(s, row)
-        return ex, sub_reason, model_rows, tool_rows
+        return read
 
     def _grade_cell(self, cell: dict, attempt: int, session_id: str, held: set, usage: dict, events: tuple) -> None:
         cid = cell["cell_id"]
@@ -376,8 +402,8 @@ class _Pass:
         out_dir = self.run_dir / "grading" / self.grading_id / cid
         out_dir.mkdir(parents=True)
         work_root = self.grading_root / self.grading_id / cid  # mirrors out_dir's shape, outside the repository
-        ex, missing, model_rows, tool_rows = self._extract(cell, folder, session_id, held)
-        unreadable = missing if ex is None else (normalize.record_unreadable(ex) or missing)
+        read = self._extract(cell, folder, session_id, held)
+        ex, model_rows, tool_rows, unreadable = read.ex, read.model_rows, read.tool_rows, read.unreadable
         if unreadable is not None:
             self.unreadable[cid] = unreadable
         if ex is not None and ex.tools_advertised is not None:

@@ -60,6 +60,7 @@ The strategy expected the smallest change to be adding `property_check_pass` to 
 2. **Pairing and exclusion: `verdicts.collect`, once per harness.**
    - Each batch's cells are relabelled first, with `rep = batch index` and `cell_id = "<run_id>/<cell_id>"`, so an
      excluded cell names its batch (`dataclasses.replace`; `CellView` is a plain dataclass, `views.py:146`).
+     *Amended 2026-10-13, see Amendment 1:* the rep is `(batch index - 1) * width + plan rep`.
    - Strata are the lean ring's ten tasks.
    - `VerdictSpec`'s label-only fields (`mde`, `level_rule`, `min_pairs`) are filled but not used.
    - `verdicts.verdict` is **not called**.
@@ -126,3 +127,19 @@ The strategy expected the smallest change to be adding `property_check_pass` to 
   leaves LB-7 unbuilt.
 - **A 1-batch ratio rendered as "interval not computed"** (a spec erratum). Rejected. `paired_ratio` is about 25
   lines on an existing draw scheme, and the spec asks for the interval.
+
+## Amendment 1 (2026-10-13): one rep per (batch, plan rep)
+
+- **Defect.** Decision 2 assumed one repetition per batch. It set `rep = batch index` on every cell of a batch.
+  A run with `repetitions: 3` then gave three cells the same `(task, rep, arm)`, and `verdicts.collect` raised
+  HB-USR-002 (`cells X and Y are both <task> rep 1 arm <arm>`). So `bench report` failed on every lean run with
+  more than one repetition, and `bench report --pack-cost` read its outcome as `not recorded`. [Verified: the
+  regression tests in `tests/test_lean.py` and `tests/test_pack_cost.py` were red with that message.]
+- **Change.** The relabelled rep is `(batch index - 1) * width + plan rep`. `width` is the largest plan rep over
+  the batches. So:
+  - each (batch, plan rep) is a distinct rep;
+  - pack-off and pack-on still pair on the same plan rep of the same batch;
+  - with one repetition per batch, the rep is the batch index, as before, and no existing result moves;
+  - `cell_id` is still `"<run_id>/<cell_id>"`, so an excluded cell names its batch.
+- **Not changed.** `--pack-cost` pairs within one view on the plan's own reps (`pack_cost._pairs`), and
+  `--cost-compare` does not pair. Only `lean.build` relabels.

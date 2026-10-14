@@ -62,6 +62,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "egress.py": "grade",
     "stats.py": "grade",
     "status.py": "grade",
+    "early_check.py": "grade",  # `bench status --check-ended`: reads like status and views, writes nothing
     "views.py": "grade",
     "gateway/__init__.py": "grade",
     "gateway/backend.py": "grade",

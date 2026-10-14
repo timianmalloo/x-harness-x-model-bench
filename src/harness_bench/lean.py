@@ -203,8 +203,11 @@ def _planned(batches: Sequence[BatchInput], combo: str | None, ref: str) -> int:
 
 
 def _relabelled(batches: Sequence[BatchInput]) -> list[CellView]:
-    """ADR-0023 decision 2: rep = batch index, cell_id = "<run_id>/<cell_id>", so an excluded cell names its batch."""
-    return [dataclasses.replace(cell, rep=index, cell_id=f"{batch.view.run_id}/{cell.cell_id}")
+    """ADR-0023 decision 2 (amended 2026-10-13): each (batch, plan rep) is its own rep, `(batch - 1) * width + rep` with
+    `width` the largest plan rep over the batches, so off and on still pair on one plan rep of one batch; cell_id is
+    "<run_id>/<cell_id>", so an excluded cell names its batch. With one rep per batch this is the batch index."""
+    width = max((cell.rep for batch in batches for cell in batch.view.cells), default=1)
+    return [dataclasses.replace(cell, rep=(index - 1) * width + cell.rep, cell_id=f"{batch.view.run_id}/{cell.cell_id}")
             for index, batch in enumerate(batches, 1) for cell in batch.view.cells]
 
 
