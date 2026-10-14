@@ -7,6 +7,7 @@
 """
 
 import json
+from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 
@@ -16,7 +17,7 @@ from test_grade_correctness import git
 
 from harness_bench import config
 from harness_bench.grade import CellInput, _changes, drift, runner
-from harness_bench.telemetry import claude_code, normalize
+from harness_bench.telemetry import Extraction, claude_code, normalize
 
 CATALOG = config.load_yaml(ROOT / "bench" / "metrics.yaml")
 SPLIT = ("drift_machine_lines", "drift_task_implied_lines", "scope_creep", "attention_drift")
@@ -181,3 +182,56 @@ def test_attention_drift_on_a_fixture_tool_sequence_equals_a_hand_count(tmp_path
     assert [line.split("\t")[-1] for line in log].count("no-path") == 1  # the Glob: excluded and counted
     assert sorted(line.split("\t")[3] for line in log if line.endswith("\toutside")) == [
         ".../.claude/settings.json", "docs/guide.md", "src/other.py"]  # an outside absolute path: its last two segments
+
+
+def _exec(n: int, js: str) -> str:
+    return json.dumps({"type": "response_item", "payload": {"type": "custom_tool_call", "call_id": f"c{n}", "name": "exec", "input": js}})
+
+
+def test_codex_attention_drift_reads_each_shell_call_not_the_tool_name(tmp_path):
+    """Codex reads through one tool, `exec`; the class is per call (B1 / I1). The hand count, 6 targets: inside are
+    limiter.py (the radius), `vendor/q` (named in the prompt), README.md (named) and helper.py (imported by the radius
+    file); OUTSIDE are other.py and docs/guide.md. A test run and an edit name no read; `rg -l` names none (no-path)."""
+    folder, cell, task = lean_cell(tmp_path, {})
+    cell["harness"] = "codex"
+    live = f"C:/bench-cells/r1/{CID}/ws"
+    batch = (r'const r = await Promise.allSettled([tools.exec_command({cmd:"rg -n Gate vendor/q"}), '
+             r'tools.exec_command({cmd:"Get-Content docs/guide.md"})]);')
+    calls = [
+        'text(await tools.exec_command({cmd:"Get-Content ' + live + '/src/limiter.py; Get-Content src/other.py"}));',
+        batch,
+        r'text(await tools.exec_command({cmd:"# note\nGet-Content README.md\npython -m pytest tests -q"}));',
+        ('text(await tools.apply_patch("*** Begin Patch\n*** Update File: src/limiter.py\n@@\n-x\n+y\n*** End Patch"));\n'
+         'text(await tools.exec_command({cmd:"Get-Content src/helper.py"}));'),  # a patch and a read in one exec
+        'text(await tools.exec_command({cmd:"python -m pytest tests/test_limiter.py"}));',
+        'text(await tools.exec_command({cmd:"rg -l TODO"}));',
+        'text(await tools.exec_command({cmd:"Get-Content src/other.py > copy.txt"}));',  # a write: names no read
+    ]
+    record = folder / "home" / "sessions" / "2026" / "10" / "13" / f"rollout-2026-10-13T00-00-00-{SESSION}.jsonl"
+    record.parent.mkdir(parents=True)
+    record.write_text("".join(_exec(n, js) + "\n" for n, js in enumerate(calls)), encoding="utf-8")
+    events = ({"kind": "attempt.session_opened", "cell_id": CID, "session_id": SESSION},)
+    inp = lean_input(tmp_path, folder, cell, task, by_id("attention_drift"), events=events)
+    plan = {**inp.plan, "profiles": {"codex": {"record_glob": "sessions/**/rollout-*-{session_id}.jsonl", "subagent_glob": None}}}
+    inp = replace(inp, plan=plan, tool_calls=({"name": "exec", "tool_class": "shell"},))
+    got = drift.grade_cell(inp)["attention_drift"]
+    assert (got.value, got.reason) == (Decimal(2) / Decimal(6), None)
+    log = (inp.out_dir / "attention.log").read_text(encoding="utf-8").splitlines()
+    assert [line.split("\t")[-1] for line in log].count("no-path") == 1
+    assert sorted(line.split("\t")[3] for line in log if line.endswith("\toutside")) == ["docs/guide.md", "src/other.py"]
+
+
+def test_attention_drift_uses_the_records_own_session_id_when_the_event_has_none(tmp_path):
+    """agy's `attempt.session_opened` carries `session_id: ""` (the conversation id arrives in the stream), as
+    `runner.read_record` already handles with `session_id or ex.session_id`; the same fallback is `_attention`'s."""
+    folder, cell, task = lean_cell(tmp_path, {})
+    cell["harness"] = "codex"
+    record = folder / "home" / "sessions" / f"rollout-{SESSION}.jsonl"
+    record.parent.mkdir(parents=True)
+    record.write_text(_exec(0, 'text(await tools.exec_command({cmd:"Get-Content src/other.py"}));') + "\n", encoding="utf-8")
+    events = ({"kind": "attempt.session_opened", "cell_id": CID, "session_id": ""},)
+    inp = lean_input(tmp_path, folder, cell, task, by_id("attention_drift"), events=events)
+    plan = {**inp.plan, "profiles": {"codex": {"record_glob": "sessions/rollout-{session_id}.jsonl", "subagent_glob": None}}}
+    inp = replace(inp, plan=plan, extraction=Extraction(session_id=SESSION))
+    assert drift.grade_cell(inp)["attention_drift"].value == Decimal(1)
+    assert drift.grade_cell(replace(inp, extraction=None))["attention_drift"].reason == drift.NO_SESSION
