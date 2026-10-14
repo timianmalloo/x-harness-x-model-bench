@@ -214,7 +214,9 @@ review-suggested:
 - **Freeze.** The 0.8 procedure: `0.9.dev` while the change lands, then the release label, then
   `tools/freeze_catalog.py` (the `bench/catalog-freeze.yaml` entry and the X1 views and board goldens, each graded
   twice). `tests/goldens/report-nonlean-arms.html` prints the loaded catalog, so it is re-captured with the reason
-  "catalog version only".
+  "catalog version only". Frozen 2026-10-14: `catalog_hash` `a5c41e5a...`, `board_export_version` 3. The X1
+  goldens now carry the six process rows, and the X1 board's autonomy area moves from NA to 100.0 (gated
+  48.3049 -> 48.8699): the composite reads them. [Verified: `tests/fixtures/catalog/0.8` against `0.9`.]
 - **Measured on real data.** [Verified, read-only, `runner.read_record` + `process.grade_cell` over the archives.]
   60 cells each, every cell has a value:
 

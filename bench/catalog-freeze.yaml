@@ -40,6 +40,15 @@ versions:
       c44dd2b-no-heads: 82579deb0da09383437357b210743f0d32c3a0f787e491fb235d514e67929b7d
       heads: 82579deb0da09383437357b210743f0d32c3a0f787e491fb235d514e67929b7d
     board_export_version: '3'
+  '0.9':
+    catalog_hash: a5c41e5af36d052cc2b3f6dc96fe8c0cd0970236f1945dd7a69fb24b23428ef7
+    golden:
+      c44dd2b-no-heads: 4202a65610abcad106f3c367e2c34ba5b520681dddde2285e079793368194b1a
+      heads: 4202a65610abcad106f3c367e2c34ba5b520681dddde2285e079793368194b1a
+    board_golden:
+      c44dd2b-no-heads: cee2d1891900ab78f3a1f336ac92c72c1e1adc745d4ef9c5015e1f42ffb8f2ae
+      heads: cee2d1891900ab78f3a1f336ac92c72c1e1adc745d4ef9c5015e1f42ffb8f2ae
+    board_export_version: '3'
 board_exports:
   '1':
     catalog: '0.5'
