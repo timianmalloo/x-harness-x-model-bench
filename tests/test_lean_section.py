@@ -396,3 +396,31 @@ def test_lbu_1_the_first_per_harness_row_is_visible_after_the_jump_link_at_1280x
     lean_page.click("nav a[href='#lean-summary']")
     box = lean_page.locator("#lean-summary table[data-table=per-harness] tbody tr").first.bounding_box()
     assert box is not None and 0 <= box["y"] and box["y"] + box["height"] <= 800
+
+
+# ---------------------------------------------------------------- ADR-0023 Amendment 2: the SV1 rows
+
+def _sv1_cell(rep, *, checks=3, early=0, gap="61.0", calls=3, direct=0, calls_reason=None, excluded=None):
+    return lean.SupervisionCell(
+        cell_id=f"{RUN_1}/sv-{rep}", rep=rep, excluded=excluded, pass_at_1=None if excluded else 1,
+        partial_credit=None if excluded else D(1), status_checks=checks, early_checks=early,
+        min_gap_s=None if gap is None else D(gap), finished_seen=True, reported_checks=checks, measures_reason=None,
+        status_calls=calls, job_run_calls=direct, calls_reason=calls_reason)
+
+
+def test_each_sv1_row_shows_its_scores_and_per_cell_measures_and_says_why_a_count_is_not_recorded():
+    rows = (lean.SupervisionRow("SV1", "claude-code-combo", "claude-code", "m", "off", (2, 2), D("0.75"),
+                                (_sv1_cell(1), _sv1_cell(2, checks=19, early=19, gap="10.0", calls=19, direct=2))),
+            lean.SupervisionRow("SV1", "grok-combo", "grok", "m", "on", (0, 0), None,
+                                (_sv1_cell(1, gap=None, calls=None, direct=None, excluded="invalid (model mismatch)",
+                                           calls_reason="no tool-input reader for grok"),)))
+    doc = _render(dataclasses.replace(_one_batch_summary(), supervision=rows), RUN_1)
+    table = re.search(r'<table data-table="supervision">.*?</table>', doc, re.DOTALL)
+    assert table, "no supervision table"
+    cc, grok = re.findall(r"<tr data-task=.*?</tr>", table.group(0), re.DOTALL)
+    assert _text(cc).startswith("SV1 claude-code off 2 of 2 0.75")
+    assert "3 / 19" in _text(cc) and "0 / 19" in _text(cc) and "61.0 / 10.0" in _text(cc) and "0 / 2" in _text(cc)
+    assert "0 of 0" in _text(grok) and "not recorded (no pass counted)" in _text(grok)
+    assert "excluded: invalid (model mismatch)" in _text(grok)
+    assert "not recorded (no tool-input reader for grok)" in _text(grok)
+    assert 'data-table="supervision"' not in _render(_one_batch_summary(), RUN_1)

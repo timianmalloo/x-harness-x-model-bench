@@ -120,6 +120,11 @@ BatchInput
   view: RunView
   run_wall_ns: int | None            # from the extracted wall-clock helper
   grading_ns: int | None; cells_graded: int | None   # current pass, from grading.started/completed mono_ns
+  first_cell_started_at: datetime | None             # the batch's earliest attempt.process_started (additive ruling)
+  supervision: Mapping[cell_id, SupervisionFacts]    # default {}; ADR-0023 Amendment 2 (2026-10-14)
+SupervisionFacts                     # one stated-requirement (SV1) cell's report-time facts; None = not recorded
+  measures: Mapping[str, object] | None; measures_reason: str | None   # oracle.log's SV1-MEASURES line
+  status_calls: int | None; job_run_calls: int | None; calls_reason: str | None   # the native record's tool calls
 Prereg
   sha256: str; committed_at: datetime | None          # None = not committed
 LeanSummary
@@ -131,6 +136,17 @@ LeanSummary
   disagree: bool                     # two harness intervals wholly on opposite sides of 0
   properties: tuple[PropertyRow, ...]
   checkpoint: tuple[BatchCheckpoint, ...]
+  supervision: tuple[SupervisionRow, ...]   # default (); per stated-requirement task x combo x arm (Amendment 2)
+SupervisionRow
+  task: str; combo: str; harness: str; model: str; arm: str
+  passes: tuple[int, int]            # pass@1 (passes, counted cells), verdicts.collect's exclusion rule
+  partial_credit: Decimal | None     # mean over counted cells
+  cells: tuple[SupervisionCell, ...] # rep order
+SupervisionCell
+  cell_id: str; rep: int; excluded: str | None; pass_at_1: int | None; partial_credit: Decimal | None
+  status_checks, early_checks, reported_checks: int | None; min_gap_s: Decimal | None; finished_seen: bool | None
+  measures_reason: str | None
+  status_calls: int | None; job_run_calls: int | None; calls_reason: str | None
 LeanRow
   combo: str; harness: str; model: str
   effect: Decimal | None; lo: Decimal | None; hi: Decimal | None   # stats.paired_delta (two-stage)

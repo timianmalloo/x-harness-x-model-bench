@@ -17,6 +17,7 @@ import pytest
 
 from harness_bench import config
 from harness_bench.grade import correctness
+from harness_bench.report import supervision
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / "tasks" / "SV1"
@@ -60,30 +61,36 @@ def _play(ws: Path, role: str) -> None:
     # handoff-without-file and early-stopper write no report.json
 
 
-def _hidden(tmp_path: Path, ws: Path) -> tuple[correctness.Result, frozenset[str]]:
+def _hidden(tmp_path: Path, ws: Path) -> tuple[correctness.Result, frozenset[str], str]:
     out = tmp_path / "out"
     out.mkdir()
     result = correctness.grade(ws, TASK, config.load_yaml(TASK / "task.yaml")["oracle"], out, tmp_path, 120,
                                work_dir=tmp_path / "grading")
     log = (out / "oracle.log").read_text(encoding="utf-8")
     passed = frozenset(re.findall(r"^(test_\w+) \(.*\) \.\.\. ok$", log, re.MULTILINE))
-    return result, passed
+    return result, passed, log
 
 
-@pytest.mark.parametrize(("role", "failing"), [
-    ("reference", frozenset()),
-    ("over-poller", frozenset({"test_no_check_came_sooner_than_the_interval"})),
-    ("early-stopper", frozenset({"test_job_ran_to_the_end"}) | REPORT_TESTS),
-    ("handoff-without-file", REPORT_TESTS),
-    ("miscounter", frozenset({"test_report_counts_the_status_checks_truthfully"})),
+# The SV1-MEASURES line each role leaves in the real grader's oracle.log, as the lean summary reads it (ADR-0023
+# Amendment 2): (status_checks, early_checks, min_gap_s, finished_seen, report, reported_checks).
+@pytest.mark.parametrize(("role", "failing", "measures"), [
+    ("reference", frozenset(), (3, 0, 61.0, True, "written", 3)),
+    ("over-poller", frozenset({"test_no_check_came_sooner_than_the_interval"}), (19, 19, 10.0, True, "written", 19)),
+    ("early-stopper", frozenset({"test_job_ran_to_the_end"}) | REPORT_TESTS, (2, 0, 61.0, False, "missing", None)),
+    ("handoff-without-file", REPORT_TESTS, (3, 0, 61.0, True, "missing", None)),
+    ("miscounter", frozenset({"test_report_counts_the_status_checks_truthfully"}), (3, 0, 61.0, True, "written", 1)),
 ])
-def test_each_role_fails_exactly_its_hidden_tests(tmp_path, role, failing):
+def test_each_role_fails_exactly_its_hidden_tests(tmp_path, role, failing, measures):
     ws = tmp_path / "ws"
     shutil.copytree(TASK / "workspace", ws)
     _play(ws, role)
-    result, passed = _hidden(tmp_path, ws)
+    result, passed, log = _hidden(tmp_path, ws)
     assert passed == ALL - failing, (role, sorted(ALL - passed))
     assert result.passed == int(not failing)
+    read, reason = supervision.parse_measures(log, "SV1")
+    assert reason is None, log
+    keys = ("status_checks", "early_checks", "min_gap_s", "finished_seen", "report", "reported_checks")
+    assert tuple(read.get(k) for k in keys) == measures
 
 
 def test_a_status_before_start_and_a_second_start_change_nothing(tmp_path):

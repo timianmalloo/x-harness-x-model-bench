@@ -99,6 +99,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "report/model.py": "grade",
     "report/pack_improvement.py": "grade",
     "report/lean_section.py": "grade",
+    "report/supervision.py": "grade",  # ADR-0023 Amendment 2: SV1's report-time facts for the lean summary
     "report/summaries.py": "grade",
     "report/assets/report.js": "grade",
     # W0 §9 includes these future phase modules and the two landed D1/F0 modules.

@@ -1,0 +1,51 @@
+[
+ {
+  "name": "SV1 cells paired on the primary (every SV1 pair excluded)",
+  "file": "src/harness_bench/lean.py",
+  "find": "c.combo == combo and c.task not in stated], spec)",
+  "replace": "c.combo == combo], spec)",
+  "tests": ["tests/test_lean.py::test_sv1_cells_leave_the_primary_mde_and_property_rows_unchanged"]
+ },
+ {
+  "name": "planned pairs count SV1 (the MDE overstated)",
+  "file": "src/harness_bench/lean.py",
+  "find": "(combo is None or cell[\"combo\"] == combo) and cell[\"task\"] not in stated",
+  "replace": "(combo is None or cell[\"combo\"] == combo)",
+  "tests": ["tests/test_lean.py::test_sv1_cells_leave_the_primary_mde_and_property_rows_unchanged"]
+ },
+ {
+  "name": "an empty SV property family row",
+  "file": "src/harness_bench/lean.py",
+  "find": "if cell[\"task\"] not in stated))",
+  "replace": "if True))",
+  "tests": ["tests/test_lean.py::test_sv1_cells_leave_the_primary_mde_and_property_rows_unchanged"]
+ },
+ {
+  "name": "an invalid SV1 cell counted for pass@1",
+  "file": "src/harness_bench/lean.py",
+  "find": "    if cell.validity.startswith(\"invalid\"):\n        return cell.validity\n",
+  "replace": "    if False:\n        return cell.validity\n",
+  "tests": ["tests/test_lean.py::test_an_sv1_cell_without_facts_or_a_counted_score_is_not_recorded_never_zero"]
+ },
+ {
+  "name": "a read of job-run/ by path not counted (the B6 gap reopened)",
+  "file": "src/harness_bench/report/supervision.py",
+  "find": " or any(JOB_RUN in p for p in c.paths))",
+  "replace": ")",
+  "tests": ["tests/test_lean_supervision.py::test_job_calls_count_status_runs_and_direct_job_run_touches_from_the_tool_inputs"]
+ },
+ {
+  "name": "the SV1 table not rendered",
+  "file": "src/harness_bench/report/lean_section.py",
+  "find": "*_supervision(summary), ",
+  "replace": "",
+  "tests": ["tests/test_lean_section.py::test_each_sv1_row_shows_its_scores_and_per_cell_measures_and_says_why_a_count_is_not_recorded"]
+ },
+ {
+  "name": "the CLI passes no SV1 facts into the lean summary",
+  "file": "src/harness_bench/cli.py",
+  "find": "views.first_cell_started_at(d),\n                                       supervision.facts(v))",
+  "replace": "views.first_cell_started_at(d))",
+  "tests": ["tests/test_lean_report_e2e.py::test_g_sv1_cells_keep_the_primary_and_render_their_own_rows_through_the_cli"]
+ }
+]

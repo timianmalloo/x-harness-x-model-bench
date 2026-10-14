@@ -143,3 +143,55 @@ The strategy expected the smallest change to be adding `property_check_pass` to 
   - `cell_id` is still `"<run_id>/<cell_id>"`, so an excluded cell names its batch.
 - **Not changed.** `--pack-cost` pairs within one view on the plan's own reps (`pack_cost._pairs`), and
   `--cost-compare` does not pair. Only `lean.build` relabels.
+
+## Amendment 2 (accepted 2026-10-14): the primary reads property tasks only; SV1 gets its own rows
+
+- **Status.** Accepted 2026-10-14, owner direction: no gaps before the re-run. It is ADR-0022 Amendment 1's
+  `lean.py` half (the supervision task `SV1` in the lean rings). Landed by the W11 track of
+  `plan-benchmark-instrumentation-2026-10-14`.
+- **Defect it prevents.** [Verified: red on `tests/test_lean.py`, a lean batch with `SV1` cells.] Before this
+  amendment, `lean.build` paired `SV1` on `property_check_pass`, which `SV1` never has. So every `SV1` cell was
+  excluded, the planned pairs read 22 per harness instead of 20, and the derived MDE read 0.30 instead of 0.31.
+- **Which tasks are property tasks.** A stated-requirement task is one the frozen plan carries with a `graders` list
+  that names no `property` grader (`lean.stated_tasks`; `SV1` names `correctness` and `process`). The plan freezes
+  each task's `graders` (`plan._graders`), and readiness requires a property task to name `property`. A plan with no
+  frozen `graders` for a task keeps it a property task, so an older run reads as before. ADR-0022 Amendment 1
+  proposed passing the property-task ids in from each `task.yaml`; the plan already holds them, so no input is added.
+- **Decision 2, amended.** The strata are the plan's property tasks. `verdicts.collect` sees no stated-requirement
+  cell, so none is excluded from the primary.
+- **Decision 6, amended.** The planned pairs, and so the MDE, count property-task pack-off cells only. A run without
+  `SV1` gets exactly the old numbers: the existing lean tests pass unchanged.
+- **LB-6.** The per-property rows list property families only, so no empty `SV` row appears.
+- **New: one SV1 row per task x combo x arm** (`LeanSummary.supervision`, after the per-property block):
+  - `passes`: `pass_at_1` passes over counted cells. A cell is counted by `verdicts.collect`'s own rule applied to
+    `pass_at_1`: an invalid cell, an outcome that is neither completed nor a timeout with a score, or no score is
+    not counted, and the row names why.
+  - `partial_credit`: the mean over counted cells.
+  - Per cell, in rep order: `status_checks`, `early_checks`, `min_gap_s`, `finished_seen` and `reported_checks`, read
+    from the `SV1-MEASURES` JSON line that the hidden tests print into the cell's `oracle.log` (the correctness
+    grader's evidence for `pass_at_1`). A value of the wrong type (a report's `status_checks` as a string, say) is
+    not recorded, never coerced.
+  - Per cell, from the native record: `status_calls`, the tool calls whose command runs `job.py status`; and
+    `job_run_calls`, the tool calls whose command or paths name `job-run` directly. This is plan row B6's gap: the
+    working tree cannot show a check that reads `job-run/state.json` instead of running `job.py status`. The counts
+    come from `ToolInput` (`tool_phases.cell_trace`, the main session plus its sub-agents). A harness with no
+    tool-input reader in `tool_phases.TRACE_READERS` reads `not recorded (no tool-input reader for <harness>)`. On
+    this base that is Grok and agy; their readers land on other tracks, and the check picks them up unchanged.
+  - Every missing value is `None` with its reason, never 0.
+- **Purity is kept.** `lean.build` does no I/O. The CLI reads the facts (`report/supervision.py`: the oracle line and
+  the native record) and passes them in through `BatchInput.supervision`, keyed by the batch's own cell id. Both new
+  fields have defaults, so every existing caller is unchanged.
+- **Not changed.** The token checkpoint and the infrastructure-failure counts still read every cell of the batch,
+  `SV1` included: they measure the run's cost, not the pack effect. `SV1` is reported, not tested: no interval and no
+  statement.
+- **Proof.** [Verified on the W11 branch.]
+  - `tests/test_lean.py`: `SV1` cells leave the rows, the pooled row, the property rows and `disagree` equal to the
+    run without them, and the SV1 rows read their own scores and facts.
+  - `tests/test_sv1_task.py`: the real grader's `oracle.log`, for each of five agent roles, parses to the expected
+    measures.
+  - `tests/test_lean_supervision.py`: the native-record counts, on `ToolInput`s shaped as the 2026-10-13 records
+    show them (Claude Code `PowerShell` and `Read`, Codex `exec`, Copilot `powershell`).
+  - `tests/test_lean_report_e2e.py`: the rows reach the page through `bench report`.
+  - `tests/mutations/lean_supervision.json`: seven mutants, all killed.
+  - On the five 2026-10-13 lean runs (no `SV1`), `stated_tasks` is empty for every plan, so no number moves. Over
+    their 8,409 traced tool calls the two counts are 0 and 0: no false positive.

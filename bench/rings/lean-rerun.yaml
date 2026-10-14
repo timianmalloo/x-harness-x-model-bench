@@ -1,5 +1,6 @@
-# Lean re-run ring at equal reasoning (ADR-0022 s1, ADR-0024): lean.yaml's ten property tasks, six combos, effort high.
-# 10 property tasks x 2 arms (pack-off, pack-on) x 6 combos x 1 = 120 cells; two confirmed runs of it are the two batches.
+# Lean re-run ring at equal reasoning (ADR-0022 s1, ADR-0024): lean.yaml's eleven tasks, six combos, effort high.
+# 10 property tasks + SV1 (ADR-0022 Amendment 1, accepted 2026-10-14) x 2 arms x 6 combos x 1 = 132 cells; two confirmed
+# runs of it are the two batches. SV1 is reported in its own lean rows, outside the primary (ADR-0023 Amendment 2).
 # Every combo pins its concrete model id, effort and context (architecture-lean-rerun.md, the six-combo table, as amended
 # by Ruling 123: Claude Code at 1,000,000 - the adapter's authoritative post-result window; Ruling 122 is superseded),
 # by Ruling 120: Copilot at 922,000 in -p mode). Grok and agy context are "default": no knob (Grok serves 256,000; agy's
@@ -7,7 +8,7 @@
 # Tokens are the only cost axis. The pack-on arm is a role arm: bind it at plan time with --arm on=SOURCE@COMMIT.
 schema: bench-matrix/3
 ring: {tag: lean}
-bom: {file: bench/bom.yaml, subset: [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2]}
+bom: {file: bench/bom.yaml, subset: [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2, SV1]}
 repetitions: 1
 harness_parallelism: {grok: 1, agy: 1}
 arms:

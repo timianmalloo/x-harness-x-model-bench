@@ -11,7 +11,7 @@ from __future__ import annotations
 import dataclasses
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
 from typing import Literal
@@ -23,12 +23,24 @@ from harness_bench.views import CellView, RunView
 
 
 @dataclass(frozen=True)
+class SupervisionFacts:
+    """One stated-requirement cell's report-time facts (ADR-0023 Amendment 2), read by the CLI: `lean` does no I/O.
+    None = not recorded, with its reason; never 0."""
+    measures: Mapping[str, object] | None  # the `SV1-MEASURES` JSON line of the cell's oracle.log
+    measures_reason: str | None
+    status_calls: int | None  # native-record tool calls whose command runs `job.py status`
+    job_run_calls: int | None  # native-record tool calls whose command or paths name `job-run` directly
+    calls_reason: str | None
+
+
+@dataclass(frozen=True)
 class BatchInput:
     view: RunView
     run_wall_ns: int | None  # from the extracted wall-clock helper
     grading_ns: int | None  # current pass, from grading.started/completed mono_ns
     cells_graded: int | None
     first_cell_started_at: datetime | None  # the batch's earliest attempt.process_started; None = not recorded
+    supervision: Mapping[str, SupervisionFacts] = field(default_factory=dict)  # by the batch's own cell_id
 
 
 @dataclass(frozen=True)
@@ -74,6 +86,36 @@ class BatchCheckpoint:
 
 
 @dataclass(frozen=True)
+class SupervisionCell:
+    cell_id: str  # "<run_id>/<cell_id>"
+    rep: int  # the relabelled rep (ADR-0023 decision 2)
+    excluded: str | None  # why pass@1 is not counted (validity, outcome, score not recorded); None = counted
+    pass_at_1: int | None
+    partial_credit: Decimal | None
+    status_checks: int | None  # job.py's status log: calls it recorded
+    early_checks: int | None  # checks sooner than the stated interval
+    min_gap_s: Decimal | None
+    finished_seen: bool | None  # a check saw the job finished
+    reported_checks: int | None  # report.json's status_checks
+    measures_reason: str | None  # why a measure above is not recorded
+    status_calls: int | None  # native record: tool calls that run `job.py status`
+    job_run_calls: int | None  # native record: tool calls that name `job-run` directly (the tree cannot see these)
+    calls_reason: str | None
+
+
+@dataclass(frozen=True)
+class SupervisionRow:
+    task: str
+    combo: str
+    harness: str
+    model: str
+    arm: str
+    passes: tuple[int, int]  # pass@1 (passes, counted cells)
+    partial_credit: Decimal | None  # mean over the counted cells; None = none counted
+    cells: tuple[SupervisionCell, ...]  # rep order
+
+
+@dataclass(frozen=True)
 class LeanSummary:
     batches: int  # 1 or 2
     run_ids: tuple[str, ...]
@@ -84,6 +126,7 @@ class LeanSummary:
     disagree: bool  # two harness intervals wholly on opposite sides of 0
     properties: tuple[PropertyRow, ...]
     checkpoint: tuple[BatchCheckpoint, ...]
+    supervision: tuple[SupervisionRow, ...] = ()  # stated-requirement tasks (SV1), per task x combo x arm
 
 
 @dataclass(frozen=True)
@@ -196,10 +239,22 @@ def _combos(batches: Sequence[BatchInput]) -> list[tuple[str, str, str]]:
     return list(seen.values())
 
 
-def _planned(batches: Sequence[BatchInput], combo: str | None, ref: str) -> int:
-    """Planned pairs: the planned pack-off cells of `combo` (every combo when None) over the batches."""
+def stated_tasks(frozen: Mapping) -> frozenset[str]:
+    """ADR-0023 Amendment 2: the plan's tasks frozen with a `graders` list that names no `property` grader (SV1 names
+    correctness and process). Their requirement is stated in the prompt, not latent, so they have no primary. A task
+    the plan froze no `graders` for stays a property task, as before (readiness requires a property task to name
+    correctness and property, `readiness.py`)."""
+    return frozenset(task for task, record in (frozen.get("tasks") or {}).items()
+                     if isinstance(record, Mapping) and isinstance(record.get("graders"), list)
+                     and "property" not in record["graders"])
+
+
+def _planned(batches: Sequence[BatchInput], combo: str | None, ref: str, stated: frozenset[str]) -> int:
+    """Planned pairs: the planned pack-off cells of `combo` (every combo when None) over the batches, property tasks
+    only."""
     return sum(1 for batch in batches for cell in batch.view.plan["cells"]
-               if (combo is None or cell["combo"] == combo) and plan.cell_arm(cell) == ref)
+               if (combo is None or cell["combo"] == combo) and cell["task"] not in stated
+               and plan.cell_arm(cell) == ref)
 
 
 def _relabelled(batches: Sequence[BatchInput]) -> list[CellView]:
@@ -252,10 +307,11 @@ def _direction(off: int, on: int) -> Literal["up", "down", "same"]:
     return "up" if on > off else "down" if on < off else "same"
 
 
-def _properties(batches: Sequence[BatchInput], collected: Sequence[tuple[str, str, Sequence[verdicts.Pair]]]
-                ) -> tuple[PropertyRow, ...]:
+def _properties(batches: Sequence[BatchInput], collected: Sequence[tuple[str, str, Sequence[verdicts.Pair]]],
+                stated: frozenset[str]) -> tuple[PropertyRow, ...]:
     """LB-6: per family (plan order) and harness (combo plan order), passes over recorded pairs in each arm."""
-    families = list(dict.fromkeys(_family(cell["task"]) for batch in batches for cell in batch.view.plan["cells"]))
+    families = list(dict.fromkeys(_family(cell["task"]) for batch in batches for cell in batch.view.plan["cells"]
+                                  if cell["task"] not in stated))
     out = []
     for family in families:
         for _, harness, pairs in collected:
@@ -263,6 +319,72 @@ def _properties(batches: Sequence[BatchInput], collected: Sequence[tuple[str, st
             off, on = int(sum(p.ref for p in mine)), int(sum(p.treat for p in mine))
             out.append(PropertyRow(family=family, harness=harness, off=(off, len(mine)), on=(on, len(mine)),
                                    direction=_direction(off, on)))
+    return tuple(out)
+
+
+NO_FACTS = "not recorded: no facts read"
+
+
+def _counted(cell: CellView) -> str | None:
+    """Why a stated-requirement cell's pass@1 is not counted, by `verdicts.collect`'s rule on its own score: an invalid
+    cell, an outcome that is neither completed nor a timeout with a score, or no score. None = counted."""
+    score = cell.scores.get("pass_at_1")
+    recorded = score is not None and score.value is not None
+    if cell.validity.startswith("invalid"):
+        return cell.validity
+    if cell.outcome != "completed" and not (cell.outcome == "timed_out" and recorded):
+        return f"{cell.outcome} ({cell.cause or 'not recorded'})"
+    if not recorded:
+        return score.reason if score is not None and score.reason else "pass_at_1 not recorded"
+    return None
+
+
+def _typed(measures: Mapping[str, object] | None, key: str, kind: type) -> object | None:
+    """A measure of exactly `kind` (a bool is not an int), else None: an agent-written value never becomes a count."""
+    value = (measures or {}).get(key)
+    return value if type(value) is kind else None
+
+
+def _supervision_cell(cell: CellView, facts: SupervisionFacts | None) -> SupervisionCell:
+    excluded = _counted(cell)
+    score, partial = cell.scores.get("pass_at_1"), cell.scores.get("partial_credit")
+    m = facts.measures if facts is not None else None
+    gap = (m or {}).get("min_gap_s")
+    return SupervisionCell(
+        cell_id=cell.cell_id, rep=cell.rep, excluded=excluded,
+        pass_at_1=score.value if excluded is None else None,
+        partial_credit=Decimal(str(partial.value)) if excluded is None and partial and partial.value is not None else None,
+        status_checks=_typed(m, "status_checks", int), early_checks=_typed(m, "early_checks", int),
+        min_gap_s=Decimal(str(gap)) if type(gap) in (int, float) else None,
+        finished_seen=_typed(m, "finished_seen", bool), reported_checks=_typed(m, "reported_checks", int),
+        measures_reason=NO_FACTS if facts is None else facts.measures_reason or (m or {}).get("reason"),
+        status_calls=facts.status_calls if facts is not None else None,
+        job_run_calls=facts.job_run_calls if facts is not None else None,
+        calls_reason=NO_FACTS if facts is None else facts.calls_reason)
+
+
+def _supervision(batches: Sequence[BatchInput], cells: Sequence[CellView], combos: Sequence[tuple[str, str, str]],
+                 comparison: tuple[str, str], stated: frozenset[str]) -> tuple[SupervisionRow, ...]:
+    """ADR-0023 Amendment 2: one row per stated-requirement task x combo x arm, from the task's own scores and facts.
+    simplify: the measure names are SV1's (the one stated-requirement task); upgrade trigger: a second such task in a
+    lean ring, which then needs its own measure list."""
+    facts = {f"{b.view.run_id}/{cell_id}": f for b in batches for cell_id, f in b.supervision.items()}
+    out = []
+    for task in sorted(stated):
+        for combo, harness, model in combos:
+            for arm in comparison:
+                mine = sorted((c for c in cells if c.task == task and c.combo == combo and c.arm == arm),
+                              key=lambda c: c.rep)
+                if not mine:
+                    continue
+                row = tuple(_supervision_cell(c, facts.get(c.cell_id)) for c in mine)
+                counted = [c for c in row if c.excluded is None]
+                credits = [c.partial_credit for c in counted if c.partial_credit is not None]
+                with localcontext(_CONTEXT):
+                    mean = sum(credits, Decimal(0)) / Decimal(len(credits)) if credits else None
+                out.append(SupervisionRow(task=task, combo=combo, harness=harness, model=model, arm=arm,
+                                          passes=(sum(c.pass_at_1 or 0 for c in counted), len(counted)),
+                                          partial_credit=mean, cells=row))
     return tuple(out)
 
 
@@ -277,7 +399,9 @@ def build(batches: Sequence[BatchInput], prereg: Prereg | None) -> LeanSummary:
     comparison = _checked(batches)
     ref, _ = comparison
     cells = _relabelled(batches)
-    tasks = tuple(sorted({cell["task"] for batch in batches for cell in batch.view.plan["cells"]}))
+    # ADR-0023 Amendment 2: the primary, the MDE and the property rows read property tasks only.
+    stated = frozenset().union(*(stated_tasks(b.view.plan) for b in batches))
+    tasks = tuple(sorted({cell["task"] for batch in batches for cell in batch.view.plan["cells"]} - stated))
     combos = _combos(batches)
     rows, collected, pooled_pairs, pooled_excluded = [], [], [], []
     for combo, harness, model in combos:
@@ -285,15 +409,17 @@ def build(batches: Sequence[BatchInput], prereg: Prereg | None) -> LeanSummary:
         spec = verdicts.VerdictSpec(prop=verdicts.PRIMARY, harness=harness, comparison=comparison, tasks=tasks,
                                     mde=Decimal(0), method=stats.METHOD, alpha_per_test=_ALPHA, level_rule="not used",
                                     min_pairs=1, seed=seed, resamples=stats.MIN_RESAMPLES, required_pairs=None)
-        pairs, excluded, _ = verdicts.collect([c for c in cells if c.combo == combo], spec)
-        rows.append(_row(combo, harness, model, pairs, excluded, _planned(batches, combo, ref), comparison, seed))
+        pairs, excluded, _ = verdicts.collect([c for c in cells if c.combo == combo and c.task not in stated], spec)
+        rows.append(_row(combo, harness, model, pairs, excluded, _planned(batches, combo, ref, stated), comparison,
+                         seed))
         collected.append((combo, harness, pairs))
         pooled_pairs += [dataclasses.replace(p, task=f"{combo}/{p.task}") for p in pairs]
         pooled_excluded += excluded
-    pooled = _row("pooled", "pooled", "pooled", pooled_pairs, sorted(pooled_excluded), _planned(batches, None, ref),
-                  comparison, _seed(prereg, "pooled", comparison))
+    pooled = _row("pooled", "pooled", "pooled", pooled_pairs, sorted(pooled_excluded),
+                  _planned(batches, None, ref, stated), comparison, _seed(prereg, "pooled", comparison))
     return LeanSummary(batches=len(batches), run_ids=tuple(b.view.run_id for b in batches),
                        plan_hashes=tuple(str(b.view.plan["plan_hash"]) for b in batches),
                        prereg_status=_prereg_status(prereg, batches[0].first_cell_started_at), rows=tuple(rows),
-                       pooled=pooled, disagree=_disagree(rows), properties=_properties(batches, collected),
-                       checkpoint=tuple(_checkpoint(b, combos, comparison) for b in batches))
+                       pooled=pooled, disagree=_disagree(rows), properties=_properties(batches, collected, stated),
+                       checkpoint=tuple(_checkpoint(b, combos, comparison) for b in batches),
+                       supervision=_supervision(batches, cells, combos, comparison, stated))

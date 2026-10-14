@@ -22,6 +22,40 @@ FIELDS = {
         ("grading_ns", "int | None"),
         ("cells_graded", "int | None"),
         ("first_cell_started_at", "datetime | None"),  # additive: Leader ruling on req-01M4H8D2JGF50ZP7F1Z65GR8B9
+        ("supervision", "Mapping[str, SupervisionFacts]"),  # additive: ADR-0023 Amendment 2 (owner, 2026-10-14)
+    ),
+    "SupervisionFacts": (
+        ("measures", "Mapping[str, object] | None"),
+        ("measures_reason", "str | None"),
+        ("status_calls", "int | None"),
+        ("job_run_calls", "int | None"),
+        ("calls_reason", "str | None"),
+    ),
+    "SupervisionCell": (
+        ("cell_id", "str"),
+        ("rep", "int"),
+        ("excluded", "str | None"),
+        ("pass_at_1", "int | None"),
+        ("partial_credit", "Decimal | None"),
+        ("status_checks", "int | None"),
+        ("early_checks", "int | None"),
+        ("min_gap_s", "Decimal | None"),
+        ("finished_seen", "bool | None"),
+        ("reported_checks", "int | None"),
+        ("measures_reason", "str | None"),
+        ("status_calls", "int | None"),
+        ("job_run_calls", "int | None"),
+        ("calls_reason", "str | None"),
+    ),
+    "SupervisionRow": (
+        ("task", "str"),
+        ("combo", "str"),
+        ("harness", "str"),
+        ("model", "str"),
+        ("arm", "str"),
+        ("passes", "tuple[int, int]"),
+        ("partial_credit", "Decimal | None"),
+        ("cells", "tuple[SupervisionCell, ...]"),
     ),
     "Prereg": (
         ("sha256", "str"),
@@ -37,6 +71,7 @@ FIELDS = {
         ("disagree", "bool"),
         ("properties", "tuple[PropertyRow, ...]"),
         ("checkpoint", "tuple[BatchCheckpoint, ...]"),
+        ("supervision", "tuple[SupervisionRow, ...]"),  # additive: ADR-0023 Amendment 2 (owner, 2026-10-14)
     ),
     "LeanRow": (
         ("combo", "str"),

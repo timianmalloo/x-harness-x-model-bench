@@ -520,3 +520,86 @@ def test_a_missing_side_of_the_timing_is_not_pre_registered(prereg, started, rea
         expected, _ = stats.paired_delta(_obs(_timed(started), "cc", REF), _obs(_timed(started), "cc", TREAT),
                                          (REF, TREAT), stats.Params(), "lean|cc")
         assert (summary.rows[0].lo, summary.rows[0].hi) == (expected.lo, expected.hi)
+
+
+# ------------------------------------------------------------------ ADR-0023 Amendment 2: SV1 beside the property tasks
+
+SV1 = "SV1"  # the supervision task: its frozen graders name no property grader
+
+
+def _sv1_cell(combo: str, arm: str, rep: int, passed, partial) -> views.CellView:
+    cell = _cell(combo, SV1, arm, None)
+    return dataclasses.replace(cell, rep=rep, cell_id=f"{combo}-{SV1}-{arm}-r{rep}", scores={
+        "pass_at_1": views.Measure(passed, None if passed is not None else "no summary"),
+        "partial_credit": views.Measure(partial, None if partial is not None else "no summary")})
+
+
+def _with_sv1(batches: list, facts=lambda cell: None) -> list:
+    """Each batch plus SV1 cells for every combo x arm (rep 1), and the plan's frozen graders for every task."""
+    out = []
+    for batch in batches:
+        view = batch.view
+        combos = list(dict.fromkeys(c.combo for c in view.cells))
+        extra = [_sv1_cell(combo, arm, 1, int(arm == TREAT), Decimal(1) if arm == TREAT else Decimal("0.5"))
+                 for combo in combos for arm in (REF, TREAT)]
+        plan = view.plan | {"cells": view.plan["cells"] + [
+            {"cell_id": c.cell_id, "task": c.task, "rep": c.rep, "combo": c.combo, "harness": c.harness,
+             "model": c.model, "arm": c.arm} for c in extra],
+            "tasks": {t: {"graders": ["correctness", "property"]} for t in TASKS} | {
+                SV1: {"graders": ["correctness", "process"]}}}
+        supervision = {c.cell_id: f for c in extra if (f := facts(c)) is not None}
+        out.append(dataclasses.replace(batch, view=dataclasses.replace(view, plan=plan, cells=view.cells + extra),
+                                       supervision=supervision))
+    return out
+
+
+def test_sv1_cells_leave_the_primary_mde_and_property_rows_unchanged():
+    """Without the amendment every SV1 pair was excluded, planned pairs read 22 and an empty SV family row appeared."""
+    plain, mixed = _build(_batches(combos=ALL), None), _build(_with_sv1(_batches(combos=ALL)), None)
+    assert (mixed.rows, mixed.pooled, mixed.properties, mixed.disagree) == (
+        plain.rows, plain.pooled, plain.properties, plain.disagree)
+    assert {p.family for p in mixed.properties} == {"S", "RS", "RW", "NG", "SM"}
+    assert plain.supervision == ()
+
+
+def test_an_sv1_row_per_combo_and_arm_reads_its_own_scores_and_measures():
+    def facts(cell):
+        if cell.combo == "cx":  # no tool-input reader, and no oracle line
+            return lean.SupervisionFacts(None, "no SV1-MEASURES line in oracle.log", None, None,
+                                         "no tool-input reader for codex")
+        measures = {"status_checks": 3, "early_checks": 0, "min_gap_s": 61.0, "finished_seen": True,
+                    "report": "written", "reported_checks": 3}
+        return lean.SupervisionFacts(measures, None, 3, 1, None)
+
+    summary = _build(_with_sv1(_batches(2, combos=("cc", "cx")), facts), None)
+    keys = [(r.task, r.combo, r.harness, r.arm) for r in summary.supervision]
+    assert keys == [(SV1, "cc", "claude_code", REF), (SV1, "cc", "claude_code", TREAT),
+                    (SV1, "cx", "codex", REF), (SV1, "cx", "codex", TREAT)]
+    off, on, cx_off = summary.supervision[0], summary.supervision[1], summary.supervision[2]
+    assert (off.passes, off.partial_credit, on.passes, on.partial_credit) == ((0, 2), Decimal("0.5"), (2, 2), Decimal(1))
+    assert [(c.cell_id, c.rep) for c in on.cells] == [(f"r1/cc-{SV1}-{TREAT}-r1", 1), (f"r2/cc-{SV1}-{TREAT}-r1", 2)]
+    first = on.cells[0]
+    assert (first.status_checks, first.early_checks, first.min_gap_s, first.finished_seen, first.reported_checks,
+            first.status_calls, first.job_run_calls) == (3, 0, Decimal("61.0"), True, 3, 3, 1)
+    gone = cx_off.cells[0]
+    assert (gone.status_checks, gone.min_gap_s, gone.finished_seen, gone.status_calls, gone.job_run_calls) == (
+        None, None, None, None, None)
+    assert (gone.measures_reason, gone.calls_reason) == ("no SV1-MEASURES line in oracle.log",
+                                                         "no tool-input reader for codex")
+
+
+def test_an_sv1_cell_without_facts_or_a_counted_score_is_not_recorded_never_zero():
+    def change(batch, cell):
+        if cell.task == SV1 and cell.arm == TREAT:
+            return dataclasses.replace(cell, validity="invalid (model mismatch)")
+        if cell.task == SV1:
+            return dataclasses.replace(cell, scores={"pass_at_1": views.Measure(None, "no summary"),
+                                                     "partial_credit": views.Measure(None, "no summary")})
+        return cell
+
+    batches = [dataclasses.replace(b, view=dataclasses.replace(b.view, cells=[change(1, c) for c in b.view.cells]))
+               for b in _with_sv1(_batches(1))]
+    off, on = _build(batches, None).supervision
+    assert (off.passes, off.partial_credit, off.cells[0].excluded) == ((0, 0), None, "no summary")
+    assert (on.passes, on.cells[0].excluded) == ((0, 0), "invalid (model mismatch)")
+    assert (off.cells[0].status_checks, off.cells[0].measures_reason) == (None, "not recorded: no facts read")
