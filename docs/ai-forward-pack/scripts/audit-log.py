@@ -296,13 +296,45 @@ def should_reconvene(stats, advisory=True):
 # A flag someone has to remember is not "measurable by default". The grounding step calls
 # `start --session <id>`, which persists the stamp; `append` then picks it up automatically,
 # so no caller threads a variable through and no skill can silently forget the measurement.
-# The store is ephemeral per-run state, not project history -- it is git-ignored, and its
-# absence degrades to "no duration recorded", never to a wrong one (IO8).
+# The store is ephemeral per-run state, not project history, and its absence degrades to
+# "no duration recorded", never to a wrong one (IO8). It lives in the checkout's GIT DIR
+# (`<git-dir>/ai-forward/run-starts.json`; per checkout, never tracked, nothing to ignore), so
+# the session-start hook leaves the working tree unchanged: beside the log it was one more
+# file in every task's working copy, and in the `.agents/log/` fallback it was not even
+# ignored (bench decision B15). Outside git it stays beside the log, as before.
 STARTS_FILE = ".run-starts.json"
 STARTS_MAX_AGE_DAYS = 7
 
 
+def _checkout_git_dir(path):
+    """The git dir of the checkout holding `path` (`.git`, or the directory a linked worktree's
+    `.git` file names), or None outside git. Filesystem only; `path` need not exist yet."""
+    here = os.path.abspath(path)
+    while True:
+        dot = os.path.join(here, ".git")
+        if os.path.isdir(dot):
+            return dot
+        if os.path.isfile(dot):
+            try:
+                with open(dot, encoding="utf-8") as f:
+                    text = f.read().strip()
+            except OSError:
+                return None
+            if not text.startswith("gitdir:"):
+                return None
+            target = text.split(":", 1)[1].strip()
+            target = target if os.path.isabs(target) else os.path.join(here, target)
+            return target if os.path.isdir(target) else None
+        parent = os.path.dirname(here)
+        if parent == here:
+            return None
+        here = parent
+
+
 def _starts_path(root):
+    git_dir = _checkout_git_dir(audit_dir(root))
+    if git_dir:
+        return os.path.join(git_dir, "ai-forward", "run-starts.json")
     return os.path.join(audit_dir(root), STARTS_FILE)
 
 
@@ -419,6 +451,23 @@ def resolve_default_root(explicit):
     if os.path.isdir(os.path.join(DEFAULT_PRODUCT_ROOT, "audit")):
         return DEFAULT_PRODUCT_ROOT
     return DEFAULT_FALLBACK_ROOT
+
+
+def is_fallback_root(root):
+    """Is `root` the AL0.2 local fallback (`.agents/log`) rather than a repo's own audit setup?"""
+    tail = os.path.normcase(os.path.normpath(DEFAULT_FALLBACK_ROOT))
+    path = os.path.normcase(os.path.normpath(os.path.abspath(root)))
+    return path == tail or path.endswith(os.sep + tail)
+
+
+def render_after_write(root, project=None):
+    """The views a write refreshes. Owner decision 2026-10-14 (bench B15, AL0.2): in the fallback
+    a write keeps ONLY the JSONL - the viewer, its data file and the hub (~510 lines) were most of
+    what the pack left in every task's working copy, for a repo that never asked for a viewer.
+    `render` stays available there as an explicit ask. A repo with docs/audit/ keeps its views."""
+    if is_fallback_root(root):
+        return None
+    return render(root, project)
 
 
 def audit_dir(root):
@@ -921,7 +970,7 @@ def cmd_append(args):
     if args.git:
         entry["git"] = git_context(args.root)
     append_log(args.root, "audit", entry)
-    render(args.root, args.project)
+    render_after_write(args.root, args.project)
     print(entry["id"])
     return 0
 
@@ -957,7 +1006,7 @@ def cmd_change(args):
     if args.audit_ref or base.get("audit_ref"):
         entry["audit_ref"] = args.audit_ref or base.get("audit_ref")
     append_log(args.root, "change", entry)
-    render(args.root, args.project)
+    render_after_write(args.root, args.project)
     print(entry["id"])
     return 0
 
@@ -1320,7 +1369,7 @@ def cmd_import(args):
         append_log(args.root, "audit", entry)
         existing.add(eid)
         added += 1
-    render(args.root, args.project)
+    render_after_write(args.root, args.project)
     print(f"imported {added} session turn(s) into the audit log")
     return 0
 

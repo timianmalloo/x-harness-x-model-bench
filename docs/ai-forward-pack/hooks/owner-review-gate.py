@@ -115,8 +115,8 @@ def main(argv=None) -> int:
         if core is None:
             return allow()
         root, err = core.resolve_root(os.getcwd(), os.environ.get("COORD_ROOT"))
-        if err or root is None:
-            return allow()
+        if err or root is None or not core.coordination_active(root):
+            return allow()  # coordination is off here: no request was ever sent (B15)
         state = core.decision_request_state(Path(root), session)
         ids = state["open_ids"]
         loop_guard = bool(payload.get("stop_hook_active") or payload.get("stopHookActive"))

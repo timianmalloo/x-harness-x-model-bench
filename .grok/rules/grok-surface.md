@@ -22,13 +22,16 @@ Grok's built-in `explore`, `plan`, and `general-purpose` types remain available.
 
 ## Hooks
 
-`.grok/hooks/ai-forward.json` wires five scripts. Project hooks run only after folder trust (`/hooks-trust` or `--trust`).
+`.grok/hooks/ai-forward.json` registers one command per event, `dispatch.py --host grok --event <event>`, which runs that event's hooks in one process (B15: four hook processes per tool call cost a median 11 s per read in bench cells). Project hooks run only after folder trust (`/hooks-trust` or `--trust`). The hooks it runs:
 
-- **re-read guard** (`reread-guard.py --host grok`, CTX-D) on `PreToolUse` matcher `Read` and on `UserPromptSubmit`
-- **mail doorbell** (`mail-doorbell.py --host grok`) on `PreToolUse` and `UserPromptSubmit` — count and pointer as `additionalContext`, never a body
-- **heartbeat** (`heartbeat.py --host grok`) on `PreToolUse` (Claude-format; this config has no `PostToolUse`)
-- **session-start audit marker** (`session-start.py --host grok`, AL4a) on `SessionStart` and `SubagentStart`
-- **owner review gate** (`owner-review-gate.py --host grok`) on `Stop` — exit 2 with a reason on stderr when this session still holds an unresolved decision request it sent
+- **re-read guard** (`reread-guard.py`, CTX-D) on `PreToolUse` (it counts only `read_file`/`Read`) and on `UserPromptSubmit`
+- **mail doorbell** (`mail-doorbell.py`) on `PreToolUse` and `UserPromptSubmit` — count and pointer as `additionalContext`, never a body
+- **heartbeat** (`heartbeat.py`) on `PreToolUse` (Claude-format; this config has no `PostToolUse`)
+- **git-identity guard** (`git-identity-guard.py`, PK-07) on `PreToolUse` — exit 2 blocks a git-identity set
+- **session-start audit marker** (`session-start.py`, AL4a) on `SessionStart` and `SubagentStart`
+- **owner review gate** (`owner-review-gate.py`) on `Stop` — exit 2 with a reason on stderr when this session still holds an unresolved decision request it sent
+
+The doorbell, heartbeat and owner review gate return at once unless coordination is on: a session identity (`AGENT_SESSION`) and a coordination record in the repository (`coord-core.py coordination_active`).
 
 On Grok the doorbell and stop gate are `observed-only` until a live session shows the event fire; the heartbeat was observed live on 2026-09-20 and is `enforced` (CO12; `pack/adapters/hooks/README.md`).
 

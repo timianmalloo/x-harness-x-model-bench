@@ -11,6 +11,15 @@ The pack's `/name` notation denotes that skill, not a registered Codex slash com
 Read the foundation and relevant standards from `.claude/knowledge/` as directed by
 that guide; Copilot's `applyTo` files are not automatically loaded by Codex.
 
+**Muse:** read `docs/ai-forward-pack/muse-surface.md` at grounding. Muse loads
+this `AGENTS.md` (it takes precedence over `CLAUDE.md` here) and discovers skills
+from the shared `.agents/skills/<name>/SKILL.md`; invoke by loading the skill
+(`read_skill <name>`). The pack's `/name` notation denotes that skill, not a
+registered Muse slash command. Read the foundation and relevant standards from
+`.claude/knowledge/` as directed by that guide; Copilot's `applyTo` files are
+not automatically loaded by Muse, and Muse has no native pack hooks — the
+surface doc names the manual steps that replace them.
+
 *Knowledge docs are cited below by their Copilot path (`.github/instructions/<name>.instructions.md`). In Claude Code the same document is `.claude/knowledge/<name>.md` — `CLAUDE.md` is `@AGENTS.md` plus a short addendum that says so (INSTALL 1.1). In Grok Build the same document is `.claude/knowledge/<name>.md` (shared; do not wrap it into `.grok/rules/`). Skills are `.grok/skills/<name>/SKILL.md`; personas are `.grok/agents/<name>.md`, spawned with `spawn_subagent` using the persona `name` as `subagent_type`. The Grok path map is `.grok/rules/grok-surface.md` (INSTALL 1.7). In Antigravity (agy) the same document is `.claude/knowledge/<name>.md` (read on-demand via `view_file`); skills are `.agents/skills/<name>/SKILL.md` (and `.agents/skills.json`); personas are enacted inline, spawned via `invoke_subagent` (`self`), or registered via `define_subagent`. The Antigravity path map is `.agents/rules/agy-surface.md` (INSTALL 1.8).*
 
 This repository uses the **Agent Knowledge Pack** and the **AI-Forward Pack**. Honor them on

@@ -50,6 +50,7 @@ def test_workspace_builder_installs_each_arms_own_pack_and_exact_manifest(base, 
             "codex/codex.md": "Fixture Codex guide\n",
             "grok/grok-surface.md": "Fixture Grok guide\n",
             "antigravity/agy-surface.md": "Fixture Antigravity guide\n",
+            "muse/muse-surface.md": "Fixture Muse guide\n",  # pack revision 100 places it
             "hooks/grok.ai-forward-hooks.json": '{}\n',
             "hooks/agy.ai-forward-hooks.json": '{}\n',
             "hooks/claude-code.settings.hooks.json": '{}\n',

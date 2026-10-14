@@ -61,14 +61,14 @@
       "updatepack": 2589,
       "visualize": 3222
   },
-  "prefix_tokens": 92937,
-  "prefix_set_on": "2026-10-06",
+  "prefix_tokens": 93062,
+  "prefix_set_on": "2026-10-14",
   "prefix_note": "rev 60 (CTX-B) - the WHOLE static prefix as Copilot CLI assembles it: AGENTS.md + the CLAUDE.md import stub + 13 always-on docs + the two allowances below; ratcheted by `context-budget.py prefix --gate`",
   "prefix_allowances": { "tool_definitions": 24070, "host_prompt": 12000 },
   "skill_ceiling_tokens": 5000,
   "skills_note": "rev 60 (CTX-E) - each SKILL.md is re-injected whole on every invocation; per-skill ratchet + a 5,000-token ceiling for NEW skills (`context-budget.py skills --gate`); stage detail belongs in reference/*.md",
   "always_on_tokens": 51002,
-  "baseline_set_on": "2026-10-06",
+  "baseline_set_on": "2026-10-14",
   "baseline_note": "rev 58 (FR-072) — 13 always-on docs after load-scope tiering",
 
   "growth_tolerance_pct": 2,
@@ -79,5 +79,18 @@
     "smallest_supported_window": 128000,
     "tool_definition_tokens": 24070,
     "required_working_headroom": 44000
+  },
+
+  "muse_profile": {
+    "_comment": "Muse assembles a different prefix from Copilot: AGENTS.md (CLAUDE.md is shadowed when both exist), the skills catalog capped at 32 KB, and host tool definitions this repo cannot see. Measured 2026-10-13 on Muse 1.4.7 in this repo; re-measure with `muse skills list --trust-workspace --json` after any catalog or managed-block change.",
+    "qualified_with": "Muse Code 1.4.7 (1.4.7-R6101.1), Windows 11, 2026-10-13",
+    "skills_source": ".agents/skills",
+    "skills_count": 29,
+    "catalog_cap_bytes": 32768,
+    "agents_md_bytes": 29354,
+    "skills_loaded_observed": 52,
+    "catalog_trim_observed": "11 descriptions compacted at the 32 KB cap (52 loaded)",
+    "hooks": "unsupported (no lifecycle-hook surface in the CLI; manual steps in muse-surface.md)",
+    "personas": "observed-only (prompt-carried spawn objectives; --agents overlay unqualified)"
   }
 }
