@@ -41,11 +41,13 @@ SETTINGS = ("effort", "context")
 SETTING_APPLY = ("placeholder", "model_id", "none")
 SETTING_PLACEHOLDERS = {"effort": "{effort}", "context": "{context_tokens}"}
 WORKTREE = "{worktree}"  # a seed_files placeholder: the cell's working copy (Grok's trusted folder)
+WORKTREE_JSON = "{worktree_json}"  # the same path as the inside of a JSON string (Copilot's trustedFolders: backslashes)
 # assume: the engine lays a cell out as <cell>/home and <cell>/ws (engine._run_cell); confirm: the test that reads that
 # line; breaks: a seeded trusted folder names a path the agent never works in, and Grok loads no project instructions.
 CELL_WORKTREE_BESIDE_HOME = "ws"
 HOST_SKILLS_CONFIG = "config.toml"  # the Codex config file host_skill_roots writes its disabled-skill entries to
 CONTEXT_ARG = "{context_arg}"  # ADR-0028 s3: a whole argv element, replaced by the context setting's argv map
+UV_PYTHON_ARG = "{uv_python_arg}"  # instr/w17: a whole argv element, `--add-dir <the host's uv Python store>` or nothing
 TRANSPORTS = ("acp", "agy-stream")  # ADR-0025 s1: the module engine._attempt drives the cell with
 SCRIPTED_USER = ("supported", "unsupported")  # ADR-0028 s7: the plan refuses a scripted-user task when unsupported
 # ADR-0003 Am. 2026-09-30: a claude-code-only alternative to the copied-credential-file path (ADR-0003 amended 2026-09-30).
@@ -277,10 +279,11 @@ class Profile:
             shutil.copyfile(self.credential_source, home / self.credential_name)
         # ADR-0025 s5-s6: trust, update and permission files (Grok, agy); `{worktree}` is the cell's working copy.
         for name, template in self.seed_files.items():
-            if WORKTREE in template and worktree is None:
+            if (WORKTREE in template or WORKTREE_JSON in template) and worktree is None:
                 raise BenchError("HB-USR-002", f"{self.harness}: seed file {name} needs {WORKTREE}, and none was given")
             (home / name).parent.mkdir(parents=True, exist_ok=True)
-            text = template.replace(WORKTREE, str(worktree)).replace("{home}", str(home)).replace("{model}", model)
+            text = (template.replace(WORKTREE_JSON, json.dumps(str(worktree))[1:-1]).replace(WORKTREE, str(worktree))
+                    .replace("{home}", str(home)).replace("{model}", model))
             (home / name).write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8")
 
     def _disable_host_skills(self, home: Path) -> None:
@@ -340,6 +343,9 @@ class Profile:
             if part == CONTEXT_ARG:
                 argv.extend(self.context_args(context))
                 continue
+            if part == UV_PYTHON_ARG:
+                argv.extend(uv_python_args())
+                continue
             part = self.expand_settings(part, "command", effort, context)
             argv.append(part.replace("{exe}", values["exe"]).replace("{model}", values["model"] or "")
                         .replace("{node}", values.get("node", "")).replace("{adapter}", values.get("adapter", ""))
@@ -361,6 +367,16 @@ class Profile:
 
     def subagent_records(self, home: Path, session_id: str) -> list[Path]:
         return find_records(home, self.subagent_glob, session_id)
+
+
+def uv_python_args() -> list[str]:
+    """`--add-dir <store>` for the host's uv-managed Python store, or [] when it cannot be named. The store is
+    UV_PYTHON_INSTALL_DIR, else the uv/python folder in APPDATA (Verified on this host: `uv python dir` printed it); a path that
+    is not a directory adds nothing, never a guess. Copilot denies a command that names a path outside its allowed
+    directories, and a denial makes the cell invalid (HB-VAL-012)."""
+    named = os.environ.get("UV_PYTHON_INSTALL_DIR") or (
+        os.path.join(os.environ["APPDATA"], "uv", "python") if os.environ.get("APPDATA") else "")
+    return ["--add-dir", named] if named and Path(named).is_dir() else []
 
 
 def model_allowed(served: str, pinned: str, auxiliary_models, model_aliases=None) -> bool:
