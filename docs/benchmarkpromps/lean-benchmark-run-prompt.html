@@ -53,6 +53,10 @@
     effort, context window) from its own configuration, names the run itself, and runs both arms: pack off and pack
     on. If the bench has never run that CLI, it onboards it first. It ends with an HTML run summary open in Chrome
     and one <code>HANDOFF:</code> line for Prompt 2.</p>
+  <div class="note" style="margin:0 0 16px">This is the <strong>automated (headless)</strong> run: the bench launches
+    one fresh CLI process per task and arm. To measure the CLI the way a developer uses it, one interactive session
+    per arm working through all the tasks, use <a href="interactive-benchmark-prompt.html">the interactive run</a>.
+    The two modes are not comparable with each other.</div>
 
   <div class="card">
     <h2>How to use it</h2>

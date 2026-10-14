@@ -5783,7 +5783,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0dadffbde4d603d88b7642c2ea76ee543826e408233d66cf3620a77d413316d1"
+      "sourceSha256": "4172466ce3854928d0033167f1d989cb07325f65801a0c0de4f936fc59294c8d"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -8377,6 +8377,38 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "931849eb9d46f67ae130a9bd39983c1ac5cd5db78af94f6831e2c483e033e436"
+    },
+    {
+      "id": "runbook-interactive-run",
+      "path": "docs/runbooks/interactive-run.md",
+      "title": "Runbook: the interactive run - one operator CLI session per arm, graded by the bench",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-14",
+      "reviewSuggested": [],
+      "summary": "The interactive mode (`bench interactive prepare | collect | report`): the operator launches a CLI in a pack-off and a pack-on folder, pastes the same text into both, and each session works the lean tasks one at a time through `.bench/next.py`. The bench grades each task folder with its own graders on a replay (the discriminate path) and reads tokens and tool calls from the session's own record, split per task at the next.py calls. Smoke evidence from four CLIs on 2026-10-14 and the mode's limits.",
+      "tags": [
+        "runbook",
+        "lean",
+        "interactive",
+        "session-layer",
+        "agy",
+        "copilot"
+      ],
+      "links": [
+        {
+          "to": "runbook-lean-comparison-run",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0026-per-cell-anatomy-facts-catalog-0-8",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5142736389ba79d194ebb8580f09d6a94f5edbc614bdd583ed7b59fc3041fb30"
     },
     {
       "id": "runbook-lean-comparison-run",
@@ -11901,6 +11933,13 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     },
     {
+      "id": "surface-benchmarkpromps-interactive-benchmark-prompt",
+      "path": "docs/benchmarkpromps/interactive-benchmark-prompt.html",
+      "title": "Interactive Benchmark Prompts",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
+    },
+    {
       "id": "surface-benchmarkpromps-grade-judge-report-prompt",
       "path": "docs/benchmarkpromps/grade-judge-report-prompt.html",
       "title": "Lean Benchmark Analysis Prompt",
@@ -12002,5 +12041,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "5998fe549868dd2b41502ddde58711d0f212c806f7316a2dc89948c87e203999"
+  "graphSha256": "2f077e7a68db76d5140d31ea4f21701c361476a3e39ef2a88f581269bd9de3f8"
 };

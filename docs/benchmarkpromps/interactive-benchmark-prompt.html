@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive Benchmark Prompts</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1f23; --muted: #5d636e; --line: #e2e0da;
+    --accent: #2f5d8a; --code-bg: #f3f1ec; --warn: #8a4b16; --warn-bg: #fbf1e6; --on: #2e6b3f; --off: #6b4a2e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171b; --panel: #1c1f24; --ink: #e8e6e1; --muted: #a2a7b0; --line: #2f333a;
+      --accent: #8db8e3; --code-bg: #23272d; --warn: #f0b27a; --warn-bg: #2b2219; --on: #8fd1a0; --off: #e0b98f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171b; --panel: #1c1f24; --ink: #e8e6e1; --muted: #a2a7b0; --line: #2f333a;
+    --accent: #8db8e3; --code-bg: #23272d; --warn: #f0b27a; --warn-bg: #2b2219; --on: #8fd1a0; --off: #e0b98f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 0 0 8px; }
+  p.sub { color: var(--muted); margin: 0 0 24px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px;
+          margin-bottom: 16px; }
+  .note { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; margin: 12px 0 0; }
+  ol { margin: 0; padding-left: 22px; }
+  ol li, ul li { margin: 4px 0; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 0.9em; overflow-wrap: anywhere; }
+  .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 8px; }
+  .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: .04em; padding: 2px 8px;
+         border-radius: 999px; border: 1px solid currentColor; }
+  .tag.on { color: var(--on); } .tag.off { color: var(--off); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+  button { font: inherit; background: var(--accent); color: var(--bg); border: 0; border-radius: 6px;
+           padding: 7px 14px; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+        white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.5 ui-monospace, "Cascadia Code", Consolas, monospace; margin: 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Interactive run: one CLI session per arm, the way a developer works</h1>
+  <p class="sub">Two windows of the same CLI: one in a pack-on folder, one in a pack-off folder. Each gets the
+    same single paste and works through the 11 lean tasks one at a time, as one long developer session. Nothing is
+    launched headless. Afterwards the bench grades each task folder with its own graders and reads each session's own
+    record for tokens and tool calls. The headless run (<code>lean-benchmark-run-prompt.html</code>) stays as the
+    automated alternative.</p>
+
+  <div class="card">
+    <h2>1. Prepare the two folders (once per CLI and model)</h2>
+    <p style="margin-top:0">In any PowerShell window:</p>
+<pre id="prepare">cd C:\Projects\x-harness-x-model-bench
+uv run bench interactive prepare --harness HARNESS --tasks S1,S2,RS1,RS2,RW1,RW2,NG1,NG2,SM1,SM2,SV1 --pack C:/Projects/ai-forward@0900e784594a2ce27d5110ca5b24ad170e5dbf7e</pre>
+    <p><code>HARNESS</code> is <code>claude-code</code>, <code>codex</code>, <code>copilot</code> or <code>agy</code>.
+      It prints two folders, <code>C:\Projects\bench-interactive\int-HARNESS-&lt;UTC time&gt;\off</code> and
+      <code>…\on</code>. Each holds the 11 task folders (base trees only; the hidden tests stay in the bench) and
+      <code>.bench\next.py</code>, which hands out one task at a time. <code>on</code> also has the AI-Forward pack
+      (revision 102) installed at its root; <code>off</code> holds no instruction file (prepare checks). For a second
+      model of the same CLI (Copilot with <code>gpt-5.5</code>, say), prepare another run.</p>
+  </div>
+
+  <div class="card">
+    <h2>2. Launch the CLI in each folder (two windows)</h2>
+    <p style="margin-top:0"><code>cd</code> into the folder, then start the CLI with the line for it below. Both
+      windows use the same line. When the CLI asks whether to trust the folder, say yes in both.</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>CLI</th><th>Launch line (pinned model, effort and window; approves its own tool calls)</th></tr>
+      <tr><td>claude-code</td><td><code>claude --model "claude-opus-5-5[1m]" --effort high --dangerously-skip-permissions</code></td></tr>
+      <tr><td>codex</td><td><code>codex -m gpt-6.1-sol -c model_reasoning_effort=high -c model_context_window=872000 -c model_auto_compact_token_limit=750000 --dangerously-bypass-approvals-and-sandbox</code></td></tr>
+      <tr><td>copilot</td><td><code>copilot --model gpt-6.1-sol --reasoning-effort high --context long_context --allow-all</code></td></tr>
+      <tr><td>agy</td><td><code>agy --model gemini-4-argon-high --dangerously-skip-permissions</code></td></tr>
+    </table>
+    </div>
+    <ul>
+      <li><strong>Approvals.</strong> One paste runs 11 tasks unattended, so each CLI approves its own calls. It is the
+        same flag in both arms, so the arms stay equal. The sessions only work inside their run folder.</li>
+      <li><strong>Windows.</strong> Codex 872000 and Copilot <code>long_context</code> (922k) are the largest windows
+        measured on the bench's pinned builds. Your installed builds are newer (Codex 0.162.1, Copilot 1.0.97). Each
+        session's record shows what it served, and the report prints it. Codex's compaction limit of 750000 keeps
+        compaction below that window. It was not measured: <code>~\.codex\config.toml</code> sets 900000, above the
+        window.</li>
+      <li><strong>Your own setup still loads in both arms</strong>: <code>~\.claude\CLAUDE.md</code> and skills
+        (graphify; claude.ai synced skills), <code>~\.copilot\skills\graphify</code>,
+        <code>~\.agents\skills\microsoft-foundry</code>. None is pack material (checked 2026-10-14), and it is the
+        same in both arms.</li>
+    </ul>
+  </div>
+
+  <div class="pair">
+    <div class="card">
+      <div class="bar"><h2><span class="tag off">PACK OFF</span> paste into the <code>off</code> window</h2>
+        <button type="button" data-copy="paste">Copy paste</button></div>
+<pre id="paste">You have a short backlog of coding tasks in this folder. Work through them one at a time, as you would on a real project.
+
+1. Run `python .bench/next.py` from this folder. It prints your first task and the folder to work in.
+2. Do that task completely, in its folder only.
+3. When the task is finished, run the next.py command printed under the task. It prints the next task.
+4. Repeat until next.py prints ALL DONE. Then stop.
+
+Keep going through every task without stopping to ask me anything: nobody will answer until the end, so make reasonable
+decisions yourself. Work in place in these folders: no git worktrees, branches or copies elsewhere. If you lose track of
+which task you are on, `python .bench/next.py --status` prints the current task again without moving on.</pre>
+    </div>
+    <div class="card">
+      <div class="bar"><h2><span class="tag on">PACK ON</span> paste into the <code>on</code> window</h2>
+        <button type="button" data-copy="paste-on">Copy paste</button></div>
+<pre id="paste-on">You have a short backlog of coding tasks in this folder. Work through them one at a time, as you would on a real project.
+
+1. Run `python .bench/next.py` from this folder. It prints your first task and the folder to work in.
+2. Do that task completely, in its folder only.
+3. When the task is finished, run the next.py command printed under the task. It prints the next task.
+4. Repeat until next.py prints ALL DONE. Then stop.
+
+Keep going through every task without stopping to ask me anything: nobody will answer until the end, so make reasonable
+decisions yourself. Work in place in these folders: no git worktrees, branches or copies elsewhere. If you lose track of
+which task you are on, `python .bench/next.py --status` prints the current task again without moving on.</pre>
+    </div>
+  </div>
+  <div class="note" style="margin:0 0 16px">The two pastes are identical on purpose. The pack is the only difference,
+    and it comes from the folder the CLI started in, not from the paste. The paste names no pack and no benchmark.</div>
+
+  <div class="card">
+    <h2>3. While it runs</h2>
+    <ul style="margin:0">
+      <li>Leave both windows alone. Expect 1 to 4 hours: 11 tasks, two of them in two turns (13 hand-outs).</li>
+      <li>If a session stops early and asks you something, answer <code>continue</code>. The report counts what
+        finished; an unfinished task is graded on what is in its folder.</li>
+      <li>When it prints <strong>ALL DONE</strong>, exit the CLI (<code>/exit</code>, or Ctrl+C twice) so it writes
+        the end of its record. Copilot writes its token totals only when the session ends.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="bar"><h2>4. Afterwards: grade and compare (paste into Claude Code in the bench repo)</h2>
+      <button type="button" data-copy="analyse">Copy prompt</button></div>
+<pre id="analyse">GOAL: grade every finished interactive run, compare the arms per CLI, and open one comparison page in Chrome.
+
+REPO = C:\Projects\x-harness-x-model-bench
+RUNS = every folder C:\Projects\bench-interactive\int-* whose off\.bench\state.json and on\.bench\state.json both
+       exist (list them first, with each arm's "done" count, and ask before skipping any run that is not finished)
+
+For each RUN, from REPO:
+  1. uv run bench interactive collect RUN --arm off
+     uv run bench interactive collect RUN --arm on
+     If collect says it found no session record, or several, find the session's own record (Claude Code
+     ~\.claude\projects, Codex ~\.codex\sessions, Copilot ~\.copilot\session-state\&lt;id&gt;\events.jsonl, agy
+     ~\.gemini\antigravity-cli\conversations\&lt;id&gt;.db) by its working folder and time, and rerun with
+     --record &lt;path&gt;. Never guess a path: if you cannot tell, say so and leave tokens not recorded.
+  2. uv run bench interactive report RUN
+     python docs\ai-forward-pack\scripts\render-markdown.py RUN\interactive-report.md
+
+Then write C:\Projects\bench-interactive\interactive-comparison-&lt;UTC yyyymmdd&gt;.md:
+  - One row per RUN: CLI, model and effort as served (from the report), property_check_pass on the 10 primary
+    tasks off vs on, hidden tests pass off vs on, SV1 off vs on, total tokens off vs on (uncached input, cache
+    read, cache write, output), tool calls and failed tool calls off vs on, wall minutes off vs on, hook events in
+    the on arm, and the warnings.
+  - Tokens only, never a price.
+  - One paired session per arm and CLI: state the differences, and do not call any of them significant.
+  - Do not compare these numbers with the headless lean runs. They come from a different mode: one long session
+    with context carried from task to task, against one fresh launch per task.
+  - Label every claim Verified (read from a report or summary.json) or Inferred.
+Render it with render-markdown.py --open so it opens in Chrome. End with the path of the page.</pre>
+  </div>
+
+  <div class="card">
+    <h2>What the report can and cannot say</h2>
+    <ul style="margin:0">
+      <li><strong>Graded the same way as a headless cell.</strong> Pass/fail and each property check come from
+        the bench's own graders. Each task folder is replayed onto a fresh copy of its base tree, the path
+        <code>bench discriminate</code> uses; the two-turn tasks are graded on the turn-1 snapshot
+        <code>next.py</code> takes. The catalog's process metrics need a record per task and are not graded here.</li>
+      <li><strong>Tokens and tool calls per task</strong> come from each session's record, split at the
+        <code>next.py</code> calls. Copilot records usage only as a total when the session ends, so it shows session
+        totals and no per-task tokens. agy is read from its conversation database (field map checked against 1,542
+        requests).</li>
+      <li><strong>One session per arm</strong>, with the tasks in the same fixed order in both arms. Context carries
+        from task to task, as in real use. That is why this mode is not comparable with the headless runs.</li>
+      <li>A deleted file cannot be replayed, and the report lists any. So does a session that read the queue file
+        directly or never reached a task.</li>
+    </ul>
+  </div>
+</main>
+<script>
+  document.querySelectorAll("button[data-copy]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = document.getElementById(btn.getAttribute("data-copy")).textContent;
+      var label = btn.textContent;
+      navigator.clipboard.writeText(text).then(function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = label; }, 1500); });
+    });
+  });
+</script>
+</body>
+</html>

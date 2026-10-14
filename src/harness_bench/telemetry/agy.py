@@ -61,7 +61,7 @@ from harness_bench.telemetry import (
     rows,
 )
 
-__all__ = ["TOOL_CLASS", "read", "tool_inputs"]
+__all__ = ["TOOL_CLASS", "read", "read_db", "tool_inputs", "tool_inputs_db"]
 
 # Every tool agy 1.3.3 advertises (its `init.tools`, 60 ids), in ADR-0004's classes. Only shell, file read and file edit
 # are in the profile. agy's grant kinds cannot deny every other class (Leader ruling on R-TRANSPORT seam 5): web search,
@@ -371,3 +371,98 @@ def read(path: Path) -> Extraction:
     ex.reasoning = _reasoning(calls, steps)
     ex.prompt_parts = _prompt_parts(gens)
     return ex
+
+
+# --- The conversation db alone: an interactive session writes no stream (bench interactive, 2026-10-14) -------------
+# Field map Verified against the lean run of 2026-10-13 (60 cells, 1,542 stream model calls paired with 1,542 db rows,
+# every value equal): a response step (`steps.step_type` 15) carries its request's usage in `steps.metadata` field 9 -
+# 9.2 uncached input, 9.3 output (thinking included), 9.5 cache read, 9.9 thinking; a field is absent when 0, and there
+# is no cache-write bucket. `steps.metadata` is the more complete source: two interactive dbs lacked the last request's
+# `gen_metadata` row. The served model is `gen_metadata` 1.19 (a string); the effort is in no db field.
+RESPONSE_STEP = 15
+DB_SOURCE = "conversations/<id>.db steps.metadata 9 (step_type 15)"
+
+
+def _db_rows(db: Path) -> tuple[list[tuple[int, int, bytes | None, bytes | None, int | None]], list[bytes]]:
+    with closing(sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True)) as con:
+        steps = [(idx, st, bytes(m) if isinstance(m, bytes) else None, bytes(p) if isinstance(p, bytes) else None,
+                  s if type(s) is int else None)
+                 for idx, st, m, p, s in con.execute("select idx, step_type, metadata, step_payload, status from steps order by idx")
+                 if type(idx) is int]
+        gens = [bytes(d) for (d,) in con.execute("select data from gen_metadata order by idx") if isinstance(d, bytes)]
+    return steps, gens
+
+
+def _db_model(gens: list[bytes]) -> str | None:
+    for data in gens:
+        try:
+            names = _at(data, 1, 19)
+            if names:
+                return names[0].decode("utf-8")
+        except (WireError, UnicodeDecodeError):
+            continue
+    return None
+
+
+def _db_tool_calls(payload: bytes | None) -> list[tuple[str, dict]]:
+    """(name, arguments) of every tool call in one response step's planner response (20.7.2 name, 20.7.3 JSON)."""
+    import json
+
+    out = []
+    try:
+        for call in (c for r in _at(payload, 20) for c in _at(r, 7)) if payload else ():
+            name = next((v.decode("utf-8") for v in _at(call, 2)), "NOT_RECORDED")
+            raw = next((v.decode("utf-8") for v in _at(call, 3)), "")
+            try:
+                args = json.loads(raw) if raw else {}
+            except ValueError:
+                args = {}
+            out.append((name, args if isinstance(args, dict) else {}))
+    except (WireError, UnicodeDecodeError):
+        return out
+    return out
+
+
+def read_db(db: Path) -> Extraction:
+    """The model calls (one per response step with usage) and tool calls (the planner's calls, at the step that made
+    them) of a conversation db alone. A tool call's outcome is not joined here (`ok` None): the tool's own step is not
+    keyed to the call in any field decoded so far."""
+    ex = Extraction(session_id=db.stem)
+    steps, gens = _db_rows(db)
+    model = _db_model(gens)
+    for idx, step_type, meta, payload, _status in steps:
+        if step_type != RESPONSE_STEP:
+            continue
+        try:
+            usage = _at(meta, 9) if meta else []
+            counts = {f: v for f, w, v in fields(usage[0]) if w == 0} if usage else None
+        except WireError:
+            counts = None
+        if counts is not None:
+            ex.model_calls.append(ModelCall(idx, model or "NOT_RECORDED", counts.get(2, 0), counts.get(5, 0), 0,
+                                            counts.get(3, 0), counts.get(9, 0)))
+        for name, _args in _db_tool_calls(payload):
+            ex.tool_calls.append(ToolCall(idx, name, TOOL_CLASS.get(name, "other"), None, None, None))
+    unmapped = not_recorded("the agy db's context figure (1.9.10.4) is not mapped to a served window")
+    ex.served = ServedSettings(
+        model_served=model or not_recorded("no model name (gen_metadata 1.19) in the db"),
+        model_api=not_recorded("the agy db names only the served model"),
+        effort=not_recorded("the agy db names no effort"), context_tokens=unmapped, context_tier=unmapped,
+        reasoning_summary=not_recorded("the agy db carries no reasoning-summary setting"),
+        sources={"model_served": "conversations/<id>.db gen_metadata 1.19"} if model else {})
+    ex.harness_events = not_recorded("agy steps are a Flagged source for hooks, skills and compaction; not read")[1]
+    ex.prompt_parts = _prompt_parts(gens)
+    return ex
+
+
+def tool_inputs_db(db: Path) -> ProcessTrace:
+    """`ToolInput`s of a conversation db alone, at the response step that made each call (as `read_db`)."""
+    steps, _gens = _db_rows(db)
+    calls = []
+    for idx, step_type, _meta, payload, _status in steps:
+        if step_type != RESPONSE_STEP:
+            continue
+        for name, args in _db_tool_calls(payload):
+            paths = tuple(dict.fromkeys(v for k, v in args.items() if _PATH_PARAM.search(k) and isinstance(v, str) and v))
+            calls.append(ToolInput(idx, name, paths, as_str(args.get("CommandLine")), TOOL_CLASS.get(name, "other") == "edit"))
+    return ProcessTrace(None, tuple(calls))

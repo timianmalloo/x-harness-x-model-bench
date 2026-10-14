@@ -28,8 +28,10 @@ def raw_tags_in_pre(page: str) -> list[str]:
 
 def test_no_prompt_holds_a_raw_tag_inside_its_pre_blocks():
     """2026-10-14: a raw `<absolute script>` in Prompt 1's <pre> was eaten by the browser, so the copy read `python `."""
-    for name in ("lean-benchmark-run-prompt.html", "grade-judge-report-prompt.html"):
-        assert raw_tags_in_pre((ROOT / "docs/benchmarkpromps" / name).read_text(encoding="utf-8")) == [], name
+    pages = sorted((ROOT / "docs/benchmarkpromps").glob("*.html"))
+    assert len(pages) >= 3  # the headless pair and the interactive page
+    for page in pages:
+        assert raw_tags_in_pre(page.read_text(encoding="utf-8")) == [], page.name
 
 
 def test_pinned_windows_are_values_the_profiles_accept():

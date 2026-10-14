@@ -36,6 +36,7 @@ from harness_bench import (
     gitsafe,
     host,
     identity,
+    interactive,
     lean,
     ledger,
     oslock,
@@ -280,11 +281,38 @@ def cmd_discriminate(args) -> int:
     return OK
 
 
+def cmd_interactive(args) -> int:
+    root, tools_root = Path(args.root), Path(args.tools_dir).parent
+    if args.interactive_command == "prepare":
+        _role, source, commit = plan.parse_binding(f"{interactive.ARM_ON}={args.pack_pin}")  # the one SOURCE@COMMIT parser
+        run_id = args.run_id or f"int-{args.harness}-{datetime.now(UTC):%Y%m%dT%H%M}"
+        manifest = interactive.prepare(root, run_id, args.harness, Path(args.out), args.tasks, (source, commit), tools_root)
+        print(f"interactive run {run_id}: {len(args.tasks)} task(s), pack revision {manifest['pack_pin']['revision']}")
+        for arm in interactive.ARMS:
+            print(f"  {arm:>3}: {manifest['arms'][arm]['path']}")
+        print("Launch the CLI in each folder (one window per arm) and paste the same text into both:\n")
+        print(interactive.PASTE)
+        return OK
+    run_root = Path(args.run_dir).resolve()
+    if args.interactive_command == "collect":
+        manifest = interactive.load(run_root)
+        records = [Path(r).resolve() for r in args.record] if args.record else None
+        summary = interactive.collect(root, run_root, args.arm, manifest["harness"], Path(args.runs), Path(args.cells_root),
+                                      tools_root / "upstream", records)
+        print(f"collected {args.arm}: replay run {summary['replay_run']}; {len(summary['warnings'])} warning(s)")
+        for line in summary["warnings"]:
+            print(f"  ! {line}")
+        return OK
+    interactive.report(run_root)
+    print(run_root / "interactive-report.md")
+    return OK
+
+
 def _plain() -> bool:
     return bool(os.environ.get("NO_COLOR")) or not sys.stdout.isatty()
 
 
-_PATH_ARGS = ("root", "runs", "cells_root", "tools_dir", "pack_source", "matrix", "out", "analysis", "vendored")
+_PATH_ARGS = ("root", "runs", "cells_root", "tools_dir", "pack_source", "matrix", "out", "analysis", "vendored", "run_dir")
 
 
 def _resolve_paths(args: argparse.Namespace) -> None:
@@ -889,6 +917,20 @@ def build_parser() -> argparse.ArgumentParser:
     ds.add_argument("task", type=_task_id)
     for flag in ("--root", "--runs", "--cells-root"):  # also accepted after the command, as W1-E's design writes it
         ds.add_argument(flag, default=argparse.SUPPRESS)
+    it = sub.add_parser("interactive", help="the lean tasks worked by the operator's own interactive CLI session, one per arm")
+    isub = it.add_subparsers(dest="interactive_command", required=True)
+    ip = isub.add_parser("prepare", help="build the pack-off and pack-on arm folders; prints where to launch and what to paste")
+    ip.add_argument("--harness", required=True, choices=sorted(interactive.RECORD_HOMES), help="the CLI that will work the tasks")
+    ip.add_argument("--tasks", required=True, type=_task_list, help="comma-separated task ids, in queue order")
+    ip.add_argument("--pack", dest="pack_pin", required=True, metavar="ABSOLUTE_SOURCE@COMMIT", help="the pinned pack for the on arm")
+    ip.add_argument("--out", default=str(root.parent / "bench-interactive"), help="where the run folder is made")
+    ip.add_argument("--run-id", default=None, type=_run_id, help="default: int-<harness>-<UTC yyyymmddThhmm>")
+    ic = isub.add_parser("collect", help="grade one arm's task folders (replay run) and read its session record")
+    ic.add_argument("run_dir", help="the run folder prepare made")
+    ic.add_argument("--arm", required=True, choices=interactive.ARMS)
+    ic.add_argument("--record", action="append", default=None, help="the session record(s), if the search finds none or several")
+    ir = isub.add_parser("report", help="both arms side by side: <run>/interactive-report.md")
+    ir.add_argument("run_dir", help="the run folder prepare made")
     tl = sub.add_parser("tools", help="the pinned harness builds")
     tl.add_argument("action", choices=["install"])
     tl.add_argument("--vendored", default=None, metavar="SOURCE",
@@ -927,7 +969,7 @@ def _commit(value: str) -> str:
 
 COMMANDS = {"drill": cmd_drill, "validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
             "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools, "campaign": cmd_campaign,
-            "discriminate": cmd_discriminate}
+            "discriminate": cmd_discriminate, "interactive": cmd_interactive}
 
 
 def main(argv: list[str] | None = None) -> int:

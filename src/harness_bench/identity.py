@@ -114,6 +114,8 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "discriminate.py": "grade",
     "readiness.py": "grade",
     "synthetic_agent.py": "grade",
+    "interactive.py": "grade",  # replays an operator session's task folders through the grading pass, as discriminate
+    "interactive_next.py": "run",  # the queue the operator's session runs: it decides what the agent is handed
     "grade/property.py": "grade",
     "grade/bench_check.py": "grade",
     "grade/_env.py": "grade",

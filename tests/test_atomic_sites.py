@@ -53,6 +53,13 @@ ALLOWED: dict[tuple[str, str, str], str] = {
         "R-REPORT-R page write: a .tmp beside the page, then one os.replace; a reader sees the old page or the new",
     ("tools", "install_vendored", "os.replace"):
         "R-BUILDS vendored exe: a .partial beside it, then one os.replace, then re-hashed against its pin",
+    # bench interactive (2026-10-14): the operator's arm folders, written before any session and read after it.
+    ("interactive", "prepare", "shutil.copytree"):
+        "builds a fresh arm folder from the task source once; prepare refuses a run folder that already exists",
+    ("interactive_next", "_save", "Path.replace"):
+        "next.py's progress file: a .tmp beside it, then one replace; collect reads old or new, never torn",
+    ("interactive_next", "main", "shutil.copytree"):
+        "the turn-1 snapshot under .bench/snapshots; collect reads it only after the session has ended",
 }
 
 

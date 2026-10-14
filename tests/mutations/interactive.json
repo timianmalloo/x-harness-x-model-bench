@@ -1,0 +1,44 @@
+[
+ {
+  "name": "IN1: the next.py call that hands out a task is counted before it",
+  "file": "src/harness_bench/interactive.py",
+  "find": "k = sum(1 for b in boundaries if b <= ordinal)",
+  "replace": "k = sum(1 for b in boundaries if b < ordinal)",
+  "tests": ["tests/test_interactive.py::test_split_attributes_by_the_next_calls_and_never_splits_a_summary"]
+ },
+ {
+  "name": "IN2: a summary usage row is split per task as if it were one request",
+  "file": "src/harness_bench/interactive.py",
+  "find": "            seg.update(dict.fromkeys(TOKEN_FIELDS))",
+  "replace": "            pass",
+  "tests": ["tests/test_interactive.py::test_split_attributes_by_the_next_calls_and_never_splits_a_summary"]
+ },
+ {
+  "name": "IN3: next.py --status counts as a task boundary",
+  "file": "src/harness_bench/interactive.py",
+  "find": " and \"--status\" not in command",
+  "replace": "",
+  "tests": ["tests/test_interactive.py::test_next_call_detection_ignores_status_and_other_scripts"]
+ },
+ {
+  "name": "IN4: Copilot's hook rows (event names only) are counted as pack hooks",
+  "file": "src/harness_bench/interactive.py",
+  "find": "if not isinstance(ex.harness_events, list) or harness == \"copilot\":",
+  "replace": "if not isinstance(ex.harness_events, list):",
+  "tests": ["tests/test_interactive.py::test_pack_hooks_count_only_the_packs_own_and_are_not_recorded_where_the_record_cannot_tell"]
+ },
+ {
+  "name": "IN5: a two-turn task's turn 1 is graded on the final tree instead of the turn-1 snapshot",
+  "file": "src/harness_bench/interactive.py",
+  "find": "_copy(_tree_files(snap), snap, folder / \"turn-1\")",
+  "replace": "_copy(files, arm_dir / \"tasks\" / tid, folder / \"turn-1\")",
+  "tests": ["tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares"]
+ },
+ {
+  "name": "IN6: the agy db's uncached input and cache read swap fields",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "counts.get(2, 0), counts.get(5, 0), 0,",
+  "replace": "counts.get(5, 0), counts.get(2, 0), 0,",
+  "tests": ["tests/test_interactive.py::test_agy_db_reader_reads_usage_and_tool_calls_from_the_mapped_fields"]
+ }
+]

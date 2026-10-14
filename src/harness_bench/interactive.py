@@ -1,0 +1,594 @@
+"""bench interactive: the lean tasks worked by the operator's own interactive CLI session, one session per arm.
+
+Why: a headless cell (`claude -p`, `codex exec`, `copilot -p` behind the adapter) is one launch per task. A developer
+works in one interactive session. This mode measures that session (docs/runbooks/interactive-run.md).
+
+- prepare: `<out>/<run>/off/` and `<out>/<run>/on/`, each one git repository holding `tasks/<ID>/` (each task's base
+  tree, built by the engine's own `workspace.task_source`, never its hidden tests) and `.bench/` (next.py, the task
+  queue). `on` also has the pinned pack installed at its root, so the CLI launched there loads it at startup; `off` holds
+  no agent instruction file (checked). The repository's HEAD after prepare is the arm's base.
+- The operator launches the CLI in an arm folder and pastes PASTE. next.py hands out one task at a time and records the
+  times; a two-turn task's turn-1 tree is snapshotted when turn 2 is handed out.
+- collect: per arm, each task folder's changes become an overlay that the synthetic agent applies to a fresh cell in a
+  replay run through the real engine and grading pass (the path `bench discriminate` uses), so pass/fail and the
+  property check are graded exactly as a headless cell's are. Tokens and tool calls come from the session's own native
+  record, read by the harness's reader and split per task on the next.py calls.
+- report: both arms side by side, as Markdown.
+
+Limits (stated in every report): one session per arm; context carries from task to task in a fixed order; the overlay
+cannot replay a deleted file (listed as a warning); the catalog's process metrics need a per-cell record and are not
+graded here; a harness whose record summarises usage (Copilot's session.shutdown) gives session totals only.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+import shutil
+from datetime import UTC, datetime
+from pathlib import Path
+
+from harness_bench import config, engine, gitsafe, plan, readiness, views, workspace
+from harness_bench.discriminate import SyntheticLauncher
+from harness_bench.errors import BenchError
+from harness_bench.grade import judge, runner
+from harness_bench.synthetic_agent import SYNTHETIC_VERSION, OverlayError, overlay_files
+from harness_bench.telemetry import (
+    Extraction,
+    agy,
+    claude_code,
+    codex,
+    copilot,
+    grok,
+    is_not_recorded,
+)
+
+ARM_ON = next(a for a in config.PACKS if a != config.ARM_OFF)
+ARMS = (config.ARM_OFF, ARM_ON)
+MANIFEST = "interactive.json"
+SCHEMA = "bench-interactive/1"
+NEXT = Path(__file__).with_name("interactive_next.py")
+SKIP_DIRS = frozenset({".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".venv", "venv", "node_modules"})
+GIT_TIMEOUT = 120
+READERS = {"claude-code": claude_code, "codex": codex, "copilot": copilot, "agy": agy, "grok": grok}
+# Where each harness keeps its session records when launched interactively: (home env var, default home, record glob).
+RECORD_HOMES = {
+    "claude-code": ("CLAUDE_CONFIG_DIR", ".claude", "projects/*/**/*.jsonl"),  # ** reaches <session>/subagents/*.jsonl
+    "codex": ("CODEX_HOME", ".codex", "sessions/**/rollout-*.jsonl"),
+    "copilot": ("COPILOT_HOME", ".copilot", "session-state/*/events.jsonl"),
+    "agy": (None, ".gemini", "antigravity-cli/conversations/*.db"),
+}
+SCAN_BYTES = 4 << 20  # a record names its cwd near its start; read at most this much to find it
+MAX_DB_SCAN = 256 << 20  # an agy db stores the prompt in whichever page sqlite chose; telemetry.MAX_FILE's bound
+
+# The one paste, the same in both arms (docs/benchmarkpromps/interactive-benchmark-prompt.html shows it verbatim;
+# tests/test_interactive.py keeps the two equal).
+PASTE = """\
+You have a short backlog of coding tasks in this folder. Work through them one at a time, as you would on a real project.
+
+1. Run `python .bench/next.py` from this folder. It prints your first task and the folder to work in.
+2. Do that task completely, in its folder only.
+3. When the task is finished, run the next.py command printed under the task. It prints the next task.
+4. Repeat until next.py prints ALL DONE. Then stop.
+
+Keep going through every task without stopping to ask me anything: nobody will answer until the end, so make reasonable
+decisions yourself. Work in place in these folders: no git worktrees, branches or copies elsewhere. If you lose track of
+which task you are on, `python .bench/next.py --status` prints the current task again without moving on."""
+
+
+def _now() -> str:
+    return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+def _git(args: list[str], cwd: Path) -> str:
+    return gitsafe.git(args, cwd=cwd, timeout=GIT_TIMEOUT).stdout
+
+
+def _items(root: Path, task_ids: list[str]) -> list[dict]:
+    """The queue: each task's prompt.md as turn 1, then its `turns:` files, in the order given."""
+    items = []
+    for tid in task_ids:
+        task_dir = root / "tasks" / tid
+        task = config.load_yaml(task_dir / "task.yaml")
+        prompts = [(task_dir / "prompt.md").read_text(encoding="utf-8")]
+        prompts += [(task_dir / rel).read_text(encoding="utf-8") for rel in task.get("turns") or ()]
+        items += [{"task": tid, "turn": k, "turns": len(prompts), "prompt": text} for k, text in enumerate(prompts, 1)]
+    return items
+
+
+def prepare(root: Path, run_id: str, harness: str, out_root: Path, task_ids: list[str], pin: tuple[str, str],
+            tools_root: Path) -> dict:
+    """Build both arm folders and write `<out>/<run>/interactive.json`; returns the manifest. `pin` is the on arm's
+    (source, commit); `tools_root` holds the engine's pack checkouts and upstream clones (`.tools/`)."""
+    upstream_root = tools_root / "upstream"
+    missing = [t for t in task_ids if not (root / "tasks" / t / "task.yaml").is_file()]
+    if missing or not task_ids:
+        raise BenchError("HB-USR-002", f"no task folder for {', '.join(missing) or '(none given)'} under tasks/")
+    out_root.mkdir(parents=True, exist_ok=True)
+    workspace.check_cells_root(out_root)  # HB-PRE-002: no instruction file above an arm, or both arms would load it
+    run_root = out_root / run_id
+    if run_root.exists():
+        raise BenchError("HB-USR-002", f"{run_root} already exists; an interactive run is prepared once")
+    versions = {t: plan.task_version_hash(root / "tasks" / t) for t in task_ids}
+    pack_dir = workspace.pack_checkout(Path(pin[0]), pin[1], tools_root / "pack")  # cli.cmd_plan's checkout cache
+    items = _items(root, task_ids)
+    arms = {}
+    for arm in ARMS:
+        arm_dir = run_root / arm
+        for tid in task_ids:
+            source = workspace.task_source(root / "tasks" / tid, versions[tid], out_root / ".sources", upstream_root)
+            shutil.copytree(source, arm_dir / "tasks" / tid, ignore=shutil.ignore_patterns(".git"))
+        bench = arm_dir / ".bench"
+        bench.mkdir()
+        shutil.copyfile(NEXT, bench / "next.py")
+        (bench / "queue.json").write_text(json.dumps({"schema": "bench-interactive-queue/1", "run_id": run_id, "arm": arm,
+                                                      "items": items}, indent=2), encoding="utf-8")
+        _git(["init", "-q", "-b", "main"], arm_dir)
+        _git(["add", "-A"], arm_dir)
+        gitsafe.git(["commit", "-q", "-m", f"interactive base ({arm})"], cwd=arm_dir, timeout=GIT_TIMEOUT, identity=True)
+        pack_files = workspace.install_pack(pack_dir, arm_dir, project=run_id, timeout=300) if arm == ARM_ON else []
+        if arm == config.ARM_OFF:
+            found = workspace._instruction_paths(arm_dir)
+            if found:  # X-PACKOFF: the pack-off arm loads no agent instruction file
+                raise BenchError("HB-PRE-009", f"the pack-off arm holds an instruction file: {found[0]}")
+        arms[arm] = {"path": str(arm_dir), "base": _git(["rev-parse", "HEAD"], arm_dir).strip(), "pack_files": len(pack_files)}
+    manifest = {"schema": SCHEMA, "run_id": run_id, "harness": harness, "created_at": _now(), "tasks": task_ids, "task_versions": versions,
+                "pack_pin": {"source": pin[0], "commit": pin[1], "revision": workspace.pack_revision(pack_dir)}, "arms": arms}
+    (run_root / MANIFEST).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    return manifest
+
+
+def load(run_root: Path) -> dict:
+    path = run_root / MANIFEST
+    if not path.is_file():
+        raise BenchError("HB-USR-002", f"{path} not found; run `bench interactive prepare` first")
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    if manifest.get("schema") != SCHEMA:
+        raise BenchError("HB-USR-002", f"{path}: schema {manifest.get('schema')!r}, expected {SCHEMA}")
+    return manifest
+
+
+# --- collect: the overlays -----------------------------------------------------------------------------------------
+
+def _skipped(rel: str) -> bool:
+    return any(part in SKIP_DIRS for part in rel.split("/"))
+
+
+def _changes(arm_dir: Path, base: str, tid: str) -> tuple[list[str], list[str]]:
+    """(changed or new files, deleted files) under tasks/<tid>/ against the base (committed or not), relative to the
+    task folder. `-z` keeps a non-ASCII name unquoted."""
+    prefix = f"tasks/{tid}/"
+    changed, deleted = [], []
+    parts = _git(["diff", "-z", "--name-status", "--no-renames", base, "--", prefix], arm_dir).split("\0")
+    for status, path in zip(parts[0::2], parts[1::2]):
+        (deleted if status.startswith("D") else changed).append(path)
+    changed += [p for p in _git(["ls-files", "-z", "--others", "--", prefix], arm_dir).split("\0") if p]
+    keep = lambda paths: sorted({p[len(prefix):] for p in paths if p.startswith(prefix) and not _skipped(p[len(prefix):])})
+    return keep(changed), keep(deleted)
+
+
+def _copy(files: list[str], src_root: Path, dest: Path) -> None:
+    dest.mkdir(parents=True, exist_ok=True)
+    for rel in files:
+        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src_root / rel, dest / rel)
+
+
+def _tree_files(root: Path) -> list[str]:
+    """Every file of a turn snapshot (next.py copied the whole task folder): an unchanged file overlays as a no-op."""
+    return sorted(rel for rel in (p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()) if not _skipped(rel))
+
+
+def build_overlays(manifest: dict, arm: str, items: list[dict], state: dict, dest: Path) -> tuple[dict[str, Path], list[str]]:
+    """task id -> overlay folder (with turn-<n>/ folders for a multi-turn task), and the warnings."""
+    arm_dir, base = Path(manifest["arms"][arm]["path"]), manifest["arms"][arm]["base"]
+    opened = {(d["task"], d["turn"]) for d in state.get("done", [])} | ({(state["open"]["task"], state["open"]["turn"])} if state.get("open") else set())
+    overlays, warnings = {}, []
+    for tid in manifest["tasks"]:
+        turns = max(i["turns"] for i in items if i["task"] == tid)
+        folder = dest / tid
+        files, deleted = _changes(arm_dir, base, tid)
+        if deleted:
+            warnings.append(f"{tid}: {len(deleted)} deleted file(s) cannot be replayed and stay in the graded tree: {', '.join(deleted[:5])}")
+        if (tid, 1) not in opened:
+            warnings.append(f"{tid}: never handed out (next.py did not reach it)")
+        if turns == 1:
+            _copy(files, arm_dir / "tasks" / tid, folder)
+        else:
+            snap = arm_dir / ".bench" / "snapshots" / tid / "turn-1"
+            if snap.is_dir():
+                _copy(_tree_files(snap), snap, folder / "turn-1")
+                _copy(files, arm_dir / "tasks" / tid, folder / f"turn-{turns}")
+            else:  # turn 2 was never handed out: the final tree is turn 1's, and the later turns change nothing
+                _copy(files, arm_dir / "tasks" / tid, folder / "turn-1")
+                warnings.append(f"{tid}: turn 2 never handed out; the tree is graded as turn 1 with no turn 2 work")
+            for k in range(2, turns + 1):
+                (folder / f"turn-{k}").mkdir(parents=True, exist_ok=True)
+        try:
+            overlay_files(folder)
+        except OverlayError as exc:
+            warnings.append(f"{tid}: overlay refused ({exc}); the task is graded on its base tree")
+            shutil.rmtree(folder)
+            folder.mkdir(parents=True)
+        overlays[tid] = folder
+    return overlays, warnings
+
+
+class ReplayLauncher(SyntheticLauncher):
+    """The synthetic agent, with one overlay per task instead of one per combo."""
+
+    def argv_env(self, cell: dict, home: Path, traceparent: str):
+        return super().argv_env(cell | {"combo": cell["task"]}, home, traceparent)
+
+
+def replay(root: Path, manifest: dict, arm: str, overlays: dict[str, Path], runs: Path, cells_root: Path,
+           upstream_root: Path) -> tuple[str, dict]:
+    """Grade the overlays through the real engine and an in-run grading pass; (replay run id, task -> scores)."""
+    run_id = f"{manifest['run_id']}-{arm}-replay-{datetime.now(UTC):%Y%m%dT%H%M%S}"
+    run_dir = runs / run_id
+    matrix = {"schema": "bench-matrix/1", "run_id": run_id, "bom": {"subset": manifest["tasks"]}, "packs": [config.ARM_OFF],
+              "repetitions": 1, "combos": [{"id": f"interactive-{arm}", "harness": "synthetic", "model": "synthetic-1"}]}
+    bom = config.load_yaml(root / "bench" / "bom.yaml")
+    p = plan.build_plan(root, matrix, bom, run_id, {"synthetic": {"version": SYNTHETIC_VERSION}}, parallelism=4, kind="discrimination")
+    stale = sorted(c["task"] for c in p["cells"] if c["task_version"] != manifest["task_versions"][c["task"]])
+    if stale:
+        raise BenchError("HB-PRE-007", f"task(s) changed since prepare, so the base trees differ: {', '.join(stale)}")
+    plan.confirm(run_dir, p)
+    cells_root.mkdir(parents=True, exist_ok=True)
+    workspace.check_cells_root(cells_root)
+
+    def build(cell: dict, cell_dir: Path) -> dict:
+        source = workspace.task_source(root / "tasks" / cell["task"], cell["task_version"], cells_root / ".sources", upstream_root)
+        workspace.cell_working_copy(source, cell_dir / "ws")
+        return {"arm": config.ARM_OFF, "pack_manifest": 0}
+
+    cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers={"synthetic": ReplayLauncher(overlays)},
+                              build_workspace=build, grade=lambda d: runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary())
+    handler = engine.configure_logging(run_dir, p["trace_id"])
+    try:
+        summary = engine.Engine(p, cfg).run()
+    finally:
+        engine.log.removeHandler(handler)
+        handler.close()
+    passes = views.completed_passes(run_dir)
+    if summary.exit_code != 0 or len(passes) != 1:
+        raise BenchError("HB-RUN-001", f"replay run {run_id} did not complete with one grading pass (exit {summary.exit_code})")
+    keep = set(readiness.CORRECTNESS_SCORES)
+    for tid in manifest["tasks"]:
+        task = config.load_yaml(root / "tasks" / tid / "task.yaml")
+        if task.get("property"):
+            keep |= set(readiness.recorded_metrics(root, task))
+    (grading_id,) = passes
+    scores, _pointers = readiness.run_scores(run_dir, grading_id, {c["cell_id"]: c["task"] for c in p["cells"]}, keep)
+    return run_id, scores
+
+
+# --- collect: the session record -----------------------------------------------------------------------------------
+
+def _path_forms(path: Path) -> list[bytes]:
+    text = str(path)
+    forms = {text, text.replace("\\", "/"), text.replace("\\", "\\\\")}
+    return [f.lower().encode() for f in forms]
+
+
+def find_records(harness: str, arm_dir: Path, since: float, home: Path | None = None) -> list[Path]:
+    """The harness's session records modified since `since` (epoch seconds) that name the arm folder: a JSON record near
+    its start, an agy db (the prompt holds the workspace path) anywhere in the file."""
+    if harness not in RECORD_HOMES:
+        raise BenchError("HB-USR-002", f"no interactive record location known for {harness!r}; pass --record")
+    env, default, pattern = RECORD_HOMES[harness]
+    base = Path(os.environ[env]) if env and os.environ.get(env) else (home or Path.home()) / default
+    forms = _path_forms(arm_dir)
+    found = []
+    for path in base.glob(pattern):
+        try:
+            if path.stat().st_mtime < since:
+                continue
+            with path.open("rb") as fh:
+                head = fh.read(SCAN_BYTES if path.suffix != ".db" else MAX_DB_SCAN).lower()
+        except OSError:
+            continue
+        if any(f in head for f in forms):
+            found.append(path)
+    return sorted(found, key=lambda p: p.stat().st_mtime)
+
+
+def _is_next(command: str | None) -> bool:
+    return bool(command) and re.search(r"\.bench[\\/]+next\.py", command) is not None and "--status" not in command
+
+
+def _peeks(trace) -> int:
+    """Tool calls that read the queue, the progress file or the snapshots (next.py hands those out itself)."""
+    pat = re.compile(r"\.bench[\\/]+(queue\.json|state\.json|snapshots)", re.IGNORECASE)
+    return sum(1 for c in trace.calls if any(pat.search(p) for p in c.paths) or (c.command and pat.search(c.command)))
+
+
+TOKEN_FIELDS = ("uncached_input", "cache_read", "cache_write", "output", "reasoning")
+
+
+def _zero() -> dict:
+    return {**dict.fromkeys(TOKEN_FIELDS, 0), "model_calls": 0, "tool_calls": 0, "tool_failures": 0}
+
+
+def _add(seg: dict, call) -> None:
+    for f in TOKEN_FIELDS:
+        value = getattr(call, f)
+        seg[f] = None if seg[f] is None or value is None else seg[f] + value
+    seg["model_calls"] += call.requests
+
+
+def split(ex: Extraction, boundaries: list[int], labels: list[str]) -> dict[str, dict]:
+    """Totals per segment: `setup` before the first next.py call, then labels[k] from the k-th call, `wrap-up` after
+    the labels run out. A summary row (requests > 1) cannot be placed in a segment: the per-segment tokens are then
+    `None` (not recorded) and only the session total holds them."""
+    names = ["setup", *labels[: len(boundaries)]]
+    if len(boundaries) > len(labels):
+        names.append("wrap-up")
+    segs = {n: _zero() for n in names}
+
+    def seg_of(ordinal: int) -> str:
+        k = sum(1 for b in boundaries if b <= ordinal)
+        return names[min(k, len(names) - 1)]
+
+    summarised = any(c.requests > 1 for c in ex.model_calls)
+    for call in ex.model_calls:
+        _add(segs[seg_of(call.native_ordinal)], call)
+    if summarised:
+        for seg in segs.values():
+            seg.update(dict.fromkeys(TOKEN_FIELDS))
+    for tool in ex.tool_calls:
+        seg = segs[seg_of(tool.native_ordinal)]
+        seg["tool_calls"] += 1
+        seg["tool_failures"] += tool.ok is False
+    return segs
+
+
+def _when(stamp: str | None) -> datetime | None:
+    try:
+        return datetime.fromisoformat(stamp) if stamp else None
+    except ValueError:
+        return None
+
+
+def split_by_time(ex: Extraction, windows: list[tuple[str, datetime, datetime | None]]) -> dict[str, dict]:
+    """Totals per item for a record with no next.py call in it (a sub-agent's own record, or a resumed session's): each
+    call goes to the item whose next.py start/end window holds its start time, else to `unattributed`. A call with no
+    time, or a summary row, is `unattributed`."""
+    def name_of(stamp: str | None, summary: bool = False) -> str:
+        when = _when(stamp)
+        if when is None or summary:
+            return "unattributed"
+        return next((label for label, start, end in windows if start <= when and (end is None or when <= end)), "unattributed")
+
+    segs: dict[str, dict] = {}
+    for call in ex.model_calls:
+        _add(segs.setdefault(name_of(call.start, call.requests > 1), _zero()), call)
+    for tool in ex.tool_calls:
+        seg = segs.setdefault(name_of(tool.start), _zero())
+        seg["tool_calls"] += 1
+        seg["tool_failures"] += tool.ok is False
+    return segs
+
+
+def _merge(into: dict, seg: dict) -> None:
+    for f, value in seg.items():
+        if f in TOKEN_FIELDS:
+            into[f] = None if into[f] is None or value is None else into[f] + value
+        else:
+            into[f] += value
+
+
+def windows_of(items: list[dict], state: dict) -> list[tuple[str, datetime, datetime | None]]:
+    """(item label, start, end) for every item next.py handed out; the open item has no end."""
+    out = []
+    for d in [*state.get("done", []), *([state["open"]] if state.get("open") else [])]:
+        out.append((_label(items[d["index"]]), datetime.fromisoformat(d["start"]), datetime.fromisoformat(d["end"]) if d.get("end") else None))
+    return out
+
+
+def _label(item: dict) -> str:
+    return item["task"] + (f" turn {item['turn']}" if item["turns"] > 1 else "")
+
+
+def _served(ex: Extraction) -> dict:
+    served = ex.served
+    if isinstance(served, tuple):
+        served = served[0] if served else None
+    if served is None or isinstance(served, str):
+        return {"note": served or "not recorded"}
+    out = {}
+    for f in ("model_served", "model_api", "effort", "context_tokens", "context_tier"):
+        value = getattr(served, f)
+        out[f] = value[1] if is_not_recorded(value) else value
+    return out
+
+
+def _read(harness: str, path: Path):
+    """(extraction, trace) of one record; an agy conversation db alone is read by the db reader."""
+    if harness == "agy" and path.suffix == ".db":
+        return agy.read_db(path), agy.tool_inputs_db(path)
+    reader = READERS[harness]
+    return reader.read(path), reader.tool_inputs(path)
+
+
+def session_metrics(harness: str, records: list[Path], items: list[dict], state: dict | None = None) -> dict:
+    """The session's totals, its per-item split (summed over its records) and its notes, from its own records."""
+    labels = [_label(i) for i in items]
+    windows = windows_of(items, state or {})
+    total, per_item, notes, served, peeks = _zero(), {}, [], [], 0
+    hooks: int | None = 0
+    for path in records:
+        ex, trace = _read(harness, path)
+        boundaries = sorted(c.native_ordinal for c in trace.calls if _is_next(c.command))
+        segs = split(ex, boundaries, labels) if boundaries else split_by_time(ex, windows)
+        for name, seg in segs.items():
+            if name in labels or name == "unattributed":
+                _merge(per_item.setdefault(name, _zero()), seg)
+        for f in TOKEN_FIELDS:  # the record's own total, so a summary row still counts in the session total
+            values = [getattr(c, f) for c in ex.model_calls]
+            rec = None if any(v is None for v in values) else sum(values)
+            total[f] = None if total[f] is None or rec is None else total[f] + rec
+        total["model_calls"] += sum(c.requests for c in ex.model_calls)
+        total["tool_calls"] += len(ex.tool_calls)
+        total["tool_failures"] += sum(1 for t in ex.tool_calls if t.ok is False)
+        if any(c.requests > 1 for c in ex.model_calls):
+            notes.append(f"{path.name}: usage is a session summary; per-task tokens are not recorded")
+        if ex.missing:
+            notes.append(f"{path.name}: {len(ex.missing)} usage field(s) not recorded (HB-TEL-001)")
+        if ex.malformed_lines or ex.truncated:
+            notes.append(f"{path.name}: {ex.malformed_lines} malformed line(s), truncated={ex.truncated}")
+        if not boundaries:
+            notes.append(f"{path.name}: no next.py call in this record (a sub-agent's, or a resumed session's); its calls "
+                         "are placed in tasks by their start time")
+        served.append(_served(ex))
+        hooks = None if hooks is None else _pack_hooks(harness, ex, hooks)
+        peeks += _peeks(trace)
+    return {"records": [str(p) for p in records], "total": total, "per_item": per_item, "served": served,
+            "pack_hook_events": hooks, "queue_reads": peeks, "notes": notes}
+
+
+PACK_HOOK = "ai-forward-pack"  # every pack hook runs a script under docs/ai-forward-pack/hooks/ (its command names it)
+
+
+def _pack_hooks(harness: str, ex: Extraction, so_far: int) -> int | None:
+    """The pack's own hook events (the operator's user-level hooks run in both arms and are not counted). None where the
+    record cannot show it: a reader that records no hook events (Codex, agy), or one that names only the event, never
+    the command (Copilot's `sessionStart`, `agentStop`... rows)."""
+    if not isinstance(ex.harness_events, list) or harness == "copilot":
+        return None
+    return so_far + sum(1 for e in ex.harness_events if e.event == "hook" and PACK_HOOK in f"{e.name} {e.detail}")
+
+
+def _minutes(state: dict) -> dict[str, float]:
+    out = {}
+    for d in state.get("done", []):
+        start, end = datetime.fromisoformat(d["start"]), datetime.fromisoformat(d["end"])
+        out[f"{d['task']}|{d['turn']}"] = round((end - start).total_seconds() / 60, 1)
+    return out
+
+
+def collect(root: Path, run_root: Path, arm: str, harness: str, runs: Path, cells_root: Path, upstream_root: Path,
+            records: list[Path] | None = None) -> dict:
+    """Grade one arm and read its session; writes `<run>/collect/<arm>/summary.json` and returns it."""
+    manifest = load(run_root)
+    arm_dir = Path(manifest["arms"][arm]["path"])
+    queue = json.loads((arm_dir / ".bench" / "queue.json").read_text(encoding="utf-8"))
+    state_path = arm_dir / ".bench" / "state.json"
+    state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.is_file() else {"done": [], "open": None}
+    out = run_root / "collect" / arm
+    if out.exists():
+        shutil.rmtree(out)
+    overlays, warnings = build_overlays(manifest, arm, queue["items"], state, out / "overlays")
+    since = datetime.fromisoformat(manifest["created_at"]).timestamp()
+    found = records or find_records(harness, arm_dir, since)
+    if not found:
+        warnings.append(f"no {harness} session record names {arm_dir}; tokens and tool calls are not recorded (pass --record)")
+    session = session_metrics(harness, found, queue["items"], state) if found else None
+    if session and len(found) > 1:
+        warnings.append(f"{len(found)} session records name this arm (a restart or sub-agents); all are summed")
+    if session and session["queue_reads"]:
+        warnings.append(f"{session['queue_reads']} tool call(s) read .bench/ files directly (the queue, progress or snapshots)")
+    if session and arm == ARM_ON and session["pack_hook_events"] == 0:
+        warnings.append("the pack-on session's record shows no pack hook event: the pack's hooks did not run (folder trust?)")
+    if session and arm == config.ARM_OFF and session["pack_hook_events"]:
+        warnings.append(f"the pack-off session's record shows {session['pack_hook_events']} pack hook event(s): the arm is not pack-free")
+    if state.get("open") or len(state.get("done", [])) < len(queue["items"]):
+        warnings.append(f"{len(state.get('done', []))} of {len(queue['items'])} items finished (next.py never printed ALL DONE)")
+    replay_id, scores = replay(root, manifest, arm, overlays, runs, cells_root, upstream_root)
+    summary = {"schema": "bench-interactive-summary/1", "run_id": manifest["run_id"], "arm": arm, "harness": harness,
+               "collected_at": _now(), "replay_run": replay_id, "scores": scores, "minutes": _minutes(state),
+               "session": session, "warnings": warnings}
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "summary.json").write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
+    return summary
+
+
+# --- report ---------------------------------------------------------------------------------------------------------
+
+def _score(value) -> str:
+    if isinstance(value, dict):
+        return f"NA ({value.get('na')})"
+    return "-" if value is None else str(value)
+
+
+def _num(value) -> str:
+    return "not recorded" if value is None else f"{value:,}" if isinstance(value, int) else str(value)
+
+
+def report(run_root: Path) -> str:
+    """Both arms side by side, as Markdown; written to `<run>/interactive-report.md` and returned."""
+    manifest = load(run_root)
+    arms = {}
+    for arm in ARMS:
+        path = run_root / "collect" / arm / "summary.json"
+        if path.is_file():
+            arms[arm] = json.loads(path.read_text(encoding="utf-8"))
+    if not arms:
+        raise BenchError("HB-USR-002", f"no collected arm under {run_root / 'collect'}; run `bench interactive collect` first")
+    harness = next(iter(arms.values()))["harness"]
+    lines = [f"# Interactive run {manifest['run_id']}", "",
+             f"- Harness: **{harness}**. One interactive session per arm, launched by the operator.",
+             f"- Pack (on arm): `{manifest['pack_pin']['source']}` at `{manifest['pack_pin']['commit'][:12]}` (revision {manifest['pack_pin']['revision']}).",
+             f"- Tasks, in queue order: {', '.join(manifest['tasks'])}. Prepared {manifest['created_at']}.",
+             "- Arms collected: " + ", ".join(f"{a} (replay run `{s['replay_run']}`)" for a, s in arms.items()) + ".", "",
+             "## Results per task", "",
+             "| Task | " + " | ".join(f"{a}: hidden tests (pass_at_1) | {a}: property_check_pass | {a}: minutes" for a in arms) + " |",
+             "|---|" + "---|---|---|" * len(arms)]
+    for tid in manifest["tasks"]:
+        row = [tid]
+        for a, s in arms.items():
+            sc = s["scores"].get(tid, {})
+            mins = [v for k, v in s["minutes"].items() if k.split("|")[0] == tid]
+            row += [_score(sc.get("pass_at_1")), _score(sc.get("property_check_pass")), _num(round(sum(mins), 1)) if mins else "not reached"]
+        lines.append("| " + " | ".join(row) + " |")
+    primary = [t for t in manifest["tasks"] if t != "SV1"]
+    lines += ["", "## Totals", "", "| Measure | " + " | ".join(arms) + " |", "|---|" + "---|" * len(arms)]
+
+    def count(arm_summary, metric, tasks):
+        vals = [arm_summary["scores"].get(t, {}).get(metric) for t in tasks]
+        return f"{sum(1 for v in vals if v == 1)} of {sum(1 for v in vals if isinstance(v, int))} graded"
+
+    lines.append("| property_check_pass (primary, without SV1) | " + " | ".join(count(s, "property_check_pass", primary) for s in arms.values()) + " |")
+    lines.append("| hidden tests pass (all tasks) | " + " | ".join(count(s, "pass_at_1", manifest["tasks"]) for s in arms.values()) + " |")
+    lines.append("| wall minutes (sum of tasks) | " + " | ".join(_num(round(sum(s["minutes"].values()), 1)) for s in arms.values()) + " |")
+    for f in (*TOKEN_FIELDS, "model_calls", "tool_calls", "tool_failures"):
+        lines.append(f"| {f} | " + " | ".join(_num((s["session"] or {}).get("total", {}).get(f)) if s["session"] else "not recorded" for s in arms.values()) + " |")
+    lines.append("| pack hook events | " + " | ".join(_num(s["session"]["pack_hook_events"]) if s["session"] else "not recorded"
+                                                     for s in arms.values()) + " |")
+    lines += ["", "## Served settings (from each session's own record)", ""]
+    for a, s in arms.items():
+        lines.append(f"- **{a}**: " + ("; ".join(json.dumps(x) for x in s["session"]["served"]) if s["session"] else "no record"))
+    lines += ["", "## Tokens per task", "", "| Task | " + " | ".join(f"{a}: input+cache | {a}: output | {a}: tool calls" for a in arms) + " |",
+              "|---|" + "---|---|---|" * len(arms)]
+    order = {t: n for n, t in enumerate(manifest["tasks"])}
+    labels = sorted({k for s in arms.values() if s["session"] for k in s["session"]["per_item"]},
+                    key=lambda k: (order.get(k.split(" ")[0], len(order)), k))  # `unattributed` last
+    for label in labels:
+        row = [label]
+        for s in arms.values():
+            seg = (s["session"] or {}).get("per_item", {}).get(label)
+            if not seg:
+                row += ["not recorded"] * 3
+                continue
+            inp = None if seg["uncached_input"] is None else seg["uncached_input"] + seg["cache_read"] + seg["cache_write"]
+            row += [_num(inp), _num(seg["output"]), _num(seg["tool_calls"])]
+        lines.append("| " + " | ".join(row) + " |")
+    lines += ["", "## Warnings", ""]
+    for a, s in arms.items():
+        notes = s["warnings"] + ((s["session"] or {}).get("notes") or [])
+        lines += [f"- **{a}**: {n}" for n in notes] or [f"- **{a}**: none"]
+    lines += ["", "## How to read this", "",
+              "- One session per arm: a single paired observation per task, not a statistical result.",
+              "- Context carries from task to task in the fixed queue order, the same order in both arms.",
+              ("- Pass/fail and property checks are graded by the bench's own graders on a replay of each task folder; "
+               "the catalog's process metrics need a per-cell record and are not graded in this mode."),
+              ("- Tokens come from the session's own record. A record that only summarises usage gives session totals, "
+               "and the per-task rows read `not recorded`.")]
+    text = "\n".join(lines) + "\n"
+    (run_root / "interactive-report.md").write_text(text, encoding="utf-8")
+    return text
+
+
+__all__ = ["ARMS", "PASTE", "build_overlays", "collect", "find_records", "load", "prepare", "replay", "report",
+           "session_metrics", "split"]

@@ -16,6 +16,7 @@ PACK_READERS_ALLOWED: dict[str, int] = {
     "board.py": 16,  # Row-dataclass `.pack` field and export key; Leader decision, W1-G F7 (legacy goldens byte-identical).
     "cli.py": 3,  # Two directory operands and the historical event wire key.
     "config.py": 3,  # Matrix arm validation, not a cell reader.
+    "interactive.py": 1,  # Directory operand: the pack checkout cache under .tools/, as cli.cmd_plan's; not a cell reader.
     "plan.py": 12,  # Authoritative version adapter and frozen identity recipe.
     "report/cli_table.py": 7,  # Row-dataclass `.pack` field and export key; Leader decision, W1-G F7 (legacy goldens byte-identical).
     "report/context_growth.py": 1,  # Row-dataclass `.pack` field and export key; Leader decision, W1-G F7 (legacy goldens byte-identical).

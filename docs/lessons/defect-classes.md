@@ -2374,3 +2374,35 @@ registers both.*
   file fails loudly instead of passing on nothing. Rung: test. Upgrade trigger: a second instance; then a lint over
   `tests/` for literal line-number slices of files outside `tests/`.
 - **Status:** `controlled`
+
+### ARM-MIX-A: a treatment measure also counts the operator's own setup, which runs in both arms (candidate)
+- **Signature:** a count meant to show the treatment (here: the pack's hooks ran) counts every event of that kind in
+  the record. In a session the operator launches, their own user-level hooks, skills or lifecycle rows run in both
+  arms, so the measure is non-zero in the control arm and cannot tell a working treatment from a broken one.
+- **Instance:** `2026-10-14` (interactive mode smoke, `bench interactive collect`; observed): the first cut counted
+  every `hook` event. Claude Code's pack-off arm showed 1 (the operator's own `wtcli.exe` Stop hook) and Copilot's
+  pack-off arm 4 (`sessionStart`, `userPromptSubmitted`, `agentStop`, `sessionEnd` rows that name no command). The
+  "pack-on recorded no hook event" warning could then never fire for a pack-on arm whose pack hooks did not run.
+- **Fix:** `interactive._pack_hooks` counts only hook events whose command runs a script under `docs/ai-forward-pack/`,
+  and is `not recorded` where the record cannot show the command (Copilot) or holds no hook events (Codex, agy). The
+  warning fires on a measured zero in the on arm, and a second warning on any pack hook in the off arm.
+- **Sweep:** the headless cells run in isolated homes, so no operator setup reaches them. In the interactive report
+  the only other per-arm count read from the record is tool calls, which measures both arms the same way by design.
+- **Control:** `tests/test_interactive.py::test_pack_hooks_count_only_the_packs_own_and_are_not_recorded_where_the_record_cannot_tell`,
+  with mutant IN4 (`tests/mutations/interactive.json`) killed. Rung: test. Upgrade trigger: a pack whose hooks run from
+  another path.
+- **Status:** `controlled`
+
+### ENUM-A: a check over a hard-coded list of files skips every file added later (candidate)
+- **Signature:** a test that guards every page or file of a kind names them in a tuple. A new file of that kind is
+  never checked, and the test still passes.
+- **Instance:** `2026-10-14` (interactive mode; observed in review before the new page could escape it):
+  `tests/test_run_prompt_pins.py::test_no_prompt_holds_a_raw_tag_inside_its_pre_blocks` named the two headless prompt
+  pages. The new `interactive-benchmark-prompt.html` holds copyable `<pre>` blocks too, the exact surface the test
+  exists for.
+- **Fix:** the test globs `docs/benchmarkpromps/*.html` and asserts at least three pages, so an empty glob fails.
+- **Sweep:** other tests in `tests/` that read `docs/benchmarkpromps/`: `test_interactive.py` reads its own page by name
+  (its subject is that page). No other test enumerates that folder.
+- **Control:** the glob with its floor. Rung: test. Upgrade trigger: a second instance; then a lint for tuple-of-paths
+  loops in `tests/` over a folder that the test does not glob.
+- **Status:** `controlled`

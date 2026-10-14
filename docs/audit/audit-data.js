@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-14T15:15:47Z",
+  "generated": "2026-10-14T21:43:02Z",
   "audit": [
     {
       "actor": null,
@@ -189844,6 +189844,23 @@ window.AUDIT_DATA = {
       "actor": null,
       "artifacts": [],
       "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M4Y5WT0X7SFSFZZ5PKATQ9SF",
+      "shortname": "interactive benchmark mode",
+      "datetime": "2026-10-14T21:43:02Z",
+      "session": "prompt-log",
+      "prompt": "i am worried that the -p approach is just not representing a developer working in the CLI\nso i guess i have to go back to two prompts a pack-on prompt and a pack-off prompt in two different cli instances\n---\ninstead of running the benchmarks now work on the prompts\nthen update the html and show in chrome\n(decisions: one paste per pack on and pack off; 1 repetition; keep the headless prompt as a second option)\n\ngoal: an interactive benchmark mode - one CLI session per arm, one paste each - with prompts, grading and session measurement that work for claude-code, codex, copilot and agy\ndone_when: bench interactive prepare|collect|report built and tested (end-to-end on the fixture two-turn task, real smokes on four CLIs), the prompt page shows both pastes verbatim, merged to main, page open in Chrome",
+      "summary": "bench interactive prepare/collect/report + interactive prompt page; one paste per arm",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [
+        "benchmark"
+      ],
       "outcome": "success"
     }
   ],
