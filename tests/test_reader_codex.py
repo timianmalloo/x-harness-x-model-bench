@@ -314,6 +314,25 @@ def test_an_exec_call_batching_several_commands_names_them_all_and_unescapes_the
     assert codex.shell_command_class(call.command) == ("test", ("tests" + chr(92) + "a.py", "vendor/q"))
 
 
+def test_an_exec_that_reads_and_patches_names_only_the_patched_files_as_written_paths(tmp_path):
+    """W2 flaw, W14 item 5. Real shape (the lean Codex run, 1 of 261 writing calls): one `exec` runs `Get-Content` on
+    three agent files and then `apply_patch` on a notes file. `is_write` is true, so `paths` is what the classifier
+    reads as written (`test_write` / `product_write`): it must hold the patch header only. The reads stay in `command`,
+    where the read classifier finds them, so no read consumer loses the call."""
+    record = tmp_path / "r.jsonl"
+    js = ('const r = await tools.exec_command({cmd:"Get-Content .claude/agents/a_agent.md -TotalCount 75; '
+          'Get-Content tests/test_x.py -TotalCount 70"});\n'
+          'text(await tools.apply_patch("*** Begin Patch\\n*** Add File: docs/notes.md\\n+x\\n*** End Patch"));')
+    record.write_text(json.dumps({"type": "response_item", "payload": {
+        "type": "custom_tool_call", "call_id": "c1", "name": "exec", "input": js}}) + "\n", encoding="utf-8")
+    (call,) = codex.tool_inputs(record).calls
+    assert call.is_write and call.paths == ("docs/notes.md",)
+    assert codex.shell_read_kind(call.command) == "read" and "tests/test_x.py" in call.command
+    from harness_bench.report import tool_phases
+    assert not {"test_write"} & tool_phases.classify(call, ["docs/**"])
+    assert {"product_write", "edit_tool", "read_tool"} <= tool_phases.classify(call, ["docs/**"])
+
+
 def test_a_codex_tool_row_carries_the_class_of_the_call_not_of_the_tool_name(tmp_path):
     """`exec` is one tool name for every read, test run and patch; the row's class is read, edit or test when the call
     is one, else shell (never `other`, which the views count as outside the profile). Hand count over the 24 calls of
