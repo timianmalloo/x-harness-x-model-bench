@@ -166,7 +166,7 @@ def test_seven_of_twenty_requests_before_the_first_edit_is_0_3500():
 def test_no_edit_class_call_is_na():
     # A shell call is not an edit, even when model calls are itemised in time.
     scores = grade_fixture("no-edit-class.json")
-    reason = "no edit-class tool call (edits through the shell are not classed)"
+    reason = "no edit-class tool call (a shell command is an edit only where the reader classifies it as one)"
     assert scores["planning_ratio"] == Score(None, reason)
 
 

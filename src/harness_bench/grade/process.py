@@ -17,7 +17,7 @@ from harness_bench.grade import CellInput, Score
 RATE_SCALE = Decimal("0.0001")
 STUCK_RUN = 3  # a maximal run of this many consecutive failures, same name
 NO_FAILED = "no failed tool call"
-NO_EDIT = "no edit-class tool call (edits through the shell are not classed)"
+NO_EDIT = "no edit-class tool call (a shell command is an edit only where the reader classifies it as one)"
 SUMMARY_ROWS = "model calls not itemised in time (summary rows)"
 NO_CELL_OUTCOME = "no cell outcome"
 STUCK_NOT_MEASURABLE = "stuck-loop count not measurable"

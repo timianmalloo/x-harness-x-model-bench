@@ -112,7 +112,7 @@ def test_formal_on_a_task_with_no_formal_block_is_na_never_0_or_a_crash(root, tm
     missing = (None, "per-call outcome missing on 2 of 2 calls")  # the captured Codex record: every ok is null (DR-G3)
     assert {m: got[m] for m in PROCESS} == {  # process is registered (GR-PROC p1-p3), so measured, never `not built`
         "tool_error_rate": missing, "stuck_loops": missing, "recovery_rate": missing,
-        "planning_ratio": (None, "no edit-class tool call (edits through the shell are not classed)"),
+        "planning_ratio": (None, "no edit-class tool call (a shell command is an edit only where the reader classifies it as one)"),
         "completion_without_intervention": (None, "no cell outcome"),  # the builder's cell.outcome has no stop_reason
         "time_to_first_green": (None, "test runs not identifiable in the tool record (no command text extracted)")}
     assert (got.get("pass_at_1"), got.get("partial_credit"), got.get("build_and_suite_clean")) == \
