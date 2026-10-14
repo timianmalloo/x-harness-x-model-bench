@@ -8,11 +8,22 @@ Sources, each Verified on the frozen 1.0.41 spike sessions (tests/fixtures/grok/
 - `usage.json` `turns[]`: per-turn, per-model usage (`modelUsage`). There is no per-request usage, so each row is one
   turn of one model with `requests` = `modelCalls` (ADR-0026 s2), and the per-request grain is PER_REQUEST.
 - `signals.json` `contextWindowTokens`; `system_prompt.txt`, `tool_definitions.json`, `prompt_context.json`
-  `agents_md_files` (the instruction files, inlined into the first user message's `<rules>` block).
+  `agents_md_files` (the instruction files, inlined into the first user message's `<rules>` block), and the skill
+  catalogue: a `system_reminder` user row before the prompt (`_skill_catalogues`, A7). Not parts: the rest of the
+  `<user_info>` row and the other pre-prompt reminders (the MCP server notice, pack-off's workflow list).
 - `events.jsonl`: `tool_started` / `tool_completed` (`tool_call_id`, `outcome`) give a call's times and outcome.
-Hooks and compaction are Flagged (ADR-0026 s1): no record shows their shape, so `harness_events` is not recorded.
-`tool_inputs` (the report's and attention drift's trace) reads `chat_history.jsonl` alone: the assistant rows' calls, and
-the `tool_result` rows by `tool_call_id`.
+- `updates.jsonl` (C4, Verified on the lean run lean-20261013T222527, build 1.0.41, every archived cell): each
+  `params.update` with `sessionUpdate` `hook_execution` is one hook event (`event_name`: session_start,
+  user_prompt_submit, pre_tool_use, post_tool_use, stop; `tool_name` on the tool events) and its `runs[]` are the hook
+  invocations, each `name` (the config path) and `status.status` / `status.elapsed_ms`. `harness_events` has one `hook`
+  row per run. The runs of one row ran one after another and `_meta.agentTimestampMs` is the last one's end: in cell
+  55f8737f9f071f28, `tool_started` to the first pre_tool_use row is 5993 ms against a runs' sum of 5990 (their max was
+  1627), and the pre_tool_use rows match the tool calls one for one (57/57). So run k ends at the stamp minus the later
+  runs' elapsed_ms and starts elapsed_ms before that. Only `success` was seen (10,591 runs): any other status is `ok`
+  None with the status in `detail`. The hook time sits inside the tool call's own interval (the hooks run after
+  `tool_started`). Compaction is not recorded: no record shows its shape (ADR-0026 s1).
+- `tool_inputs` (the report's and attention drift's trace) reads `chat_history.jsonl` alone: the assistant rows' calls,
+  and the `tool_result` rows by `tool_call_id`.
 """
 
 from __future__ import annotations
@@ -20,11 +31,13 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict, deque
+from datetime import UTC, datetime
 from pathlib import Path
 
 from harness_bench.telemetry import (
     MAX_FILE,
     Extraction,
+    HarnessEvent,
     MissingField,
     ModelCall,
     ProcessTrace,
@@ -60,9 +73,11 @@ TOOL_CLASS = {"run_terminal_command": "shell", "get_command_or_subagent_output":
               "image_gen": "other", "image_edit": "other", "image_to_video": "other", "reference_to_video": "other"}
 
 PER_REQUEST = not_recorded("per-turn totals only")[1]
-NO_EVENTS = not_recorded("grok hook and compaction events are Flagged (no record shows their shape)")[1]
+NO_UPDATES = not_recorded("updates.jsonl absent (hook runs are recorded there)")[1]
+UPDATES = "updates.jsonl"
 NO_PROMPT_CONTEXT = not_recorded("prompt_context.json absent or unreadable")[1]
 CHAT = "chat_history.jsonl"
+SKILLS_HEAD = "<system-reminder>\nThe following skills are available for use:"
 USAGE_KEYS = ("inputTokens", "cachedReadTokens", "cacheCreationTokens", "outputTokens")
 
 
@@ -178,6 +193,21 @@ def _tool_calls(d: Path, ex: Extraction, calls: dict[str, str]) -> None:
         ex.tool_calls.append(ToolCall(position, name, tool_class(name), start, end, ok, None if ok in (None, True) else outcome))
 
 
+def _skill_catalogues(d: Path) -> list[int]:
+    """The chars of each skill catalogue Grok sent before the prompt: a `user` row with `synthetic_reason`
+    `system_reminder` whose text opens with SKILLS_HEAD, before the first row with `prompt_index` (A7, Verified on
+    lean-20261013T222527: one per pack-on cell, after `<user_info>`; a reload after the prompt is not the prefix)."""
+    out: list[int] = []
+    if (d / CHAT).is_file():
+        for _, row in rows(d / CHAT, Extraction()):
+            if "prompt_index" in row or row.get("type") in ("assistant", "reasoning"):
+                break
+            text = "".join(as_str(p.get("text")) or "" for p in as_list(row.get("content")) if isinstance(p, dict))
+            if row.get("synthetic_reason") == "system_reminder" and text.startswith(SKILLS_HEAD):
+                out.append(len(text))
+    return out
+
+
 def _prompt_parts(d: Path) -> list[PromptPart] | str:
     context = _json(d / "prompt_context.json")
     files = as_dict(context).get("agents_md_files")
@@ -192,7 +222,44 @@ def _prompt_parts(d: Path) -> list[PromptPart] | str:
         content = as_str(f.get("content"))
         parts.append(PromptPart(len(parts), "instruction_file", as_str(f.get("file_path")), None if content is None else len(content),
                                 "inlined", "prompt_context.json:agents_md_files"))
+    parts += [PromptPart(len(parts) + k, "skills", None, chars, "listed", f"{CHAT}:user.system_reminder (skills)")
+              for k, chars in enumerate(_skill_catalogues(d))]
     return parts
+
+
+def _iso(ms: int) -> str:
+    return datetime.fromtimestamp(ms / 1000, UTC).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def _hook_events(d: Path) -> list[HarnessEvent] | str:
+    """One `hook` event per run of each `hook_execution` update (module docstring), in record order. A run's times
+    are derived back from the row's stamp through the later runs' elapsed_ms, so a run with no count leaves its own
+    and every earlier run's times None (the stream's sum is then not recorded, never a partial one)."""
+    if not (d / UPDATES).is_file():
+        return NO_UPDATES
+    events: list[HarnessEvent] = []
+    for _, row in rows(d / UPDATES, Extraction()):
+        params = as_dict(row.get("params"))
+        update = as_dict(params.get("update"))
+        if update.get("sessionUpdate") != "hook_execution":
+            continue
+        at = as_dict(params.get("_meta")).get("agentTimestampMs")
+        end = at if is_count(at) else None
+        tool = as_str(update.get("tool_name"))
+        label = (as_str(update.get("event_name")) or "unknown") + (f" tool={tool}" if tool else "")
+        timed = []
+        for run in reversed([as_dict(r) for r in as_list(update.get("runs"))]):
+            status = as_dict(run.get("status"))
+            elapsed, state = status.get("elapsed_ms"), as_str(status.get("status"))
+            start = end - elapsed if end is not None and is_count(elapsed) and elapsed <= end else None
+            detail = f"{label} elapsed_ms={elapsed}" + ("" if state == "success" else f" status={state}")
+            timed.append((as_str(run.get("name")), start, end if start is not None else None,
+                          True if state == "success" else None, detail))
+            end = start
+        for name, start, stop, ok, detail in reversed(timed):
+            events.append(HarnessEvent(len(events) + 1, "hook", name, None if start is None else _iso(start),
+                                       None if stop is None else _iso(stop), ok, detail))
+    return events
 
 
 def _served(d: Path, served: list[str], effort: list[str]) -> tuple[ServedSettings, ...]:
@@ -270,5 +337,5 @@ def read(path: Path) -> Extraction:
     _model_calls(d, ex)
     ex.served = _served(d, served, effort)
     ex.prompt_parts = _prompt_parts(d)
-    ex.harness_events = NO_EVENTS
+    ex.harness_events = _hook_events(d)
     return ex

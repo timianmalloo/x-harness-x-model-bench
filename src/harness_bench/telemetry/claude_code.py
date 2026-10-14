@@ -27,6 +27,14 @@ The lean re-run's reader facts (ADR-0026 s1; R-READ-CC spike, 2026-10-12, one pa
   tool call is a skill load. Hooks of other events (SessionStart, PreToolUse, PostToolUse, UserPromptSubmit) that
   print nothing leave no row (the spike's SessionStart hook ran and wrote its file, with no transcript row), and no
   compaction row was seen: both are not recorded.
+- Per-tool hook time (C4, lean run lean-20261013T222006, 30 pack-on cells, 712 tool calls) is not recorded by the
+  harness: the pack wires 2-3 PreToolUse hooks and 1-2 PostToolUse hooks on every call, yet the transcript holds only 8
+  `attachment` rows of type `hook_success` (`hookEvent`, `hookName`, `command`, `exitCode`, `durationMs`, `toolUseID`),
+  all from the re-read guard when it printed a warning. Each is a hook event; its `timestamp` is the hook's end (the
+  tool_use row's stamp plus `durationMs`, within 1-4 ms, on all 8). Every hook event keeps `start` None and its duration in
+  `detail`, so the cell's hook time (a sum over events) stays not recorded rather than a sum that leaves out the
+  silent invocations. The hook time is inside each tool call's interval (tool_use row to tool_result row). Inferred
+  estimate, not emitted: the median Read call takes 1275 ms pack-on against 14 ms pack-off on the same run.
 """
 
 from __future__ import annotations
@@ -251,7 +259,16 @@ def _note_parts(parts: list[PromptPart], seen: set[str], row: dict) -> None:
 
 def _hook_events(row: dict, stamp: str | None) -> list[HarnessEvent]:
     """A `stop_hook_summary` row: one hook event per `hookInfos` entry (ordinal set later). `ok` is 1 only when the
-    row lists no `hookErrors`; with errors the record does not say which hook failed, so `ok` is None."""
+    row lists no `hookErrors`; with errors the record does not say which hook failed, so `ok` is None. A `hook_success`
+    attachment (a tool or prompt hook that printed): one event, `ok` from its `exitCode`. `start` is None on both and
+    the duration rides in `detail` (module docstring, C4: the silent invocations are not in the record)."""
+    att = as_dict(row.get("attachment"))
+    if att.get("type") == "hook_success":
+        code = att.get("exitCode")
+        return [HarnessEvent(0, "hook", as_str(att.get("command")), None, stamp, code == 0 if type(code) is int else None,
+                             f"{as_str(att.get('hookName'))} durationMs={att.get('durationMs')}")]
+    if row.get("type") != "system" or row.get("subtype") != "stop_hook_summary":
+        return []
     errors = row.get("hookErrors")
     ok = True if errors == [] else None
     return [HarnessEvent(0, "hook", as_str(info.get("command")), None, stamp, ok,
@@ -301,8 +318,7 @@ def read(path: Path, acp: Path | None = None) -> Extraction:
         att = as_dict(row.get("attachment"))
         if att.get("type") == "model":
             _keep(models, as_dict(att.get("identity")).get("modelId"))
-        if kind == "system" and row.get("subtype") == "stop_hook_summary":
-            events += [(n, e) for e in _hook_events(row, stamp)]
+        events += [(n, e) for e in _hook_events(row, stamp)]
         if kind == "user":
             content = message.get("content")
             if ex.first_user_text is None:

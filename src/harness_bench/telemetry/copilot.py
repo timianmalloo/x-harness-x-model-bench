@@ -65,8 +65,19 @@ the R-COPILOT-P and Sol Fast records), which keys every per-request fact to the 
   `<imported_custom_instruction source=...>` inside it, each `---\\napplyTo:` instruction file after them, each
   `<available_skills>` entry (`skills`, listed), the rest `system`; the "instruction files" table rows are
   `instruction_file` listed (no chars). Tools are one `tools` row, listed: the log carries names and digests only.
+  A7 (lean runs lean-20261013T222133 and lean-20261013T222416, `copilot -p`): the full tool definitions are in no
+  file of the cell home (events.jsonl, the `-p` output stream, the debug process log), so the part has no character
+  count. Their size is recorded only in tokens: `session.usage_checkpoint.data.promptCacheBreakState[].models[].
+  tool_tokens` (2187 for 9 tools on both runs) beside `tool_count`; the count is `Extraction.tools_advertised` (the
+  same checkpoint's `tools[].name`). A `PromptPart` has no token column, so the token size is not emitted here.
 - `harness_events`: `hook.start`/`hook.end` paired by `hookInvocationId`; skill loads are `skill` tool calls.
-  Compaction is not mapped: no record seen carries one (Flagged, ADR-0026 s1).
+  Compaction is not mapped: no record seen carries one (Flagged, ADR-0026 s1). C4: under `copilot -p` hook time is
+  not recorded by the harness. The pack-on cells of both lean runs (.github/hooks/ai-forward.json wires preToolUse
+  and postToolUse hooks) hold no `hook.start`/`hook.end` row, no hook event in the `-p` stream, and only hook-policy
+  lines in the debug log, so `hook_starts` reads 0 there although hooks were configured. No cheap per-cell bound:
+  the gap from the tool request (`assistant.message.toolRequests`) to `tool.execution_start` is 2-3 ms median both
+  pack-on and pack-off. Inferred, not emitted: the median `view` call takes 60 ms on against 9 ms off (gpt-5.5) and
+  730 ms against 46 ms (gpt-6.1-sol), which would put any hook time inside the tool call's interval.
 """
 
 from __future__ import annotations
