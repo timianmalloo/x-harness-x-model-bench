@@ -13,6 +13,7 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -20,6 +21,7 @@ import pytest
 from clean_parent import CLEAN_PARENT
 
 from harness_bench import archive, gitsafe, interactive
+from harness_bench.errors import BenchError
 from harness_bench.telemetry import Extraction, ModelCall, ToolCall, agy
 
 REPO = Path(__file__).resolve().parents[1]
@@ -57,7 +59,10 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
         root = mt.make_root(base)
         task_dir = mt.install(root, "disc_turns")
         _fake_pack(monkeypatch, base / "pack")
-        manifest = interactive.prepare(root, "int-t", "claude-code", base / "out", [TASK], ("C:/pack", "0" * 40), base / "tools")
+        monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(base / "no-records"))  # gather's search reads no operator record
+        graded = base / "graded.txt"  # the stand-in grading command appends the arm it was started for
+        stand_in = [sys.executable, "-c", f"import sys; open({str(graded)!r}, 'a').write(sys.argv[-2] + '\\n')"]
+        manifest = interactive.prepare(root, "int-t", "claude-code", base / "out", [TASK], ("C:/pack", "0" * 40), base / "tools", stand_in)
         solutions = {"off": "reference", "on": "naive"}
         for arm, role in solutions.items():
             arm_dir = Path(manifest["arms"][arm]["path"])
@@ -72,13 +77,30 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
                 out = _next(arm_dir)
                 assert ("TASK 2 of 2" in out) if turn == 1 else out.startswith("ALL DONE")
             assert (arm_dir / ".bench" / "snapshots" / TASK / "turn-1").is_dir()
+            if arm == "on":
+                (arm_dir / "notes.md").write_text("work outside the task folders\n", encoding="utf-8")
             summary = interactive.collect(root, base / "out" / "int-t", arm, "claude-code", base / "runs", base / "cells",
                                           base / "tools" / "upstream", records=[])
             expected = mt.TURNS_EXPECTED[role]
             got = {k: summary["scores"][TASK][k] for k in expected}
             assert got == expected, (arm, role, summary["warnings"])
+            assert set(interactive.DRIFT_SCORES) <= set(summary["scores"][TASK]), summary["scores"][TASK]
+            assert summary["outside_task_folders"] == (["notes.md"] if arm == "on" else [])
             assert set(summary["minutes"]) == {f"{TASK}|1", f"{TASK}|2"}
-        text = interactive.report(base / "out" / "int-t")
+            local = interactive.report(base / "out" / "int-t", only=arm).read_text(encoding="utf-8")
+            other = "on" if arm == "off" else "off"
+            assert f"{arm}: property_check_pass" in local and f"{other}: property_check_pass" not in local
+        deadline = time.monotonic() + 60
+        while time.monotonic() < deadline and len(graded.read_text().split() if graded.is_file() else []) < 2:
+            time.sleep(0.2)
+        assert sorted(graded.read_text().split()) == ["off", "on"]  # one grading started per arm, at the last item
+        state = lambda: json.loads((arm_dir / ".bench" / "state.json").read_text(encoding="utf-8"))["grading"]
+        started = state()
+        assert "pid" in started, started
+        assert _next(arm_dir).startswith("ALL DONE") and state() == started  # a later ALL DONE starts no second grading
+        rows = interactive.gather(base / "out")
+        assert [r["arms"] for r in rows] == [{"off": "graded", "on": "graded"}]
+        text = Path(rows[0]["report"]).read_text(encoding="utf-8")
         assert re.search(rf"\| {TASK} \| \S+ \| 1 \| [\d.]+ \| \S+ \| 0 \| [\d.]+ \|", text), text
     finally:
         shutil.rmtree(base, onexc=archive.make_writable)
@@ -97,6 +119,31 @@ def test_next_status_reprints_without_advancing_and_done_stays_done(tmp_path):
     assert _next(tmp_path).startswith("ALL DONE")
     assert _next(tmp_path).startswith("ALL DONE")
     assert len(json.loads((bench / "state.json").read_text(encoding="utf-8"))["done"]) == 1
+
+
+def test_harness_list_takes_commas_spaces_and_the_claude_alias_and_refuses_an_unknown_name():
+    assert interactive.harnesses(["claude,", "codex,", "copilot"]) == ["claude-code", "codex", "copilot"]
+    assert interactive.harnesses(["claude,codex", "claude-code"]) == ["claude-code", "codex"]
+    with pytest.raises(BenchError, match="gemini"):
+        interactive.harnesses(["claude", "gemini"])
+
+
+def test_gather_rereads_the_records_the_grading_found_and_searches_only_when_it_found_none(monkeypatch, tmp_path):
+    run = tmp_path / "run"
+    (run / "collect" / "on").mkdir(parents=True)
+    (run / interactive.MANIFEST).write_text(json.dumps({"schema": interactive.SCHEMA, "harness": "codex"}), encoding="utf-8")
+    known = tmp_path / "rollout-known.jsonl"
+    known.write_text("", encoding="utf-8")
+    read = []
+    monkeypatch.setattr(interactive, "read_session", lambda manifest, arm, harness, records: (read.append(records), (None, []))[1])
+    for session, expected in (({"records": [str(known)]}, [known]), (None, None)):
+        (run / "collect" / "on" / "summary.json").write_text(json.dumps({"harness": "codex", "session": session}), encoding="utf-8")
+        interactive.refresh_session(run, "on")
+        assert read[-1] == expected  # None: read_session searches, as the grading did
+
+
+def test_default_tasks_are_every_lean_task():
+    assert interactive.default_tasks(REPO) == ["S1", "S2", "RS1", "RS2", "RW1", "RW2", "NG1", "NG2", "SM1", "SM2", "SV1"]
 
 
 def _call(n: int, requests: int = 1) -> ModelCall:

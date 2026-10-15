@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-14T21:43:02Z",
+  "generated": "2026-10-15T14:32:15Z",
   "audit": [
     {
       "actor": null,
@@ -189862,6 +189862,35 @@ window.AUDIT_DATA = {
         "benchmark"
       ],
       "outcome": "success"
+    },
+    {
+      "id": "al-01M4ZZMQ60DXQMRHH45HRG8J01",
+      "shortname": "interactive-self-grading",
+      "datetime": "2026-10-15T14:32:14Z",
+      "session": "5f95ed8a-0c20-43f8-9c7a-70a86f9723b8",
+      "prompt": "reviewing the latest bench prompt: file:///C:/Projects/x-harness-x-model-bench/docs/benchmarkpromps/interactive-benchmark-prompt.html\n\nthings I want changed\n\n#1: in the folder prep script\n- I dont want to have to specify the tasks, it should be all tasks\n- I should not have to specify the pack... you should just apply the latest ai-forward pack\n- I dont want to have to run per harness... just let me specify each harness e.g.\n     uv run bench --harness claude, codex, copilot\n\n#2: local grading should still happen in each CLI instance and then the other prompt just \"gathers\" the graded runs, analyzes for things like drift, task-alignment, token usage etc and builds the comparisson report\n\n#3: each bench run should finish with the local grading report in html opened in chrome\n\nupdate the prompts document in html as before and open in chrome for me to review",
+      "summary": "bench interactive prepare: --harness takes several CLIs (commas/spaces; claude = claude-code), one run each; tasks default to the lean ring's 11; pack defaults to HEAD of ../ai-forward. Each arm's .bench/grade.json holds `collect --open`; next.py starts it detached when it closes the last item (silent to the session), so each run ends graded with its arm report opened in Chrome. The replay now keeps the change-set drift scores (scope_creep, drift_task_implied_lines, drift_machine_lines); collect lists files changed outside the task folders. New `gather`: re-reads the records each arm's grading found (re-search only when none: the smoke showed a search matches any later session naming the arm folder) and writes each run's two-arm report. Prompt page: one prepare line, self-grading, gather + drift/alignment/token analysis prompt. Proof: tests/test_interactive.py 11 pass, related files 74 pass, mutants IN1-IN10 killed; real smoke: prepare for claude+codex with defaults, 13 next.py calls -> detached grading -> report opened in Chrome 34 s after ALL DONE; gather over the smoke runs.",
+      "kind": "prompt",
+      "skill": null,
+      "tool": "claude-code",
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "docs/benchmarkpromps/interactive-benchmark-prompt.html",
+        "src/harness_bench/interactive.py",
+        "src/harness_bench/interactive_next.py"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "goal": "prepare takes all CLIs with default tasks and latest pack; each session grades itself and opens its report in Chrome; the analysis prompt only gathers and compares",
+      "done_when": "code, tests and prompt page changed; tests and mutants pass; page open in Chrome",
+      "tier": "T1",
+      "fan_out": 0,
+      "git": {
+        "sha": "565dead95e7ac61e8afeb704fdc6b1ff6a22f960",
+        "short": "565dead95",
+        "branch": "main",
+        "pushed": true
+      }
     }
   ],
   "changes": [

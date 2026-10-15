@@ -40,5 +40,33 @@
   "find": "counts.get(2, 0), counts.get(5, 0), 0,",
   "replace": "counts.get(5, 0), counts.get(2, 0), 0,",
   "tests": ["tests/test_interactive.py::test_agy_db_reader_reads_usage_and_tool_calls_from_the_mapped_fields"]
+ },
+ {
+  "name": "IN7: the replay drops the change-set drift scores",
+  "file": "src/harness_bench/interactive.py",
+  "find": "keep = set(readiness.CORRECTNESS_SCORES) | set(DRIFT_SCORES)",
+  "replace": "keep = set(readiness.CORRECTNESS_SCORES)",
+  "tests": ["tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares"]
+ },
+ {
+  "name": "IN8: next.py starts the grading on every ALL DONE call, not once when the last item closes",
+  "file": "src/harness_bench/interactive_next.py",
+  "find": "if opened is not None:  # this call closed the last item",
+  "replace": "if True:  # this call closed the last item",
+  "tests": ["tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares"]
+ },
+ {
+  "name": "IN9: claude is not read as claude-code",
+  "file": "src/harness_bench/interactive.py",
+  "find": "ALIASES = {\"claude\": \"claude-code\"}",
+  "replace": "ALIASES = {}",
+  "tests": ["tests/test_interactive.py::test_harness_list_takes_commas_spaces_and_the_claude_alias_and_refuses_an_unknown_name"]
+ },
+ {
+  "name": "IN10: gather searches the CLI's records again instead of re-reading the ones the grading found",
+  "file": "src/harness_bench/interactive.py",
+  "find": "summary[\"harness\"], known or None)",
+  "replace": "summary[\"harness\"], None)",
+  "tests": ["tests/test_interactive.py::test_gather_rereads_the_records_the_grading_found_and_searches_only_when_it_found_none"]
  }
 ]

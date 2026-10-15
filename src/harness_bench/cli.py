@@ -13,6 +13,7 @@ import importlib
 import json
 import os
 import re
+import subprocess
 import sys
 import uuid
 from collections import Counter
@@ -284,28 +285,65 @@ def cmd_discriminate(args) -> int:
 def cmd_interactive(args) -> int:
     root, tools_root = Path(args.root), Path(args.tools_dir).parent
     if args.interactive_command == "prepare":
-        _role, source, commit = plan.parse_binding(f"{interactive.ARM_ON}={args.pack_pin}")  # the one SOURCE@COMMIT parser
-        run_id = args.run_id or f"int-{args.harness}-{datetime.now(UTC):%Y%m%dT%H%M}"
-        manifest = interactive.prepare(root, run_id, args.harness, Path(args.out), args.tasks, (source, commit), tools_root)
-        print(f"interactive run {run_id}: {len(args.tasks)} task(s), pack revision {manifest['pack_pin']['revision']}")
-        for arm in interactive.ARMS:
-            print(f"  {arm:>3}: {manifest['arms'][arm]['path']}")
-        print("Launch the CLI in each folder (one window per arm) and paste the same text into both:\n")
+        names = interactive.harnesses(args.harness)
+        if args.pack_pin:
+            _role, source, commit = plan.parse_binding(f"{interactive.ARM_ON}={args.pack_pin}")  # the one SOURCE@COMMIT parser
+        else:
+            source, commit = interactive.latest_pack(root.parent / "ai-forward")
+        tasks = args.tasks or interactive.default_tasks(root)
+        # The command next.py starts when a session closes its last item: this bench, with this call's paths.
+        bench_argv = [sys.executable, "-m", "harness_bench.cli", "--root", str(root), "--cells-root", args.cells_root,
+                      "--tools-dir", args.tools_dir, *(["--runs", args.runs] if args.runs else [])]
+        stamp = f"{datetime.now(UTC):%Y%m%dT%H%M}"
+        print(f"pack: {source} at {commit[:12]}; {len(tasks)} task(s): {', '.join(tasks)}")
+        for harness in names:
+            run_id = f"int-{harness}-{stamp}"
+            manifest = interactive.prepare(root, run_id, harness, Path(args.out), tasks, (source, commit), tools_root, bench_argv)
+            print(f"\ninteractive run {run_id} (pack revision {manifest['pack_pin']['revision']}):")
+            for arm in interactive.ARMS:
+                print(f"  {arm:>3}: {manifest['arms'][arm]['path']}")
+        print("\nLaunch each CLI in its two folders (one window per arm; launch lines on the prompt page) and paste the same"
+              " text into every window:\n")
         print(interactive.PASTE)
+        return OK
+    if args.interactive_command == "gather":
+        rows = interactive.gather(Path(args.out))
+        for row in rows:
+            arms = ", ".join(f"{a} {s}" for a, s in row["arms"].items())
+            print(f"{row['run']} [{row['harness']}]: {arms}" + (f"\n  {row['report']}" if row["report"] else ""))
+        if not rows:
+            print(f"no interactive run under {args.out}")
         return OK
     run_root = Path(args.run_dir).resolve()
     if args.interactive_command == "collect":
         manifest = interactive.load(run_root)
         records = [Path(r).resolve() for r in args.record] if args.record else None
-        summary = interactive.collect(root, run_root, args.arm, manifest["harness"], Path(args.runs), Path(args.cells_root),
-                                      tools_root / "upstream", records)
-        print(f"collected {args.arm}: replay run {summary['replay_run']}; {len(summary['warnings'])} warning(s)")
-        for line in summary["warnings"]:
+        try:
+            summary = interactive.collect(root, run_root, args.arm, manifest["harness"], Path(args.runs), Path(args.cells_root),
+                                          tools_root / "upstream", records)
+        except Exception as exc:
+            if args.open:  # the session's own grading: the operator watches Chrome, so a failure opens there too
+                failed = run_root / f"grade-{args.arm}-failed.md"
+                failed.write_text(f"# Grading of the {args.arm} arm failed\n\n- Run: `{run_root}`\n- Error: `{exc}`\n"
+                                  f"- Log: `{run_root / f'grade-{args.arm}.log'}`\n- Rerun from the bench repo: "
+                                  f"`uv run bench interactive collect {run_root} --arm {args.arm} --open`\n", encoding="utf-8")
+                _render_open(root, failed)
+            raise
+        warnings = summary["warnings"] + summary["session_warnings"]
+        print(f"collected {args.arm}: replay run {summary['replay_run']}; {len(warnings)} warning(s)")
+        for line in warnings:
             print(f"  ! {line}")
+        if args.open:
+            _render_open(root, interactive.report(run_root, only=args.arm))
         return OK
-    interactive.report(run_root)
-    print(run_root / "interactive-report.md")
+    print(interactive.report(run_root))
     return OK
+
+
+def _render_open(root: Path, md: Path) -> None:
+    """Render a Markdown report to its sibling HTML with the pack's renderer and open it in Chrome."""
+    script = root / "docs" / "ai-forward-pack" / "scripts" / "render-markdown.py"
+    subprocess.run([sys.executable, str(script), str(md), "--open"], check=False, timeout=120)
 
 
 def _plain() -> bool:
@@ -919,15 +957,20 @@ def build_parser() -> argparse.ArgumentParser:
         ds.add_argument(flag, default=argparse.SUPPRESS)
     it = sub.add_parser("interactive", help="the lean tasks worked by the operator's own interactive CLI session, one per arm")
     isub = it.add_subparsers(dest="interactive_command", required=True)
-    ip = isub.add_parser("prepare", help="build the pack-off and pack-on arm folders; prints where to launch and what to paste")
-    ip.add_argument("--harness", required=True, choices=sorted(interactive.RECORD_HOMES), help="the CLI that will work the tasks")
-    ip.add_argument("--tasks", required=True, type=_task_list, help="comma-separated task ids, in queue order")
-    ip.add_argument("--pack", dest="pack_pin", required=True, metavar="ABSOLUTE_SOURCE@COMMIT", help="the pinned pack for the on arm")
-    ip.add_argument("--out", default=str(root.parent / "bench-interactive"), help="where the run folder is made")
-    ip.add_argument("--run-id", default=None, type=_run_id, help="default: int-<harness>-<UTC yyyymmddThhmm>")
+    ip = isub.add_parser("prepare", help="build the pack-off and pack-on arm folders per harness; prints where to launch and what to paste")
+    ip.add_argument("--harness", required=True, nargs="+", metavar="HARNESS",
+                    help=f"the CLIs that will work the tasks, one run each: {', '.join(sorted(interactive.RECORD_HOMES))} "
+                         "(claude = claude-code); spaces, commas or both")
+    ip.add_argument("--tasks", default=None, type=_task_list, help="comma-separated task ids, in queue order (default: every lean task)")
+    ip.add_argument("--pack", dest="pack_pin", default=None, metavar="ABSOLUTE_SOURCE@COMMIT",
+                    help="the pack for the on arm (default: the latest, HEAD of ../ai-forward)")
+    ip.add_argument("--out", default=str(root.parent / "bench-interactive"), help="where the run folders are made")
+    ig = isub.add_parser("gather", help="after the sessions exit: re-read every graded arm's session and write each run's report")
+    ig.add_argument("--out", default=str(root.parent / "bench-interactive"), help="the folder holding the run folders")
     ic = isub.add_parser("collect", help="grade one arm's task folders (replay run) and read its session record")
     ic.add_argument("run_dir", help="the run folder prepare made")
     ic.add_argument("--arm", required=True, choices=interactive.ARMS)
+    ic.add_argument("--open", action="store_true", help="also write the arm's report as HTML and open it in Chrome")
     ic.add_argument("--record", action="append", default=None, help="the session record(s), if the search finds none or several")
     ir = isub.add_parser("report", help="both arms side by side: <run>/interactive-report.md")
     ir.add_argument("run_dir", help="the run folder prepare made")

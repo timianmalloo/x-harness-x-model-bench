@@ -52,29 +52,37 @@
 <body>
 <main>
   <h1>Interactive run: one CLI session per arm, the way a developer works</h1>
-  <p class="sub">Two windows of the same CLI: one in a pack-on folder, one in a pack-off folder. Each gets the
-    same single paste and works through the 11 lean tasks one at a time, as one long developer session. Nothing is
-    launched headless. Afterwards the bench grades each task folder with its own graders and reads each session's own
-    record for tokens and tool calls. The headless run (<code>lean-benchmark-run-prompt.html</code>) stays as the
-    automated alternative.</p>
+  <p class="sub">Two windows per CLI: one in a pack-on folder, one in a pack-off folder. Every window gets the same
+    single paste and works through all 11 lean tasks one at a time, as one long developer session. Nothing is launched
+    headless. When a session finishes its last task, it grades itself with the bench's own graders and opens its report
+    in Chrome. Afterwards one prompt gathers the graded runs and compares them. The headless run
+    (<code>lean-benchmark-run-prompt.html</code>) stays as the automated alternative.</p>
 
   <div class="card">
-    <h2>1. Prepare the two folders (once per CLI and model)</h2>
+    <h2>1. Prepare the folders (one command for every CLI)</h2>
     <p style="margin-top:0">In any PowerShell window:</p>
 <pre id="prepare">cd C:\Projects\x-harness-x-model-bench
-uv run bench interactive prepare --harness HARNESS --tasks S1,S2,RS1,RS2,RW1,RW2,NG1,NG2,SM1,SM2,SV1 --pack C:/Projects/ai-forward@0900e784594a2ce27d5110ca5b24ad170e5dbf7e</pre>
-    <p><code>HARNESS</code> is <code>claude-code</code>, <code>codex</code>, <code>copilot</code> or <code>agy</code>.
-      It prints two folders, <code>C:\Projects\bench-interactive\int-HARNESS-&lt;UTC time&gt;\off</code> and
+uv run bench interactive prepare --harness claude, codex, copilot</pre>
+    <p>List the CLIs you want: <code>claude</code> (or <code>claude-code</code>), <code>codex</code>,
+      <code>copilot</code>, <code>agy</code>. Commas, spaces or both are fine. You do not name the tasks or the pack:</p>
+    <ul>
+      <li><strong>Tasks</strong>: every lean task (S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2, SV1), read from the
+        lean ring <code>bench\rings\lean.yaml</code>.</li>
+      <li><strong>Pack</strong>: the latest AI-Forward pack, the HEAD of <code>C:\Projects\ai-forward</code>. Prepare
+        prints the commit and revision it used. Pull that clone first if you want what is on its remote.</li>
+    </ul>
+    <p>For each CLI it prints two folders, <code>C:\Projects\bench-interactive\int-CLI-&lt;UTC time&gt;\off</code> and
       <code>…\on</code>. Each holds the 11 task folders (base trees only; the hidden tests stay in the bench) and
-      <code>.bench\next.py</code>, which hands out one task at a time. <code>on</code> also has the AI-Forward pack
-      (revision 102) installed at its root; <code>off</code> holds no instruction file (prepare checks). For a second
-      model of the same CLI (Copilot with <code>gpt-5.5</code>, say), prepare another run.</p>
+      <code>.bench\next.py</code>, which hands out one task at a time. <code>on</code> also has the pack installed at
+      its root; <code>off</code> holds no instruction file (prepare checks). Prepare takes about half a minute per CLI.
+      For a second model of the same CLI (Copilot with <code>gpt-5.5</code>, say), run prepare again for that CLI.
+      <code>--tasks</code> and <code>--pack SOURCE@COMMIT</code> still override the defaults.</p>
   </div>
 
   <div class="card">
-    <h2>2. Launch the CLI in each folder (two windows)</h2>
+    <h2>2. Launch the CLI in each folder (two windows per CLI)</h2>
     <p style="margin-top:0"><code>cd</code> into the folder, then start the CLI with the line for it below. Both
-      windows use the same line. When the CLI asks whether to trust the folder, say yes in both.</p>
+      windows of one CLI use the same line. When the CLI asks whether to trust the folder, say yes in both.</p>
     <div class="table-wrap">
     <table>
       <tr><th>CLI</th><th>Launch line (pinned model, effort and window; approves its own tool calls)</th></tr>
@@ -87,6 +95,8 @@ uv run bench interactive prepare --harness HARNESS --tasks S1,S2,RS1,RS2,RW1,RW2
     <ul>
       <li><strong>Approvals.</strong> One paste runs 11 tasks unattended, so each CLI approves its own calls. It is the
         same flag in both arms, so the arms stay equal. The sessions only work inside their run folder.</li>
+      <li><strong>Several CLIs at once</strong> is fine: each run has its own folders, and the gather step compares
+        them. Each window costs its own tokens.</li>
       <li><strong>Windows.</strong> Codex 872000 and Copilot <code>long_context</code> (922k) are the largest windows
         measured on the bench's pinned builds. Your installed builds are newer (Codex 0.162.1, Copilot 1.0.97). Each
         session's record shows what it served, and the report prints it. Codex's compaction limit of 750000 keeps
@@ -129,50 +139,75 @@ decisions yourself. Work in place in these folders: no git worktrees, branches o
 which task you are on, `python .bench/next.py --status` prints the current task again without moving on.</pre>
     </div>
   </div>
-  <div class="note" style="margin:0 0 16px">The two pastes are identical on purpose. The pack is the only difference,
-    and it comes from the folder the CLI started in, not from the paste. The paste names no pack and no benchmark.</div>
+  <div class="note" style="margin:0 0 16px">The pastes are identical on purpose. The pack is the only difference,
+    and it comes from the folder the CLI started in, not from the paste. The paste names no pack, no benchmark and no
+    grading.</div>
 
   <div class="card">
-    <h2>3. While it runs</h2>
+    <h2>3. While it runs, and how each run ends</h2>
     <ul style="margin:0">
-      <li>Leave both windows alone. Expect 1 to 4 hours: 11 tasks, two of them in two turns (13 hand-outs).</li>
-      <li>If a session stops early and asks you something, answer <code>continue</code>. The report counts what
-        finished; an unfinished task is graded on what is in its folder.</li>
-      <li>When it prints <strong>ALL DONE</strong>, exit the CLI (<code>/exit</code>, or Ctrl+C twice) so it writes
-        the end of its record. Copilot writes its token totals only when the session ends.</li>
+      <li>Leave the windows alone. Expect 1 to 4 hours: 11 tasks, two of them in two turns (13 hand-outs).</li>
+      <li>If a session stops early and asks you something, answer <code>continue</code>. An unfinished task is graded
+        on what is in its folder.</li>
+      <li><strong>Each run grades itself.</strong> The <code>next.py</code> call that prints <strong>ALL DONE</strong>
+        also starts that arm's grading in the background:
+        <code>bench interactive collect RUN --arm ARM --open</code>, the bench's own graders on a replay of each task
+        folder. The session is not told. When it finishes, the arm's report opens in Chrome
+        (<code>RUN\collect\ARM\report.html</code>): hidden tests, property check, drift per task, minutes, tokens and
+        tool calls so far, and warnings.</li>
+      <li><strong>Exit the CLI only after its report has opened</strong> (<code>/exit</code>, or Ctrl+C twice). The
+        CLI then writes the end of its record; Copilot writes its token totals only at this point.</li>
+      <li>If no report opens within about 10 minutes, read <code>RUN\grade-ARM.log</code>. A failed grading opens
+        <code>RUN\grade-ARM-failed.html</code> instead. To grade by hand, from the bench repo:
+        <code>uv run bench interactive collect RUN --arm ARM --open</code>.</li>
     </ul>
   </div>
 
   <div class="card">
-    <div class="bar"><h2>4. Afterwards: grade and compare (paste into Claude Code in the bench repo)</h2>
+    <div class="bar"><h2>4. Afterwards: gather and compare (paste into Claude Code in the bench repo)</h2>
       <button type="button" data-copy="analyse">Copy prompt</button></div>
-<pre id="analyse">GOAL: grade every finished interactive run, compare the arms per CLI, and open one comparison page in Chrome.
+<pre id="analyse">GOAL: gather every graded interactive run, analyse drift, task alignment and token usage, compare pack-off and
+pack-on per CLI and across CLIs, and open one comparison page in Chrome. The runs graded themselves: do not grade them
+again.
 
 REPO = C:\Projects\x-harness-x-model-bench
-RUNS = every folder C:\Projects\bench-interactive\int-* whose off\.bench\state.json and on\.bench\state.json both
-       exist (list them first, with each arm's "done" count, and ask before skipping any run that is not finished)
 
-For each RUN, from REPO:
-  1. uv run bench interactive collect RUN --arm off
-     uv run bench interactive collect RUN --arm on
-     If collect says it found no session record, or several, find the session's own record (Claude Code
+1. From REPO: uv run bench interactive gather
+   It lists every run under C:\Projects\bench-interactive, re-reads each graded arm's session records now that the
+   CLIs have exited (Copilot's tokens appear only now), and writes RUN\interactive-report.md for each run.
+   - An arm shown "not graded" did not reach ALL DONE, or its grading failed (RUN\grade-ARM.log). List those arms
+     and ask me before grading any of them (uv run bench interactive collect RUN --arm ARM) or leaving one out.
+   - A session-record warning (none found, or several): find the session's own record (Claude Code
      ~\.claude\projects, Codex ~\.codex\sessions, Copilot ~\.copilot\session-state\&lt;id&gt;\events.jsonl, agy
-     ~\.gemini\antigravity-cli\conversations\&lt;id&gt;.db) by its working folder and time, and rerun with
-     --record &lt;path&gt;. Never guess a path: if you cannot tell, say so and leave tokens not recorded.
-  2. uv run bench interactive report RUN
-     python docs\ai-forward-pack\scripts\render-markdown.py RUN\interactive-report.md
+     ~\.gemini\antigravity-cli\conversations\&lt;id&gt;.db) by its working folder and time, and rerun collect for that
+     arm with --record &lt;path&gt;. Never guess a path: if you cannot tell, say so and leave tokens not recorded.
 
-Then write C:\Projects\bench-interactive\interactive-comparison-&lt;UTC yyyymmdd&gt;.md:
-  - One row per RUN: CLI, model and effort as served (from the report), property_check_pass on the 10 primary
-    tasks off vs on, hidden tests pass off vs on, SV1 off vs on, total tokens off vs on (uncached input, cache
-    read, cache write, output), tool calls and failed tool calls off vs on, wall minutes off vs on, hook events in
-    the on arm, and the warnings.
-  - Tokens only, never a price.
-  - One paired session per arm and CLI: state the differences, and do not call any of them significant.
-  - Do not compare these numbers with the headless lean runs. They come from a different mode: one long session
-    with context carried from task to task, against one fresh launch per task.
-  - Label every claim Verified (read from a report or summary.json) or Inferred.
-Render it with render-markdown.py --open so it opens in Chrome. End with the path of the page.</pre>
+2. Read, for each RUN and arm: RUN\interactive-report.md, RUN\collect\ARM\summary.json, the arm's task prompts
+   (ARM\.bench\queue.json) and its work (git -C ARM diff HEAD -- tasks/&lt;ID&gt;, plus new files).
+
+3. Analyse:
+   - Results: hidden tests pass and property_check_pass on the 10 primary tasks, SV1 on its own row.
+   - Drift (measured): scope_creep, drift_task_implied_lines and drift_machine_lines per task; files changed outside
+     the task folders; tool calls that read .bench files directly; work after ALL DONE (the wrap-up segment).
+   - Task alignment (judged): per task, does the change do what the prompt asked, all of it and nothing else? One
+     line per task and arm, citing the files. Label each one Inferred.
+   - Token usage: per arm, the totals (uncached input, cache read, cache write, output, reasoning), model calls, tool
+     calls and failed tool calls; tokens per task where recorded; tokens per task that passes its hidden tests. Tokens
+     only, never a price.
+   - Time: wall minutes per task and in total.
+
+4. Write C:\Projects\bench-interactive\interactive-comparison-&lt;UTC yyyymmdd&gt;.md:
+   - A summary table, one row per RUN: CLI, model and effort as served, results off vs on, drift off vs on, total
+     tokens off vs on, tool calls and failures off vs on, minutes off vs on, pack hook events in the on arm.
+   - A section per CLI (results, drift, alignment, tokens), then a cross-CLI section on what changes with the pack
+     in every CLI and what does not.
+   - The warnings of every run.
+   - One paired session per arm and CLI: state the differences, and do not call any of them significant.
+   - Do not compare these numbers with the headless lean runs. They come from a different mode: one long session
+     with context carried from task to task, against one fresh launch per task.
+   - Label every claim Verified (read from a report, summary.json or a diff) or Inferred.
+   Render it with python docs\ai-forward-pack\scripts\render-markdown.py &lt;the md&gt; --open so it opens in Chrome.
+   End with the path of the page.</pre>
   </div>
 
   <div class="card">
@@ -181,11 +216,13 @@ Render it with render-markdown.py --open so it opens in Chrome. End with the pat
       <li><strong>Graded the same way as a headless cell.</strong> Pass/fail and each property check come from
         the bench's own graders. Each task folder is replayed onto a fresh copy of its base tree, the path
         <code>bench discriminate</code> uses; the two-turn tasks are graded on the turn-1 snapshot
-        <code>next.py</code> takes. The catalog's process metrics need a record per task and are not graded here.</li>
+        <code>next.py</code> takes. Drift is the bench's change-set drift (changed lines outside each task's blast
+        radius). The catalog's process metrics and attention drift need a record per task and are not graded here.</li>
       <li><strong>Tokens and tool calls per task</strong> come from each session's record, split at the
-        <code>next.py</code> calls. Copilot records usage only as a total when the session ends, so it shows session
-        totals and no per-task tokens. agy is read from its conversation database (field map checked against 1,542
-        requests).</li>
+        <code>next.py</code> calls. The report that opens at the end of a session read the record while the session
+        was still open; <code>gather</code> reads it again after you exit, and the comparison uses those numbers.
+        Copilot records usage only as a total when the session ends, so it shows session totals and no per-task
+        tokens. agy is read from its conversation database (field map checked against 1,542 requests).</li>
       <li><strong>One session per arm</strong>, with the tasks in the same fixed order in both arms. Context carries
         from task to task, as in real use. That is why this mode is not comparable with the headless runs.</li>
       <li>A deleted file cannot be replayed, and the report lists any. So does a session that read the queue file

@@ -10,11 +10,12 @@ links:
   - { to: adr-0026-per-cell-anatomy-facts-catalog-0-8, rel: depends-on }
 review-by: "2027-04-14"
 summary: >-
-  The interactive mode (`bench interactive prepare | collect | report`): the operator launches a CLI in a pack-off and
-  a pack-on folder, pastes the same text into both, and each session works the lean tasks one at a time through
-  `.bench/next.py`. The bench grades each task folder with its own graders on a replay (the discriminate path) and reads
-  tokens and tool calls from the session's own record, split per task at the next.py calls. Smoke evidence from four
-  CLIs on 2026-10-14 and the mode's limits.
+  The interactive mode (`bench interactive prepare | collect | gather | report`): one prepare builds a pack-off and a
+  pack-on folder per CLI (every lean task, the latest pack), the operator pastes the same text into every window, and
+  each session works the lean tasks one at a time through `.bench/next.py`. When a session closes its last task, next.py
+  starts that arm's grading: the bench's own graders on a replay (the discriminate path), tokens and tool calls from the
+  session's own record, and the arm's report opened in Chrome. `gather` re-reads the records after exit for the
+  cross-CLI comparison. Smoke evidence from four CLIs on 2026-10-14 and the mode's limits.
 ---
 
 # Runbook: the interactive run
@@ -30,15 +31,22 @@ one session were rejected, because the pack is loaded once, at CLI startup, from
 parent's setup, so one session cannot hold both arms. The operator chose (2026-10-14): one paste per arm, one
 repetition, and the headless prompt kept as the alternative.
 
+The operator's changes (2026-10-15): prepare takes every lean task (the lean ring's list) and the latest pack (HEAD of
+`../ai-forward`) by default, and several CLIs in one call (`--harness claude, codex, copilot`). Each session grades
+itself and ends with its report open in Chrome. The analysis prompt only gathers the graded runs and compares them.
+
 ## 2. How it works
 
 | Step | What happens | Code |
 |---|---|---|
-| prepare | `<out>/<run>/off/` and `.../on/`: each is one git repository with `tasks/<ID>/` (the base tree from `workspace.task_source`, never the hidden tests) and `.bench/` (`next.py`, `queue.json`). `on` gets the pinned pack through `workspace.install_pack`. `off` is checked to hold no instruction file. HEAD after prepare is the arm's base. | `interactive.prepare` |
+| prepare | One run per CLI named in `--harness` (commas, spaces or both; `claude` = `claude-code`), all with one time stamp. Tasks default to the lean ring's list (`bench/rings/lean.yaml`), the pack to HEAD of `../ai-forward`. `<out>/<run>/off/` and `.../on/`: each is one git repository with `tasks/<ID>/` (the base tree from `workspace.task_source`, never the hidden tests) and `.bench/` (`next.py`, `queue.json`, `grade.json`). `on` gets the pack through `workspace.install_pack`. `off` is checked to hold no instruction file. HEAD after prepare is the arm's base. | `interactive.prepare`, `harnesses`, `default_tasks`, `latest_pack` |
 | session | The operator launches the CLI in each folder and pastes `interactive.PASTE` (the page shows it verbatim; a test keeps the two equal). `next.py` hands out one task at a time and stamps start and end times. When it hands out turn 2 of a two-turn task, it first snapshots the task folder as turn 1. | `interactive_next.py` |
-| collect: grade | Each task's changes against the base (committed or not, plus new files) become an overlay. A two-turn task gets `turn-1/` (the snapshot) and `turn-2/` (the final tree). A replay run applies the overlays through the real engine, the synthetic agent and the in-run grading pass, which is the path `bench discriminate` uses. Scores come from `readiness.run_scores`. | `interactive.build_overlays`, `replay` |
-| collect: session | The session's records are found under the CLI's home by the arm path (`find_records`) or given with `--record`. Each is read by the harness's reader; agy's conversation db is read by `agy.read_db`. Model and tool calls are split per task at the `next.py` calls (`split`). | `interactive.session_metrics` |
-| report | Both arms side by side: scores, minutes, session tokens, per-task tokens, served settings, pack hook events, warnings. | `interactive.report` |
+| session: grading | The `next.py` call that closes the last item starts `grade.json`'s command, `bench interactive collect <run> --arm <arm> --open`, detached (a new hidden console and process group, out of the CLI's job where allowed), with its output in `<run>/grade-<arm>.log`. It prints nothing, so the session is not told it is graded; `state.json` records the start or why it did not start. A later call does not start it again. | `interactive_next._grade` |
+| collect: grade | Each task's changes against the base (committed or not, plus new files) become an overlay. A two-turn task gets `turn-1/` (the snapshot) and `turn-2/` (the final tree). A replay run applies the overlays through the real engine, the synthetic agent and the in-run grading pass, which is the path `bench discriminate` uses. Scores come from `readiness.run_scores`: correctness, the property check and the change-set drift scores (`scope_creep`, `drift_task_implied_lines`, `drift_machine_lines`). Files changed outside `tasks/` and `.bench/` are listed. | `interactive.build_overlays`, `replay`, `outside_task_folders` |
+| collect: session | The session's records are found under the CLI's home by the arm path (`find_records`) or given with `--record`. Each is read by the harness's reader; agy's conversation db is read by `agy.read_db`. Model and tool calls are split per task at the `next.py` calls (`split`). | `interactive.read_session`, `session_metrics` |
+| collect `--open` | The arm's own report, `<run>/collect/<arm>/report.md`, rendered to HTML and opened in Chrome. A failed grading opens `<run>/grade-<arm>-failed.md` instead. | `cli.cmd_interactive`, `interactive.report(only=arm)` |
+| gather | After every CLI has exited: re-read the session records each graded arm's grading found (the search runs again only for an arm whose grading found none, because a new search also matches any later session that named the arm folder, as this session's own transcript did in the 2026-10-15 smoke) and write each run's two-arm `interactive-report.md`. An arm not graded is listed, not graded. | `interactive.gather`, `refresh_session` |
+| report | The collected arms side by side: scores, drift, minutes, session tokens, per-task tokens, served settings, pack hook events, warnings. | `interactive.report` |
 
 The end-to-end test (`tests/test_interactive.py`) plays the fixture two-turn task's reference solution in one arm and
 its naive solution in the other, through the real path. It requires the scores the fixture declares
@@ -73,10 +81,14 @@ recorded` for Copilot (event names only) and for Codex and agy (their readers re
 - The pack's per-message rules fire once for the whole paste (one user message), not once per task.
 - An overlay cannot replay a deleted file. Collect lists deletions as a warning, and the deleted file stays in the
   graded tree.
-- The catalog's process metrics (catalog 0.9) need a record per cell and are not graded in this mode. Collect reports
-  tool calls and failed tool calls per task from the session record instead.
-- Copilot writes usage as a session summary at exit, so its per-task tokens are `not recorded`. The operator must
-  exit each CLI before collecting.
+- The catalog's process metrics (catalog 0.9) and `attention_drift` need a record per cell and are not graded in this
+  mode. Collect reports tool calls and failed tool calls per task from the session record instead.
+- The session's own grading reads its record while the session is still open, so the last turns are missing. Copilot
+  writes usage as a session summary at exit, so its local report has no tokens and its per-task tokens are `not
+  recorded`. `gather` re-reads every record after the CLIs exit; the comparison uses those numbers.
+- The detached grading survives the tool call. Whether it survives the CLI's exit depends on the CLI's job object
+  (not measured per CLI), so the operator exits only after the report has opened. If none opens, the log names the
+  failure and `collect --open` reruns it.
 - The installed CLI builds are newer than the bench's pinned builds. The context windows measured for the pins
   (Codex 872000, Copilot `long_context`) are read back from each record where it carries them: Codex's context
   tokens, Copilot's tier. Claude Code and agy record no window.
