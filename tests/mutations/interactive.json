@@ -72,7 +72,7 @@
  {
   "name": "IN11: prepare leaves each arm's line-ending rule to the pack and the system git (ARM-FAIR-A)",
   "file": "src/harness_bench/interactive.py",
-  "find": "(info / \"attributes\").write_text(EOL_RULE, encoding=\"utf-8\")",
+  "find": "workspace.write_eol_rule(arm_dir)",
   "replace": "None",
   "tests": ["tests/test_interactive.py::test_the_arms_check_out_the_same_bytes_whatever_line_ending_rule_the_pack_ships"]
  },

@@ -65,5 +65,14 @@
   "tests": [
    "tests/test_workspace.py::test_a_rename_refusal_that_never_clears_still_raises"
   ]
+ },
+ {
+  "name": "ARM-FAIR-A: a cell's line-ending rule is left to the pack and the system git",
+  "file": "src/harness_bench/workspace.py",
+  "find": "    write_eol_rule(dest)\n",
+  "replace": "",
+  "tests": [
+   "tests/test_workspace.py::test_pack_on_and_pack_off_cells_check_out_the_same_bytes_whatever_line_ending_rule_the_pack_ships"
+  ]
  }
 ]

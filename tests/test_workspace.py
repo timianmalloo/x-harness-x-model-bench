@@ -1,5 +1,6 @@
 """Per-cell working copies (ADR-0013; US-8, US-9, US-49) and safe host git (ADR-0010 B6)."""
 
+import os
 import subprocess
 import threading
 import time
@@ -217,6 +218,33 @@ def test_one_cells_git_state_is_invisible_to_another(source, tmp_path):  # T-WS-
     assert _git(b, "stash", "list").strip() == ""
     assert _git(b, "remote").strip() == ""
     assert not (b / "solution.txt").exists()
+
+
+def _agent_git(cwd: Path, *args: str) -> str:
+    """git as an agent in a cell runs it: the cell env leaves the system config on, and Git for Windows' default there
+    is autocrlf=true. Pinned here, with no system or global config of the machine running the test."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")} | {"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull}
+    return subprocess.run(["git", "-c", "core.autocrlf=true", "-c", "user.name=s", "-c", "user.email=s@x", *args], cwd=cwd, env=env,
+                          capture_output=True, text=True, check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
+
+
+def test_pack_on_and_pack_off_cells_check_out_the_same_bytes_whatever_line_ending_rule_the_pack_ships(source, tmp_path):
+    """ARM-FAIR-A's sweep: a pack-on cell took the pack's .gitattributes and a pack-off cell none, so the agent's own git
+    used the system autocrlf=true in off only, as in interactive run 20261015T1529. The stand-in pack ships the
+    opposite rule (`eol=crlf`); the bench's own rule must still decide both cells, and leave each tree clean."""
+    restored = {}
+    for arm in ("off", "on"):
+        ws = workspace.cell_working_copy(source, tmp_path / "cells" / "r" / arm / "ws")
+        if arm == "on":
+            (ws / ".gitattributes").write_text("* text eol=crlf\n", encoding="utf-8")
+            gitsafe.git(["add", "-A"], cwd=ws, timeout=60)
+            gitsafe.git(["commit", "-q", "-m", "pack"], cwd=ws, timeout=60, identity=True)
+        assert _agent_git(ws, "status", "--porcelain") == ""
+        (ws / "slug.py").write_text("changed\n", encoding="utf-8")
+        _agent_git(ws, "stash")
+        _agent_git(ws, "stash", "pop")
+        restored[arm] = (ws / "slug.py").read_bytes()
+    assert restored == {"off": b"changed\n", "on": b"changed\n"}
 
 
 # --- workspace_from: source (R-83): a task's base tree from a pinned upstream commit, never the

@@ -42,6 +42,8 @@ summary: >-
     module, and its fixtures prove another `cli.py` function is still caught. The full suite's one red is gone.
   - Copilot's model is picked by hand: it starts on its default `gpt-5.5`. The prompt page says so, and the report
     now warns when the arms were served different models (`served_model_warnings`, mutant IN27).
+  ARM-FAIR-A instance 1's owed sweep is closed. The headless cells had the same line-ending split, measured on real
+  bases: 10 of 11 lean tasks. `cell_working_copy` now writes the arms' rule.
 - 2026-10-15, later (Leader, the follow-up round): one project candidate. REC-ATTR-A: records and task boundaries
   were attributed by a text match. ARM-FAIR-A gains per-arm venvs, a CLI-build warning and tracked-only arm trees.
   Two further fixes were instance-only. Copilot per-call usage rows are now read; they replace the shutdown summary
@@ -2508,7 +2510,8 @@ registers both.*
 - **Sweep:** the headless cells have the same shape. `workspace.cell_working_copy` gives a pack-on cell the pack's
   `.gitattributes` and a pack-off cell none, and the agent's git in the cell reads the system config. Inferred, not
   measured: the bench's own git calls force `core.autocrlf=false` through `gitsafe`, but the agent's do not. Owed:
-  apply the same `info/attributes` rule in `cell_working_copy`. Instances 2–4 have no control yet.
+  apply the same `info/attributes` rule in `cell_working_copy`. Instances 2–4 have no control yet. *Closed
+  2026-10-16; see the update below.*
 - **Control:** `tests/test_interactive.py::test_the_arms_check_out_the_same_bytes_whatever_line_ending_rule_the_pack_ships`
   (the stand-in pack ships the opposite rule, `eol=crlf`) and `::test_prepare_refuses_arms_whose_task_trees_differ_in_line_endings`.
   Mutants IN11 and IN12 in `tests/mutations/interactive.json` are killed. Both tests were observed red on the
@@ -2538,6 +2541,25 @@ registers both.*
     empty, no file in site-packages names either package or a run folder, and `find_spec` finds neither.
   - Status after the update: `partially-controlled` (instances 1, 2 and 5 controlled; 3 is detected; 4 is procedure
     only).
+- **Update `2026-10-16` (the sweep for headless cells):**
+  - *Measured.* The cell env names its own global config but leaves the system config on, and the system config
+    has `core.autocrlf=true`. Each cell's base was built by the bench, with the pack installed in on, and the
+    machine's own git (no overrides) rewrote a tracked file as LF, stashed it and popped it. Without the rule, 10
+    of the 11 lean tasks split: off wrote `changed\r\n` and on wrote `changed\n`, and the `ls-files --eol` rows
+    differed. RS2 did not split. The 22 cell working copies left in `bench-cells` showed no flip (3 pack-on, 19
+    pack-off), so no past cell is known to have been affected. Most cells are archived without their tree, so
+    this is not evidence that none was.
+  - *Fixed.* `workspace.cell_working_copy` now calls `write_eol_rule`, which interactive prepare uses too. The
+    rule (`EOL_RULE`) now lives once, in `workspace.py`. This covers every caller: headless cells, the interactive
+    replay's cell, plan probes and discrimination trials. With the rule, all 11 lean tasks matched on the same real
+    path. Each tree was clean, the base rows were equal (including the 8 blobs that are CRLF upstream), and both
+    cells wrote LF after `stash pop`.
+  - *Control.* `tests/test_workspace.py::test_pack_on_and_pack_off_cells_check_out_the_same_bytes_whatever_line_ending_rule_the_pack_ships`.
+    Its stand-in pack ships `eol=crlf`, and it pins the agent's git to `autocrlf=true`. It was observed red on the
+    un-fixed code, with both cells at `changed\r\n`. The new mutant in `tests/mutations/workspace.json` is killed.
+    IN11 now targets the prepare call and is still killed.
+  - Side effect: `workspace.py` is part of `BUILDER_KEY` (CACHE-A), so every task base rebuilds once under a new
+    name.
 
 ### REC-ATTR-A: a measurement attributes a record or an event by what its text mentions, not by what happened (candidate)
 - **Signature:** a reader decides that a record belongs to an arm, or that a call marks a task boundary, because a

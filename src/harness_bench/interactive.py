@@ -66,10 +66,6 @@ RECORD_HOMES = {
 ALIASES = {"claude": "claude-code"}  # what the operator types for a harness -> its bench name
 LEAN_RING = Path("bench") / "rings" / "lean.yaml"  # its BOM subset is the default task list, in queue order
 GRADE = "grade.json"  # .bench/grade.json: the command next.py starts when the last item closes
-# Both arms' git line-ending rule, in .git/info/attributes (it outranks a tracked .gitattributes). Without it the on arm
-# took the pack's `eol=lf` and the off arm Git for Windows' system autocrlf=true, so the session's own git wrote CRLF in
-# off only (run 20261015T1529, ARM-FAIR-A). Matches the pack's rule, so the on arm is unchanged.
-EOL_RULE = "* text=auto eol=lf\n"
 # Change-set drift (grade/drift.py; `all_tasks` metrics) graded on the replay. attention_drift and the process metrics
 # read the replay's synthetic record, not the session's, so they are not kept.
 DRIFT_SCORES = ("scope_creep", "drift_task_implied_lines", "drift_machine_lines")
@@ -172,10 +168,8 @@ def prepare(root: Path, run_id: str, harness: str, out_root: Path, task_ids: lis
         _git(["add", "-A"], arm_dir)
         gitsafe.git(["commit", "-q", "-m", f"interactive base ({arm})"], cwd=arm_dir, timeout=GIT_TIMEOUT, identity=True)
         pack_files = workspace.install_pack(pack_dir, arm_dir, project=run_id, timeout=300) if arm == ARM_ON else []
-        info = arm_dir / ".git" / "info"
-        info.mkdir(parents=True, exist_ok=True)
-        (info / "attributes").write_text(EOL_RULE, encoding="utf-8")  # ARM-FAIR-A: outranks the pack's .gitattributes
-        with (info / "exclude").open("a", encoding="utf-8") as exclude:
+        workspace.write_eol_rule(arm_dir)  # ARM-FAIR-A: outranks the pack's .gitattributes
+        with (arm_dir / ".git" / "info" / "exclude").open("a", encoding="utf-8") as exclude:
             exclude.write("\n.venv/\n")
         versions_seen.add(workspace.make_venv(python, arm_dir / ".venv"))  # ARM-FAIR-A: no shared interpreter
         if arm == config.ARM_OFF:

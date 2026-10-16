@@ -57,6 +57,10 @@ def builder_key(files: list[Path] | None = None, rules: tuple | None = None) -> 
 
 BUILDER_KEY = builder_key()
 GIT_TIMEOUT = 120
+# Every cell's and interactive arm's git line-ending rule (write_eol_rule). Without it the pack-on side took the pack's
+# `eol=lf` and the pack-off side Git for Windows' system autocrlf=true, so a session's own git wrote CRLF in off only
+# (interactive run 20261015T1529, ARM-FAIR-A). It matches the pack's rule, so pack-on is unchanged.
+EOL_RULE = "* text=auto eol=lf\n"
 # pack-apply rows that wrote a file; SKIP and UNCHANGED rows name no change (probe W1)
 WRITE_ACTIONS = ("ADD", "UPDATE", "MERGE")
 
@@ -254,13 +258,22 @@ def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root:
 
 
 def cell_working_copy(source: Path, dest: Path) -> Path:
-    """A fresh `git clone --local` of the task source, with its remote removed."""
+    """A fresh `git clone --local` of the task source, with its remote removed and the bench's line-ending rule."""
     if dest.exists():
         raise BenchError("HB-USR-002", f"{dest} already exists; a cell's working copy is built once")
     dest.parent.mkdir(parents=True, exist_ok=True)
     gitsafe.git(["clone", "--local", "--quiet", str(source), str(dest)], cwd=dest.parent, timeout=GIT_TIMEOUT)
     gitsafe.git(["remote", "remove", "origin"], cwd=dest, timeout=GIT_TIMEOUT)
+    write_eol_rule(dest)
     return dest
+
+
+def write_eol_rule(repo: Path) -> None:
+    """ARM-FAIR-A: the bench's own rule in `.git/info/attributes`, which outranks a tracked .gitattributes, so the pack's
+    rule (on) and the system git's autocrlf=true (off; the cell env leaves the system config on) never differ."""
+    info = repo / ".git" / "info"
+    info.mkdir(parents=True, exist_ok=True)
+    (info / "attributes").write_text(EOL_RULE, encoding="utf-8")
 
 
 def _pack_head(dest: Path) -> str:
