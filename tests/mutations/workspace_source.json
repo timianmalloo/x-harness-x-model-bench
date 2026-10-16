@@ -19,5 +19,19 @@
     "find": "        left = _instruction_paths(dest)\n",
     "replace": "        left = []\n",
     "tests": ["tests/test_workspace.py::test_task_source_refuses_a_cached_base_that_carries_an_instruction_file"]
+  },
+  {
+    "name": "the task-source folder ignores the builder key",
+    "file": "src/harness_bench/workspace.py",
+    "find": "hashlib.sha256(f\"{version}\\0{BUILDER_KEY}\".encode())",
+    "replace": "hashlib.sha256(f\"{version}\\0\".encode())",
+    "tests": ["tests/test_workspace.py::test_a_builder_change_gets_its_own_task_source_folder"]
+  },
+  {
+    "name": "the builder key ignores the instruction-file rules",
+    "file": "src/harness_bench/workspace.py",
+    "find": "    digest.update(repr(rules if rules is not None else (INSTRUCTION_FILES, INSTRUCTION_DIRS, INSTRUCTION_TREES)).encode())\n",
+    "replace": "",
+    "tests": ["tests/test_workspace.py::test_the_builder_key_follows_the_builder_files_and_the_instruction_rules"]
   }
 ]

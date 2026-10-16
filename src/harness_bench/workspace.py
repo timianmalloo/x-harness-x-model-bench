@@ -41,6 +41,21 @@ def instruction_rules(root: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
 
 
 INSTRUCTION_FILES, INSTRUCTION_TREES = instruction_rules(config.repo_root(Path(__file__).resolve().parent))
+
+
+def builder_key(files: list[Path] | None = None, rules: tuple | None = None) -> str:
+    """A hash of the code and rules that build a task base: this module, gitsafe (how the base is committed) and the
+    instruction-file rules (profiles can add to them). `tests/ring_cache.py`'s `content_version` keys its rings the
+    same way. simplify: whole files, so any edit to them rebuilds every base once (seconds each; the upstream clones
+    are cached apart); upgrade trigger: a rebuild that costs minutes."""
+    digest = hashlib.sha256()
+    for path in files if files is not None else (Path(__file__), Path(gitsafe.__file__)):
+        digest.update(path.read_bytes() + b"\0")
+    digest.update(repr(rules if rules is not None else (INSTRUCTION_FILES, INSTRUCTION_DIRS, INSTRUCTION_TREES)).encode())
+    return digest.hexdigest()
+
+
+BUILDER_KEY = builder_key()
 GIT_TIMEOUT = 120
 # pack-apply rows that wrote a file; SKIP and UNCHANGED rows name no change (probe W1)
 WRITE_ACTIONS = ("ADD", "UPDATE", "MERGE")
@@ -185,6 +200,13 @@ def _instruction_paths(tree: Path) -> list[Path]:
     return found
 
 
+def source_dir(sources_root: Path, task_dir: Path, version: str) -> Path:
+    """Where one task version's base lives, for this builder: `<sources_root>/<task>/<16 hex>`. The key is the task's
+    version and BUILDER_KEY, so a base built by other code is never served (CACHE-A: bench-cells/.sources' NG1 base
+    predated the X-PACKOFF rule and kept an instruction file). Sixteen characters, as before (PATH-B)."""
+    return sources_root / task_dir.name / hashlib.sha256(f"{version}\0{BUILDER_KEY}".encode()).hexdigest()[:16]
+
+
 def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root: Path | None = None) -> Path:
     """The bench-owned repository of one task version's base tree (created once, then reused).
 
@@ -194,10 +216,10 @@ def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root:
     archive`), with `tasks/<ID>/workspace/` overlaid on top -- so a large public task's base tree
     never vendors the upstream repository into this one, and the cell still sees one tree with one
     base commit, never the upstream's history (R-83)."""
-    dest = sources_root / task_dir.name / version[:16]
+    dest = source_dir(sources_root, task_dir, version)
     if (dest / ".git").is_dir():
-        # CACHE-A: the key is the task's content, not this builder, so a base built before a rule here still hits.
-        # Re-check the pack-off rule on every hit (bench-cells/.sources' NG1 kept .github/copilot-instructions.md).
+        # The pack-off rule is re-checked on every hit, whatever the key: a cache is not trusted unchecked (CACHE-B),
+        # and a file written into a cached base after its build would otherwise reach every cell.
         left = _instruction_paths(dest)
         if left:
             raise BenchError("HB-PRE-009", f"{task_dir.name}: the cached base {dest} carries an agent instruction file: "

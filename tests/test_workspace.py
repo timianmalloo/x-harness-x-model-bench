@@ -120,7 +120,7 @@ def _run_concurrently(build) -> list:
 
 def test_task_source_built_concurrently_gives_every_caller_the_same_dest(base):  # T6-1 (HB-CELL-113)
     sources_root = base / "sources"
-    dest = sources_root / "X1" / "v-race"[:16]
+    dest = workspace.source_dir(sources_root, X1, "v-race")
     results = _run_concurrently(lambda: workspace.task_source(X1, "v-race", sources_root))
     assert results == [dest, dest], results
     assert (dest / ".git").is_dir()
@@ -128,7 +128,7 @@ def test_task_source_built_concurrently_gives_every_caller_the_same_dest(base): 
 
 def test_task_source_reraises_when_a_colliding_dest_is_not_a_valid_build(base):
     sources_root = base / "sources"
-    dest = sources_root / "X1" / "v-bad"[:16]
+    dest = workspace.source_dir(sources_root, X1, "v-bad")
     dest.mkdir(parents=True)
     (dest / "not-a-build").write_text("x", encoding="utf-8")  # occupies dest but has no .git
     with pytest.raises(OSError):
@@ -301,6 +301,26 @@ def test_task_source_refuses_a_base_tree_that_carries_an_instruction_file(base):
     with pytest.raises(BenchError) as e:
         workspace.task_source(task_dir, "v6", base / "sources", base / "upstream-cache")
     assert e.value.code == "HB-PRE-009"
+
+
+def test_a_builder_change_gets_its_own_task_source_folder(base, monkeypatch):  # CACHE-A, 2026-10-16
+    """The cache key holds the builder as well as the task, so a base built by older code is never served to newer
+    code (bench-cells/.sources' NG1 base predated the X-PACKOFF rule). The old build stays for the code that made it."""
+    old = workspace.task_source(X1, "v-builder", base / "sources")
+    monkeypatch.setattr(workspace, "BUILDER_KEY", "0" * 64)
+    new = workspace.task_source(X1, "v-builder", base / "sources")
+    assert new != old and (new / ".git").is_dir() and (old / ".git").is_dir()
+    assert len(new.name) == len(old.name) == 16  # no longer than before: long paths break git on Windows (PATH-B)
+
+
+def test_the_builder_key_follows_the_builder_files_and_the_instruction_rules(tmp_path):
+    code = tmp_path / "builder.py"
+    code.write_text("a\n", encoding="utf-8")
+    key = workspace.builder_key([code], ("AGENTS.md",))
+    assert workspace.builder_key([code], ("AGENTS.md", "GEMINI.md")) != key
+    code.write_text("b\n", encoding="utf-8")
+    assert workspace.builder_key([code], ("AGENTS.md",)) != key
+    assert workspace.BUILDER_KEY == workspace.builder_key()
 
 
 def test_task_source_refuses_a_cached_base_that_carries_an_instruction_file(base):  # CACHE-A, 2026-10-16

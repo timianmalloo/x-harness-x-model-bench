@@ -927,9 +927,15 @@ summary: >-
   `tests/test_workspace.py::test_task_source_refuses_a_cached_base_that_carries_an_instruction_file`, observed red
   before the change. Mutant in `tests/mutations/workspace_source.json`, killed. Sweep: 145 cached bases on this
   machine. One more is stale, `bench-cells\.sources\S2\eadf2d35538e6514` (an old S2 version, with bottle's
-  `AGENTS.md`). It was deleted at the operator's request, and a re-sweep of the 144 left found none. The key still ignores the builder, so another
-  builder change that alters a base without an instruction file would still be served stale. Status:
-  `partially-controlled` (the pack-off rule is checked; the rest of the builder is not keyed).
+  `AGENTS.md`). It was deleted at the operator's request, and a re-sweep of the 144 left found none.
+  *Keyed by the builder, 2026-10-16 (the operator's request):* `workspace.source_dir` names a base by a hash of the
+  task version and `BUILDER_KEY`. `BUILDER_KEY` is `workspace.py`, `gitsafe.py` and the instruction-file rules,
+  the same rule `ring_cache.content_version` uses. The name is still 16 characters (PATH-B). Tests:
+  `test_a_builder_change_gets_its_own_task_source_folder` and
+  `test_the_builder_key_follows_the_builder_files_and_the_instruction_rules`, both red before the change; two
+  mutants killed. Checked on the real path: every task of the six 2026-10-15 arms matches its base rebuilt under the
+  new key, blob for blob. Folders under the old naming stay on disk and are no longer read. The cache-hit check stays,
+  because a file written into a cached base after its build is not a builder change. Status: `controlled`.
   Status of the class after this instance: `partially-controlled`.
 
 ### MOD-C: a new model guard starves another guard's seeded variant
@@ -1309,6 +1315,16 @@ summary: >-
     The three files alone: 169 passed. Stage: one reference probe per task read as not blocked under load. Mechanism
     **not measured** (DIAG-A: not attributed to the probe-host start bound without a `hosts.jsonl` line); the
     archived trial trees were not kept. N for this join: 1 red of 2 full runs before run 3.
+  - `2026-10-16` (Leader, the builder-keyed task-source cache; observed): three `-n 4` full suites on one tree. Run 1
+    was red on `test_discriminate.py::test_variant_trial_runs_on_the_real_host_compares_flips_and_never_executes_the_file`.
+    Its error text was lost, because that run kept only the summary lines (gap (c) again, on the Leader's own
+    command). Run 2 was red on `test_cli_campaign.py::test_the_parser_validates_the_campaign_id_before_any_command_runs`:
+    "worker 'gw2' crashed", no assertion, and no Python crash event in the Windows Application log. Run 3 was green
+    (5079 passed). Each node passes alone (3 of 3; 1 of 1) and in its own file under `-n 4` (49 of 49; 9 of 9).
+    `tools/load_repro.py`: 0/10 for each. Load at the time: other operator sessions held 6 `codex.exe`, 3
+    `copilot.exe`, 3 `claude.exe` and 21 `node.exe` processes; RAM 92.6 of 127.4 GB free. The change does not touch
+    either node's path (cache folder names only; Inferred). N for this tree: 2 red of 3. A worker crash is a new
+    stage for this class, and its cause is not recorded.
 - **Control gaps (LOOP-J0, 2026-10-09; proposed, not fixed; X-FLAKE owns `tools/load_repro.py`):** (a) `load_repro` deletes each run's junit file and keeps no stdout, so a "no result" run loses its cause (3 of 120 disc runs): keep the junit file and the output tail of every run that is not a pass. (b) `load_repro` runs only the node, while this class's trigger is the suite's own load: add `--with <paths>` for suite-shaped co-load (for example the node's module plus `test_e1_e2e.py`). (c) `conductor-join`'s recount log keeps only pytest's summary: keep the `-rf` short summary with its messages for any red. Rung: tool option and join log. Upgrade trigger: the next instance whose stage is not recorded.
 - **PATH-B re-examination (Coordinator #41, 2026-10-06; fixtures read at `481f5c21`, lengths measured on the leftover fixture roots under `C:\Projects\bench-test`):** none of the four named instances ran under a long pytest tmp path. Each root is `CLEAN_PARENT` (`tests/clean_parent.py`: `C:/Projects/bench-test` on Windows) plus a fixed-length name, independent of `TMP`, `TEMP` and pytest's basetemp: `test_discriminate`'s two nodes and `test_engine`'s no-launch[4] use the `base` fixture (`tests/conftest.py:44-47`, `<32 hex>`, a 56-character root); the e2e `S1Repo` uses `xint-<12 hex>` (`tests/test_e1_e2e.py:137-139`). The longest path a discriminate fixture trial leaves is 139 characters below its root (measured: `runs\disc-disc-c-…\archive\<16>\attempt-1\ws\.git\objects\..`), about 195 in all, 65 under MAX_PATH; the engine fake-launcher archive is 110. And the path length is the same in the failing run and the passing re-run, so length alone cannot explain a failure that needs load. Verdicts: `test_a_leaked_temp_is_swept…` **load or unknown, not PATH-B**; `test_no_link_after_hb_rdy_010` **load or unknown, not PATH-B**; `test_engine` no-launch[4] **load (Inferred: a stop path with a release file), not PATH-B**; e2e `S1Repo` m8 `clauses.json` **load or unknown, not PATH-B** (S1's check runs the real probe host; its archive depth is Inferred from S1's tree, whose deepest oracle file is 41 characters). The one `TEMP`-dependent path in the workspace stage is gitsafe's shared state `%TEMP%\harness-bench-git` (`src/harness_bench/gitsafe.py:16`), short, and shared by every process with the same `TEMP`: a load mechanism candidate (Inferred), not a length one. **Not recorded:** the failing runs' `TEMP` and the exception text behind the "workspace" cause (`engine.py:673-675` maps any `BenchError`, `GitError` or `OSError` from the build to it, including a 120 s git timeout, `workspace.py:29`). The next instance's report records both.
 - **Candidate mechanisms (Inferred, not measured):** TIME-B (a real-time bound sized on an idle machine), WIN-A (a transient Windows refusal of a rename or delete inside the workspace build) and, for the L9 test, a real lock race. Neither `test_discriminate.py` test body sleeps or asserts a duration (read at `197092d3`, `:135-148`, `:175-189`). So TIME-B is not the obvious fit, and the "workspace" stage name points at the build of the trial's working tree. Once a repro names the mechanism, the instance moves to that class.
