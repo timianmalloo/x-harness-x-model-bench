@@ -175,6 +175,13 @@
   "tests": ["tests/test_interactive.py::test_a_task_changed_since_prepare_regrades_only_when_what_the_session_saw_is_unchanged"]
  },
  {
+  "name": "IN27: arms served different models are not warned about",
+  "file": "src/harness_bench/interactive.py",
+  "find": "if len(known) == len(models) and len(set(known.values())) > 1:",
+  "replace": "if False:",
+  "tests": ["tests/test_interactive.py::test_arms_served_different_models_is_a_warning"]
+ },
+ {
   "name": "IN26: a changed base tree is not a change to what the session saw",
   "file": "src/harness_bench/interactive.py",
   "find": "            what.append(\"base tree\")",

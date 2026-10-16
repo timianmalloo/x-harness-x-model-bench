@@ -26,6 +26,10 @@ ACP_METHODS = {"initialize", "session/new", "session/prompt", "session/set_mode"
 # reason. interactive_next.py is each interactive arm's .bench/next.py, run by the session's own Python.
 STDLIB_COPIES = frozenset({"interactive_next.py"})
 SUBPROCESS_CALLERS = frozenset({"procs.py", "grade/bench_check.py"}) | STDLIB_COPIES
+# Single call sites admitted by name, (module, function), each with its reason. cli._render_open renders an interactive
+# run's report and opens the local file in the operator's own Chrome. Nothing leaves the machine, so report.publish's
+# egress scan (ADR-0027) and its BENCH_OPERATOR_EMAIL requirement do not apply (operator ruling 2026-10-16).
+SANCTIONED_SPAWNS = frozenset({("cli.py", "_render_open")})
 IMPORT_LINT_MODULES = frozenset({"identity.py", "campaign.py", "power.py", "verdicts.py", "gates.py",
                                  "grade/property.py", "grade/bench_check.py", "grade/_env.py"})
 
@@ -58,8 +62,10 @@ def _spawn_offenders(sources: dict[str, str]) -> list[str]:
             continue
         tree = ast.parse(source)
         names = aliases(f"src/harness_bench/{rel}", tree)
+        sanctioned = {id(n) for f in ast.walk(tree) if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef))
+                      and (rel, f.name) in SANCTIONED_SPAWNS for n in ast.walk(f)}
         for node in ast.walk(tree):
-            if isinstance(node, ast.Call):
+            if isinstance(node, ast.Call) and id(node) not in sanctioned:
                 target = dotted(node.func, names)
                 if target in {f"subprocess.{name}" for name in SUBPROCESS_CALLS} | {f"os.{name}" for name in OS_SPAWNS}:
                     offenders.append(f"{rel}:{node.lineno}")
@@ -68,8 +74,8 @@ def _spawn_offenders(sources: dict[str, str]) -> list[str]:
 
 def test_only_procs_calls_subprocess_or_spawns():
     """D3 root: src/harness_bench/; recursion: yes; tokens: resolved subprocess
-    calls in SUBPROCESS_CALLS and os calls in OS_SPAWNS; allowlist: SUBPROCESS_CALLERS.
-    W0 §10 admits bench_check.py, which is stdlib-only in the grading copy.
+    calls in SUBPROCESS_CALLS and os calls in OS_SPAWNS; allowlist: SUBPROCESS_CALLERS, and the single functions in
+    SANCTIONED_SPAWNS. W0 §10 admits bench_check.py, which is stdlib-only in the grading copy.
     """
     offenders = _spawn_offenders({p.relative_to(SRC).as_posix(): p.read_text(encoding="utf-8") for p in MODULES})
     assert offenders == []
@@ -87,6 +93,9 @@ def test_only_procs_calls_subprocess_or_spawns():
     ("workspace.py", "import subprocess\nsubprocess.run([])", True),
     ("workspace.py", "from subprocess import run as launch\nlaunch([])", True),
     ("workspace.py", "import os\nos.getenv('x')", False),
+    ("cli.py", "import subprocess\ndef _render_open(root, md):\n    subprocess.run([])", False),
+    ("cli.py", "import subprocess\ndef cmd_run(args):\n    subprocess.run([])", True),
+    ("workspace.py", "import subprocess\ndef _render_open(root, md):\n    subprocess.run([])", True),
 ])
 def test_spawn_guard_resolves_aliases_and_checks_the_two_path_allowlist(rel, source, bad):
     assert bool(_spawn_offenders({rel: source})) is bad

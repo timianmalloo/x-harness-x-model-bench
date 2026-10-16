@@ -92,5 +92,9 @@ recorded` for Copilot (event names only) and for Codex and agy (their readers re
 - The installed CLI builds are newer than the bench's pinned builds. The context windows measured for the pins
   (Codex 872000, Copilot `long_context`) are read back from each record where it carries them: Codex's context
   tokens, Copilot's tier. Claude Code and agy record no window.
+- Copilot starts on its default model (`gpt-5.5`), so the operator picks `gpt-6.1-sol` in
+  each window's model picker before pasting (the operator, 2026-10-16; both 2026-10-15 records show the `startup`
+  model `gpt-5.5`, then a `model_picker` switch). The report warns when the arms were served different models
+  (`served_model_warnings`).
 - The paste approves every tool call (each CLI's own flag, the same in both arms), because one paste runs
   unattended.

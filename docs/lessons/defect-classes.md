@@ -36,6 +36,12 @@ summary: >-
     prompt changed (`seen_changes`; mutants IN25 and IN26).
   - REC-ATTR-A instance 4: the refresh re-read a record list kept by the old matcher.
   - A CACHE-A instance: the shared task-source cache serves an NG1 base built before the pack-off rule. It is open.
+  The operator ruled on the two waiting decisions (2026-10-16):
+  - `cli.py:346` is an exception. `_render_open` opens a local report in the operator's own Chrome, and nothing
+    leaves the machine. `test_architecture.py` admits that one function by name (`SANCTIONED_SPAWNS`), not the
+    module, and its fixtures prove another `cli.py` function is still caught. The full suite's one red is gone.
+  - Copilot's model is picked by hand: it starts on its default `gpt-5.5`. The prompt page says so, and the report
+    now warns when the arms were served different models (`served_model_warnings`, mutant IN27).
 - 2026-10-15, later (Leader, the follow-up round): one project candidate. REC-ATTR-A: records and task boundaries
   were attributed by a text match. ARM-FAIR-A gains per-arm venvs, a CLI-build warning and tracked-only arm trees.
   Two further fixes were instance-only. Copilot per-call usage rows are now read; they replace the shutdown summary
@@ -913,7 +919,10 @@ summary: >-
   interactive replay and `bench discriminate`. No agent runs there, so no score is affected (Inferred: the overlay
   never changes the file, so drift does not count it). Found when `seen_changes` compared that base with an arm's.
   No control yet. Proposed: re-run the instruction-file check on a cache hit, or put the builder's source in the key
-  as `ring_cache.content_version` does. Rebuilding the stale entry is the operator's call.
+  as `ring_cache.content_version` does. Rebuilding the stale entry is the operator's call. *Rebuilt 2026-10-16 at
+  the operator's request:* the entry was deleted and `task_source` rebuilt it. The new base has no instruction file,
+  and its 46 blob ids equal every 2026-10-15 arm's NG1 base. The class is still `partially-controlled`, because a
+  cache hit still skips the check.
   Status of the class after this instance: `partially-controlled`.
 
 ### MOD-C: a new model guard starves another guard's seeded variant

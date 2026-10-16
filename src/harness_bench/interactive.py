@@ -458,6 +458,18 @@ def cli_build_warnings(arms: dict[str, dict]) -> list[str]:
     return []
 
 
+def served_model_warnings(arms: dict[str, dict]) -> list[str]:
+    """Both arms must be served one model. Copilot starts on its default model and the operator picks the run's model
+    by hand in each window (run int-copilot-20261015T1529: gpt-5.5 at start, gpt-6.1-sol from the picker), so a window
+    can be missed. A model not recorded in either arm is no warning here; the served settings say so."""
+    models = {a: ((s.get("session") or {}).get("served") or {}).get("model_served") for a, s in arms.items()}
+    known = {a: m for a, m in models.items() if isinstance(m, str) and not m.startswith("not recorded")}
+    if len(known) == len(models) and len(set(known.values())) > 1:
+        return ["the arms were served different models (" + "; ".join(f"{a} {m}" for a, m in known.items())
+                + "): the model is not the same in both windows, so the pack is not the only difference"]
+    return []
+
+
 def _same_dir(recorded: str, arm_dir: Path) -> bool:
     drive = re.match(r"^/([a-zA-Z])(/|$)", recorded)  # Claude Code on Windows writes Git Bash's /c/... form
     if drive:
@@ -903,7 +915,7 @@ def report(run_root: Path, only: str | None = None) -> Path:
         lines.append("| " + " | ".join(row) + " |")
     lines += ["", "## Warnings", ""]
     if len(arms) > 1:
-        lines += [f"- **both arms**: {w}" for w in cli_build_warnings(arms)]
+        lines += [f"- **both arms**: {w}" for w in cli_build_warnings(arms) + served_model_warnings(arms)]
     for a, s in arms.items():
         notes = s["warnings"] + s.get("session_warnings", []) + ((s["session"] or {}).get("notes") or [])
         lines += [f"- **{a}**: {n}" for n in notes] or [f"- **{a}**: none"]
@@ -923,5 +935,5 @@ def report(run_root: Path, only: str | None = None) -> Path:
 
 
 __all__ = ["ARMS", "PASTE", "build_overlays", "collect", "default_tasks", "find_records", "gather", "harnesses",
-           "latest_pack", "load", "outside_task_folders", "prepare", "read_session", "refresh_session", "replay", "report", "seen_changes",
+           "latest_pack", "load", "outside_task_folders", "prepare", "read_session", "refresh_session", "replay", "report", "seen_changes", "served_model_warnings",
            "session_metrics", "split"]

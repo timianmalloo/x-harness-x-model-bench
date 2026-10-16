@@ -425,6 +425,15 @@ def test_the_cli_build_is_read_per_arm_and_a_difference_between_the_arms_is_a_wa
     assert "not recorded" in " ".join(interactive.cli_build_warnings(unknown))
 
 
+def test_arms_served_different_models_is_a_warning():
+    """Copilot starts on its default model (gpt-5.5), and the operator picks the run's model by hand in each window (run
+    int-copilot-20261015T1529: the picker switched both to gpt-6.1-sol). A window the operator missed must show."""
+    served = lambda off, on: {a: {"session": {"served": {"model_served": m}}} for a, m in (("off", off), ("on", on))}
+    assert interactive.served_model_warnings(served("gpt-6.1-sol", "gpt-6.1-sol")) == []
+    assert "gpt-5.5" in " ".join(interactive.served_model_warnings(served("gpt-5.5", "gpt-6.1-sol")))
+    assert interactive.served_model_warnings(served("not recorded: no usage rows", "gpt-6.1-sol")) == []
+
+
 def test_a_next_call_that_handed_out_nothing_is_not_a_task_boundary():
     """Run int-codex-20261015T1529 (on): a cell holding `python .bench/next.py` was blocked by policy, so next.py never
     ran, yet its text made it a boundary and every later task's tokens moved one label. A boundary is a next.py call

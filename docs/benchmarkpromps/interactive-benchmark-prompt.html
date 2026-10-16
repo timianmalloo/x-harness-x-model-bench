@@ -107,6 +107,11 @@ $env:PIP_REQUIRE_VIRTUALENV = "1"</pre>
       <li><strong>One CLI at a time.</strong> Run a CLI's two windows together, then the next CLI after both have
         finished. On 2026-10-15 three CLIs ran at once on this machine and shared CPU, API limits and the grading
         host, which adds noise to minutes and to timing-sensitive checks. Each window costs its own tokens.</li>
+      <li><strong>Copilot: pick the model by hand.</strong> Copilot starts on its default model, <code>gpt-5.5</code>.
+        In each window, before you paste, open the model picker (<code>/model</code>)
+        and choose <code>gpt-6.1-sol</code>, then check that the window shows it. On 2026-10-15 the records show both
+        windows starting on <code>gpt-5.5</code> and switched in the picker within 15 s. The report warns when the
+        two arms were served different models.</li>
       <li><strong>One build in both windows.</strong> Start the two windows back to back. Claude Code updated itself
         between the two launches on 2026-10-15 (2.1.301 in off, 2.1.300 in on). The report reads each session's build
         and warns when the arms differ.</li>

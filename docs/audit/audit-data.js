@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-16T15:06:24Z",
+  "generated": "2026-10-16T15:25:20Z",
   "audit": [
     {
       "actor": null,
@@ -189928,6 +189928,21 @@ window.AUDIT_DATA = {
       "datetime": "2026-10-16T15:06:24Z",
       "session": "prompt-log",
       "prompt": "yes re-collect the Claude run / run the grading prompt for all the runs we did yesterday / i dont understandn the cli.py:346 ask or the copilot --model ask",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M52N2MWD5X5X9WMSQ7EBJFJS",
+      "shortname": "1: record the exception / 2: yes I pick the model by hand the copilot de…",
+      "datetime": "2026-10-16T15:25:20Z",
+      "session": "prompt-log",
+      "prompt": "1: record the exception / 2: yes I pick the model by hand the copilot default is 5.5 so i have to set by hand; yes delete the stale NG1 cache entry; commit and push when the suite is green; add the cache-hit instruction check to task_source",
       "summary": "prompt logged for reuse",
       "kind": "prompt",
       "skill": null,

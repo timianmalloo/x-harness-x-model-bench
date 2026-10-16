@@ -48,5 +48,7 @@ th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); 
 <p>(not measured per CLI), so the operator exits only after the report has opened. If none opens, the log names the failure and <code>collect --open</code> reruns it.</p>
 <ul><li>The installed CLI builds are newer than the bench&#x27;s pinned builds. The context windows measured for the pins</li></ul>
 <p>(Codex 872000, Copilot <code>long_context</code>) are read back from each record where it carries them: Codex&#x27;s context tokens, Copilot&#x27;s tier. Claude Code and agy record no window.</p>
+<ul><li>Copilot starts on its default model (<code>gpt-5.5</code>), so the operator picks <code>gpt-6.1-sol</code> in</li></ul>
+<p>each window&#x27;s model picker before pasting (the operator, 2026-10-16; both 2026-10-15 records show the <code>startup</code> model <code>gpt-5.5</code>, then a <code>model_picker</code> switch). The report warns when the arms were served different models (<code>served_model_warnings</code>).</p>
 <ul><li>The paste approves every tool call (each CLI&#x27;s own flag, the same in both arms), because one paste runs</li></ul>
 <p>unattended.</p></main></body></html>
