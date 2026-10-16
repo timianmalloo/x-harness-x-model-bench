@@ -65,6 +65,10 @@ RECORD_HOMES = {
 ALIASES = {"claude": "claude-code"}  # what the operator types for a harness -> its bench name
 LEAN_RING = Path("bench") / "rings" / "lean.yaml"  # its BOM subset is the default task list, in queue order
 GRADE = "grade.json"  # .bench/grade.json: the command next.py starts when the last item closes
+# Both arms' git line-ending rule, in .git/info/attributes (it outranks a tracked .gitattributes). Without it the on arm
+# took the pack's `eol=lf` and the off arm Git for Windows' system autocrlf=true, so the session's own git wrote CRLF in
+# off only (run 20261015T1529, ARM-FAIR-A). Matches the pack's rule, so the on arm is unchanged.
+EOL_RULE = "* text=auto eol=lf\n"
 # Change-set drift (grade/drift.py; `all_tasks` metrics) graded on the replay. attention_drift and the process metrics
 # read the replay's synthetic record, not the session's, so they are not kept.
 DRIFT_SCORES = ("scope_creep", "drift_task_implied_lines", "drift_machine_lines")
@@ -163,15 +167,30 @@ def prepare(root: Path, run_id: str, harness: str, out_root: Path, task_ids: lis
         _git(["add", "-A"], arm_dir)
         gitsafe.git(["commit", "-q", "-m", f"interactive base ({arm})"], cwd=arm_dir, timeout=GIT_TIMEOUT, identity=True)
         pack_files = workspace.install_pack(pack_dir, arm_dir, project=run_id, timeout=300) if arm == ARM_ON else []
+        info = arm_dir / ".git" / "info"
+        info.mkdir(parents=True, exist_ok=True)
+        (info / "attributes").write_text(EOL_RULE, encoding="utf-8")  # ARM-FAIR-A: outranks the pack's .gitattributes
         if arm == config.ARM_OFF:
             found = workspace._instruction_paths(arm_dir)
             if found:  # X-PACKOFF: the pack-off arm loads no agent instruction file
                 raise BenchError("HB-PRE-009", f"the pack-off arm holds an instruction file: {found[0]}")
         arms[arm] = {"path": str(arm_dir), "base": _git(["rev-parse", "HEAD"], arm_dir).strip(), "pack_files": len(pack_files)}
-    manifest = {"schema": SCHEMA, "run_id": run_id, "harness": harness, "created_at": _now(), "tasks": task_ids, "task_versions": versions,
+    check_arms_alike(*(Path(arms[a]["path"]) for a in ARMS))
+    manifest ={"schema": SCHEMA, "run_id": run_id, "harness": harness, "created_at": _now(), "tasks": task_ids, "task_versions": versions,
                 "pack_pin": {"source": pin[0], "commit": pin[1], "revision": workspace.pack_revision(pack_dir)}, "arms": arms}
     (run_root / MANIFEST).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest
+
+
+def check_arms_alike(off_dir: Path, on_dir: Path) -> None:
+    """HB-PRE-013: every task file has the same index and working-tree line endings and the same line-ending rule in both
+    arms, so the pack is the only difference a session meets (ARM-FAIR-A)."""
+    rows = {d: _git(["ls-files", "-z", "--eol", "--", "tasks"], d).split("\0") for d in (off_dir, on_dir)}
+    for off_row, on_row in zip(rows[off_dir], rows[on_dir], strict=False):
+        if off_row.split() != on_row.split():
+            raise BenchError("HB-PRE-013", f"the arms differ in line endings: off {off_row!r}, on {on_row!r}")
+    if len(rows[off_dir]) != len(rows[on_dir]):
+        raise BenchError("HB-PRE-013", f"the arms track {len(rows[off_dir])} and {len(rows[on_dir])} task files")
 
 
 def load(run_root: Path) -> dict:
@@ -228,6 +247,9 @@ def build_overlays(manifest: dict, arm: str, items: list[dict], state: dict, des
             warnings.append(f"{tid}: {len(deleted)} deleted file(s) cannot be replayed and stay in the graded tree: {', '.join(deleted[:5])}")
         if (tid, 1) not in opened:
             warnings.append(f"{tid}: never handed out (next.py did not reach it)")
+        for d in state.get("done", []):
+            if d["task"] == tid and isinstance(d.get("commit"), dict) and "error" in d["commit"]:
+                warnings.append(f"{tid} turn {d['turn']}: next.py could not commit the task folder ({d['commit']['error']})")
         if turns == 1:
             _copy(files, arm_dir / "tasks" / tid, folder)
         else:

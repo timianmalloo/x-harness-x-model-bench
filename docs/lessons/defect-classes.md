@@ -27,6 +27,17 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-15 (Leader, the first full interactive run `int-*-20261015T1529`): two project candidates. ARM-FAIR-A: the
+  arms differ, or share state, beyond the pack. Instance 1, the git line-ending rule, is controlled. The shared
+  site-packages, the CLI build and concurrency are open. TASK-ISO-A: a later task can undo an earlier one in the
+  shared tree. `next.py` now commits each closed task. Also found:
+  `test_architecture.py::test_only_procs_calls_subprocess_or_spawns` was already red at `0dc38297`. The cause was
+  `cli.py` `_render_open` and `next.py`'s grading `Popen`. The commit went in without a green full suite.
+  `interactive_next.py` now joins `bench_check.py` as a standard-library copy (`STDLIB_COPIES`), so that part is
+  green. `cli.py:346` stays red on purpose. Routing it through `procs` fails the egress guard, and the sanctioned
+  path, `report.publish`, needs `BENCH_OPERATOR_EMAIL`, which the operator's environment does not set. It waits
+  for an operator decision: either set the variable and open the interactive report through `publish`, which adds
+  the ADR-0027 egress scan, or record an exemption.
 - 2026-10-12 (Coordinator #2, the lean re-run's J0): one project candidate, WT-NEST-A (a checkout-relative `--cells-root` default lands inside the primary from a nested agent worktree; nine HB-GRD-006 reds). A MUT-E instance (R-CONTRACT-FACTS appended to the `PASS_FACTS`/`FACTS` union tuples and reported no retargets; it fires the 2026-10-05 union-line upgrade trigger) and a SCAN-A instance (the frozen-root listing counted the bytecode pytest writes; the test-side shape).
 - 2026-10-09 (Coordinator #64, the lean benchmark's J1 docs pass): three project candidates, CONSOLE-FLAG-MASKS-TEST (a convention sweep masks the fixture RF-11 needs), RED-ONE-GATE-A (a fix track's red from one gate; Leader-caused) and HELP-A (`mutate_check.py --help` raises `FileNotFoundError`). Instances: CEIL-A gains the brief-size shape and this run's measured floors; FLAKE-A gains the L-CONTRACT join's two reds with LOOP-J0's rates and three control gaps; EDIT-B gains its file-writing heredoc instance; TEST-A absorbs the proposed TEST-WEAK-SUBSTR.
 - 2026-10-08 (Coordinator #60, `docs/coordination/coordinator-log/c60.md`): one project candidate, PACKOFF-A (an upstream pin carries an agent-instruction file into every arm's base tree; Ruling 116; X-E5M's NG1 and S2 refusal). Its control is X-PACKOFF's build. X-E5M's authoring finding (no pack-off-safety check before `ready`) is one line in it, not a class. MUT-E gains X-NOPRICE's instance (a find text that newly added code also contains retargets the mutant to the first match).
@@ -2406,3 +2417,67 @@ registers both.*
 - **Control:** the glob with its floor. Rung: test. Upgrade trigger: a second instance; then a lint for tuple-of-paths
   loops in `tests/` over a folder that the test does not glob.
 - **Status:** `controlled`
+
+## Leader entries (2026-10-15; the first full interactive run, int-*-20261015T1529)
+
+### ARM-FAIR-A: the two arms differ, or share mutable state, in something besides the pack (candidate)
+- **Signature:** a pack-on/pack-off pair is read as "the pack's effect", but something else also differs between the
+  arms, or one arm changes state the other reads. The difference is not in the paste or the task, so nothing in the
+  run's own record flags it. In an interactive run the sessions use the operator's own machine, git, Python and CLI
+  homes, so every piece of shared state is a candidate.
+- **Instances:** `2026-10-15` (runs `int-{claude-code,codex,copilot}-20261015T1529`):
+  1. *Line-ending rule (observed; fixed).* The pack ships `.gitattributes` `* text=auto eol=lf`. The off arm has
+     none, so the session's own git used Git for Windows' system `core.autocrlf=true`. Prepare wrote identical LF
+     trees (8 upstream CRLF files in each arm), but a session's `git stash pop` or checkout then wrote CRLF in off
+     only. Measured: CRLF in 6 (Claude) and 4 (Codex) files the off sessions touched, 0 in on. Drift scores are not
+     affected (`grade/drift.py` normalises CRLF). The bytes the session works on are affected.
+  2. *Shared interpreter (observed; open).* Global site-packages
+     (`C:\Users\malla\AppData\Local\Programs\Python\Python312\Lib\site-packages`) holds editable installs pointing
+     into `int-codex-…\off\tasks\RS2\src` (structlog) and `int-copilot-…\off\tasks\NG1\src\cachetools`. They outlive
+     the run. The Copilot run review reports that the on session's NG1 test imported the off arm's tree through
+     the finder. That is the review's report and was not re-checked here. The finder file itself was checked.
+  3. *CLI build (observed; open).* Claude Code was 2.1.301 in off and 2.1.300 in on (the `version` field in all
+     771 and 972 rows of the two transcripts): an auto-update landed between the two launches.
+  4. *Concurrency (observed; open).* Three runs and both arms of each ran at once on one machine, sharing CPU, API
+     limits and the grading host.
+- **Fix (instance 1):** prepare writes the bench's own rule `* text=auto eol=lf` to each arm's
+  `.git/info/attributes`, which outranks any tracked `.gitattributes`, so the pack's rule can no longer differ from
+  off's. Prepare then refuses (HB-PRE-013) if the arms' `git ls-files --eol` rows for `tasks/` differ.
+  Verified on a real prepare (pack revision 102, 11 lean tasks): identical rows in both arms, and the operator's own
+  git (`autocrlf=true`) writes LF after `stash pop` in both.
+- **Sweep:** the headless cells have the same shape. `workspace.cell_working_copy` gives a pack-on cell the pack's
+  `.gitattributes` and a pack-off cell none, and the agent's git in the cell reads the system config. Inferred, not
+  measured: the bench's own git calls force `core.autocrlf=false` through `gitsafe`, but the agent's do not. Owed:
+  apply the same `info/attributes` rule in `cell_working_copy`. Instances 2–4 have no control yet.
+- **Control:** `tests/test_interactive.py::test_the_arms_check_out_the_same_bytes_whatever_line_ending_rule_the_pack_ships`
+  (the stand-in pack ships the opposite rule, `eol=crlf`) and `::test_prepare_refuses_arms_whose_task_trees_differ_in_line_endings`.
+  Mutants IN11 and IN12 in `tests/mutations/interactive.json` are killed. Both tests were observed red on the
+  un-fixed code. Rung: test plus a prepare-time refusal. Upgrade trigger: any further instance. Then the general
+  control is a prepare/collect check that fingerprints the shared state (CLI build per arm, site-packages entries
+  naming a run folder, concurrent runs) and warns in the report.
+- **Status:** `partially-controlled` (instance 1 controlled; 2–4 open)
+
+### TASK-ISO-A: a later task in one shared session can undo or rewrite an earlier task's graded work (candidate)
+- **Signature:** several tasks share one working tree, and each is graded from the final tree after the last task.
+  Any repository-wide action in a later task, such as `git stash`, `checkout -- .`, `reset --hard` or a formatter
+  over the whole tree, reaches finished tasks, and the grade reflects that action and not the task's own work.
+- **Instances:** `2026-10-15` (run `int-claude-code-20261015T1529`): both arms ran `git stash` during RW1 (observed
+  in both transcripts). No work was lost, because the stash left out untracked files and the earlier tasks had
+  only added new files. The Claude run review also reports that the on session rewrote the line endings of
+  S1/RS1/RS2 files during RW1 turn 2 (not re-checked here).
+- **Fix:** when `next.py` closes an item, it commits that task's folder and only that folder (`git add -A -- tasks/<ID>`,
+  `commit -- tasks/<ID>`), with hooks off and the bench's identity, so both arms commit alike. It records the sha, or
+  why there is none, in `state.json`. A failed commit never blocks the hand-out, and collect reports it as a warning.
+  Collect already diffs against the prepare base, so committed and uncommitted work are graded the same way.
+  Verified on a real on arm (pack installed): the log reads base → pack → `S1 turn 1 closed (next.py)`, and no
+  pack hook ran.
+- **Sweep:** headless cells run one task per working copy, so the shape is interactive-only. Not covered: an
+  intentional later edit to an earlier task (the second instance) is still graded, because grading reads the final
+  tree. Grading each task from its hand-off commit would close this. That is a design decision for the operator,
+  because a developer revisiting earlier work is realistic.
+- **Control:** `tests/test_interactive.py::test_next_commits_the_closed_task_folder_so_a_later_stash_cannot_take_it`
+  (`git stash -u` after hand-off leaves the task's work in place, and work outside the folder stays uncommitted)
+  and `::test_next_hands_out_the_next_task_when_the_commit_cannot_be_made`. The end-to-end test asserts a sha on
+  every closed item and grades from them. Mutants IN13 (no commit) and IN14 (the whole tree is committed) are
+  killed. Rung: test.
+- **Status:** `partially-controlled` (loss through git is controlled; later edits are not)

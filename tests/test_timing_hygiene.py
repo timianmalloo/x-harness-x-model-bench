@@ -48,6 +48,8 @@ TIMING_ALLOWED: Mapping[str, str] = {
     "test_window_check.py::visible_window_child": _STALL,
     "test_window_check.py::test_window_check_child_with_flag_lists_nothing": _STALL,
     "test_procs.py::test_run_with_an_unconfirmed_kill_raises_nothing_and_leaks_nothing": _POLL,
+    "test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares":
+        _POLL + "; next.py starts the grading detached, so the stand-in's file is the only signal another process gives",
     "test_gateway_headless.py::test_t_gw_09_a_timed_out_call_is_unavailable_even_when_it_left_a_record": _HUNG,
     "test_gateway_headless.py::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy": _HUNG,
     "test_grade_correctness.py::test_rewriting_a_file_with_the_same_size_changes_the_snapshot_through_mtime_ns":

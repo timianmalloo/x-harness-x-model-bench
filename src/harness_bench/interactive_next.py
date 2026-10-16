@@ -2,7 +2,8 @@
 
 Run with no argument, it closes the open item (end time; a turn-1 item of a two-turn task also snapshots its task folder
 into `.bench/snapshots/<task>/turn-1/`, the tree the rework grader reads) and prints the next item's prompt, or
-`ALL DONE`. `--status` prints the open item again without advancing. The queue is `.bench/queue.json` (written by
+`ALL DONE`. Closing an item also commits its task folder (see `_commit`). `--status` prints the open item again without
+advancing. The queue is `.bench/queue.json` (written by
 `bench interactive prepare`); progress is `.bench/state.json`. Each call is a tool call in the session's own record, so
 the calls are the task boundaries `bench interactive collect` splits the record on.
 
@@ -67,6 +68,29 @@ def _grade() -> dict:
     return {"error": error, "log": spec["log"]}
 
 
+def _commit(item: dict) -> "str | dict":
+    """Commit the closed item's task folder, and only it, so a later task's `git stash`, checkout or reset cannot carry its
+    work away (TASK-ISO-A). Returns the commit, or why there is none; the hand-out never waits on it. Hooks off, the bench's
+    identity: the arm's own hooks (the pack's, in `on`) never run for it, so both arms commit alike."""
+    if not (ARM / ".git").exists():
+        return {"error": "no repository at the arm root"}
+    folder = f"tasks/{item['task']}"
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    git = ["git", "-C", str(ARM), "-c", f"core.hooksPath={BENCH / 'no-hooks'}", "-c", "core.autocrlf=false", "-c", "core.fsmonitor=false",
+           "-c", "commit.gpgsign=false", "-c", "user.name=bench next.py", "-c", "user.email=next.py@bench.invalid"]
+    run = lambda *args, check=True: subprocess.run([*git, *args], env=env, capture_output=True, text=True, timeout=60, check=check)
+    try:
+        run("add", "-A", "--", folder)
+        if run("diff", "--cached", "--quiet", "--", folder, check=False).returncode == 0:
+            return {"note": "nothing to commit"}
+        run("commit", "-q", "--no-verify", "-m", f"{item['task']} turn {item['turn']} closed (next.py)", "--", folder)
+        return run("rev-parse", "HEAD").stdout.strip()
+    except subprocess.CalledProcessError as exc:
+        return {"error": f"git {exc.cmd[len(git)]} exited {exc.returncode}: {(exc.stderr or '').strip()[-300:]}"}
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {"error": str(exc)}
+
+
 def _show(items: list, i: int) -> None:
     item = items[i]
     folder = ARM / "tasks" / item["task"]
@@ -100,7 +124,7 @@ def main(argv: list[str]) -> int:
             if dest.exists():
                 shutil.rmtree(dest)
             shutil.copytree(ARM / "tasks" / item["task"], dest, ignore=SKIP)
-        state["done"].append(opened | {"end": _now()})
+        state["done"].append(opened | {"end": _now(), "commit": _commit(item)})
         state["open"] = None
     index = len(state["done"])
     if index >= len(items):

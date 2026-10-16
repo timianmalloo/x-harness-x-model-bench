@@ -22,7 +22,10 @@ MODULES = sorted(SRC.rglob("*.py"))
 SUBPROCESS_CALLS = {"run", "Popen", "call", "check_call", "check_output", "getoutput", "getstatusoutput"}
 OS_SPAWNS = {"system", "popen", "startfile", "execv", "execve", "spawnv", "spawnve"}
 ACP_METHODS = {"initialize", "session/new", "session/prompt", "session/set_mode", "session/cancel", "session/request_permission"}
-SUBPROCESS_CALLERS = frozenset({"procs.py", "grade/bench_check.py"})
+# Copied out of the bench and run by another interpreter, so they cannot import procs or gitsafe: bench_check.py's W0 s10
+# reason. interactive_next.py is each interactive arm's .bench/next.py, run by the session's own Python.
+STDLIB_COPIES = frozenset({"interactive_next.py"})
+SUBPROCESS_CALLERS = frozenset({"procs.py", "grade/bench_check.py"}) | STDLIB_COPIES
 IMPORT_LINT_MODULES = frozenset({"identity.py", "campaign.py", "power.py", "verdicts.py", "gates.py",
                                  "grade/property.py", "grade/bench_check.py", "grade/_env.py"})
 
@@ -89,8 +92,8 @@ def test_spawn_guard_resolves_aliases_and_checks_the_two_path_allowlist(rel, sou
     assert bool(_spawn_offenders({rel: source})) is bad
 
 
-def test_subprocess_callers_equal_w0_two_paths():
-    assert SUBPROCESS_CALLERS == frozenset({"procs.py", "grade/bench_check.py"})
+def test_subprocess_callers_equal_w0_two_paths_and_the_stdlib_copies():
+    assert SUBPROCESS_CALLERS == frozenset({"procs.py", "grade/bench_check.py"}) | STDLIB_COPIES
 
 
 def _gateway_imports(sources: dict[str, str]) -> list[str]:
@@ -141,7 +144,7 @@ GIT_TEXT_READERS = frozenset({"codex.py"})
 
 def test_only_gitsafe_runs_git():
     named = [p.name for p in MODULES if {"git", "git.exe"} & _string_constants(p)]
-    assert [n for n in named if n not in GIT_TEXT_READERS] == ["gitsafe.py"]
+    assert [n for n in named if n not in GIT_TEXT_READERS | STDLIB_COPIES] == ["gitsafe.py"]
 
 
 ACP_SERVERS = frozenset({"synthetic_agent.py"})  # the ACP *server* of W1-E 5.1; req-01M451WM4JKQSA22RW4DAF31YE

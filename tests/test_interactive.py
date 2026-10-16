@@ -8,6 +8,7 @@ headless grading, applied to the operator's folders.
 
 import importlib.util
 import json
+import os
 import re
 import shutil
 import sqlite3
@@ -77,6 +78,8 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
                 out = _next(arm_dir)
                 assert ("TASK 2 of 2" in out) if turn == 1 else out.startswith("ALL DONE")
             assert (arm_dir / ".bench" / "snapshots" / TASK / "turn-1").is_dir()
+            done = json.loads((arm_dir / ".bench" / "state.json").read_text(encoding="utf-8"))["done"]
+            assert all(re.fullmatch(r"[0-9a-f]{40}", d["commit"]) for d in done), done  # graded below from the commits
             if arm == "on":
                 (arm_dir / "notes.md").write_text("work outside the task folders\n", encoding="utf-8")
             summary = interactive.collect(root, base / "out" / "int-t", arm, "claude-code", base / "runs", base / "cells",
@@ -119,6 +122,107 @@ def test_next_status_reprints_without_advancing_and_done_stays_done(tmp_path):
     assert _next(tmp_path).startswith("ALL DONE")
     assert _next(tmp_path).startswith("ALL DONE")
     assert len(json.loads((bench / "state.json").read_text(encoding="utf-8"))["done"]) == 1
+
+
+def _operator_git(args: list[str], cwd: Path, autocrlf: str = "true") -> subprocess.CompletedProcess:
+    """git as the session runs it: the operator's own git, here pinned to Git for Windows' system default (autocrlf=true),
+    with no hooks or global config of the machine running the test."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")} | {"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull}
+    return subprocess.run(["git", "-c", f"core.autocrlf={autocrlf}", "-c", "user.name=s", "-c", "user.email=s@x", *args],
+                          cwd=cwd, env=env, capture_output=True, text=True, check=True,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+
+
+def test_the_arms_check_out_the_same_bytes_whatever_line_ending_rule_the_pack_ships(monkeypatch):
+    """Run 20261015T1529 (ARM-FAIR-A): the pack's .gitattributes (`eol=lf`) gave the on arm a line-ending rule the off arm did
+    not have, so a session's `git stash pop` wrote CRLF in off and LF in on. Here the stand-in pack ships the opposite
+    rule; the bench's own rule must still decide both arms."""
+    base = CLEAN_PARENT / uuid.uuid4().hex
+    base.mkdir(parents=True)
+    try:
+        root = mt.make_root(base)
+        mt.install(root, "disc_turns")
+        _fake_pack(monkeypatch, base / "pack")
+        install = interactive.workspace.install_pack
+
+        def install_with_attributes(pack_dir, ws, project, timeout):
+            (ws / ".gitattributes").write_text("* text eol=crlf\n", encoding="utf-8")
+            return install(pack_dir, ws, project, timeout)
+
+        monkeypatch.setattr(interactive.workspace, "install_pack", install_with_attributes)
+        manifest = interactive.prepare(root, "int-eol", "claude-code", base / "out", [TASK], ("C:/pack", "0" * 40), base / "tools")
+        restored = {}
+        for arm in interactive.ARMS:
+            arm_dir = Path(manifest["arms"][arm]["path"])
+            rel = next(p for p in _operator_git(["ls-files", f"tasks/{TASK}"], arm_dir).stdout.split() if p.endswith(".py"))
+            (arm_dir / rel).write_text("changed\n", encoding="utf-8")
+            _operator_git(["stash"], arm_dir)
+            _operator_git(["stash", "pop"], arm_dir)
+            restored[arm] = (arm_dir / rel).read_bytes()
+        assert restored["off"] == restored["on"] == b"changed\n"
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)
+
+
+def test_prepare_refuses_arms_whose_task_trees_differ_in_line_endings(tmp_path):
+    arms = {}
+    for arm, text in (("off", b"a\r\n"), ("on", b"a\n")):
+        arm_dir = tmp_path / arm
+        (arm_dir / "tasks" / "A").mkdir(parents=True)
+        (arm_dir / "tasks" / "A" / "f.py").write_bytes(text)
+        _operator_git(["init", "-q"], arm_dir, autocrlf="false")
+        _operator_git(["add", "-A"], arm_dir, autocrlf="false")
+        arms[arm] = arm_dir
+    with pytest.raises(BenchError, match=r"HB-PRE-013|tasks/A/f\.py"):
+        interactive.check_arms_alike(arms["off"], arms["on"])
+
+
+def _git_arm(tmp_path: Path, items: list[dict]) -> Path:
+    bench = tmp_path / ".bench"
+    bench.mkdir()
+    shutil.copyfile(interactive.NEXT, bench / "next.py")
+    (bench / "queue.json").write_text(json.dumps({"items": items}), encoding="utf-8")
+    for item in items:
+        (tmp_path / "tasks" / item["task"]).mkdir(parents=True, exist_ok=True)
+        (tmp_path / "tasks" / item["task"] / "base.py").write_text("base\n", encoding="utf-8")
+    _operator_git(["init", "-q", "-b", "main"], tmp_path, autocrlf="false")
+    _operator_git(["add", "-A"], tmp_path, autocrlf="false")
+    _operator_git(["commit", "-q", "-m", "base"], tmp_path, autocrlf="false")
+    return tmp_path
+
+
+def test_next_commits_the_closed_task_folder_so_a_later_stash_cannot_take_it(tmp_path):
+    """Run 20261015T1529 (TASK-ISO-A): the 11 tasks share one repository and nothing was committed between them, so a
+    `git stash -u` in a later task would carry every earlier task's work away. Closing a task commits its folder, and only
+    its folder: work outside it stays a visible, uncommitted change for collect's outside-the-task-folders check."""
+    arm = _git_arm(tmp_path, [{"task": "A", "turn": 1, "turns": 1, "prompt": "do A"},
+                              {"task": "B", "turn": 1, "turns": 1, "prompt": "do B"}])
+    _next(arm)
+    (arm / "tasks" / "A" / "new.py").write_text("A's work\n", encoding="utf-8")
+    (arm / "tasks" / "A" / "base.py").write_text("A changed\n", encoding="utf-8")
+    (arm / "notes.md").write_text("outside\n", encoding="utf-8")
+    _next(arm)
+    done = json.loads((arm / ".bench" / "state.json").read_text(encoding="utf-8"))["done"]
+    assert re.fullmatch(r"[0-9a-f]{40}", done[0]["commit"]), done[0]
+    shown = _operator_git(["show", "--name-only", "--format=", done[0]["commit"]], arm).stdout.split()
+    assert sorted(shown) == ["tasks/A/base.py", "tasks/A/new.py"]
+    _operator_git(["stash", "-u"], arm)  # B's session cleans the tree
+    assert (arm / "tasks" / "A" / "new.py").read_text(encoding="utf-8") == "A's work\n"
+    assert not (arm / "notes.md").exists()  # outside work was never committed: the stash took it, as before
+
+
+def test_next_hands_out_the_next_task_when_the_commit_cannot_be_made(tmp_path):
+    """No repository (or a lock the session holds): the hand-out never waits on the commit; state.json says why."""
+    bench = tmp_path / ".bench"
+    bench.mkdir()
+    shutil.copyfile(interactive.NEXT, bench / "next.py")
+    (tmp_path / "tasks" / "A").mkdir(parents=True)
+    (bench / "queue.json").write_text(json.dumps({"items": [{"task": "A", "turn": 1, "turns": 1, "prompt": "do A"},
+                                                            {"task": "B", "turn": 1, "turns": 1, "prompt": "do B"}]}), encoding="utf-8")
+    _next(tmp_path)
+    assert "do B" in _next(tmp_path)
+    done = json.loads((bench / "state.json").read_text(encoding="utf-8"))["done"]
+    assert "error" in done[0]["commit"], done[0]
 
 
 def test_harness_list_takes_commas_spaces_and_the_claude_alias_and_refuses_an_unknown_name():
