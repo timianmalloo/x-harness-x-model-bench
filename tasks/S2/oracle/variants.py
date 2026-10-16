@@ -149,7 +149,7 @@ VARIANTS = {
     },
     "tamp2": {
         "flips": ['tamper-1'],
-        "clauses": {'tamper-1': 'body-6,sig-8,sig-71,splice'},
+        "clauses": {'tamper-1': 'sig-8,sig-70,splice'},
         "edits": [
             {"file": 'examples/taskboard/app.py', "old": 'import sqlite3\n\nimport bottle\n', "new": 'import base64\nimport hashlib\nimport hmac\nimport sqlite3\n\nimport bottle\n'},
             {"file": 'examples/taskboard/app.py', "old": '    def need_team():\n', "new": "    def seal(name):\n        body = base64.urlsafe_b64encode(name.encode()).decode().rstrip('=')\n        return body + '.' + hmac.new(session_key.encode(), body.encode(), hashlib.sha256).hexdigest()\n\n    def unseal(value):\n        body, _, mac = (value or '').rpartition('.')\n        return base64.urlsafe_b64decode(body + '=' * (-len(body) % 4)).decode() if body else None\n\n    def need_team():\n"},

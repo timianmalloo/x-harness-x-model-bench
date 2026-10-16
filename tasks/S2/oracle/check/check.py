@@ -283,7 +283,9 @@ def split_pair(pair):
 
 
 def tamper_inputs(a, b):
-    """Named inert cookies: plain names, one character changed in the body, in the signature, and a splice of two issued values."""
+    """Named inert cookies: plain names, one character changed in the body, in the signature, and a splice of two issued values.
+    A change is never made to a part's last character: in base64 it also carries padding bits, so the change can decode to
+    the same bytes, which a secure app accepts (run 20261015T1529). The last but one is always all data bits."""
     inputs = {"plain-alice": "session=alice", "plain-bob": "session=bob", "name-team": "session=alice:2",
               "b64-text": "session=QUJDRA==", "empty": "session="}
 
@@ -292,7 +294,7 @@ def tamper_inputs(a, b):
 
     name, val, quoted = split_pair(a)
     body, sig = spans(val)
-    for label, span, picks in (("body", body, (0, None, -1)), ("sig", sig, (0, -1))):
+    for label, span, picks in (("body", body, (0, None, -2)), ("sig", sig, (0, -2))):
         idx = alnum_at(val, span)
         for k in picks:
             if idx:

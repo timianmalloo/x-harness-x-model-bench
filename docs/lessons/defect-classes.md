@@ -27,6 +27,9 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-16 (Leader): one project candidate. NOOP-PROBE-A: S2's `tamper-1` altered the last base64 character,
+  where padding bits live, and failed secure apps (the open finding below). It is now controlled. ARM-FAIR-A
+  instance 2's leftover global editable installs (`cachetools`, `structlog`) were removed at the operator's request.
 - 2026-10-15, later (Leader, the follow-up round): one project candidate. REC-ATTR-A: records and task boundaries
   were attributed by a text match. ARM-FAIR-A gains per-arm venvs, a CLI-build warning and tracked-only arm trees.
   Two further fixes were instance-only. Copilot per-call usage rows are now read; they replace the shutdown summary
@@ -2480,7 +2483,9 @@ registers both.*
     agent's own work. Prepare now copies only the files the source commit tracks (`_tracked_only`). Test:
     `test_an_arm_holds_exactly_the_task_bases_tracked_files` (mutant IN19).
   - The global site-packages still holds the two editable installs from 2026-10-15. They are no longer reachable from
-    an arm venv, and cleaning them is the operator's call.
+    an arm venv, and cleaning them is the operator's call. *Removed 2026-10-16 at the operator's request*
+    (`pip uninstall cachetools structlog` in Python312; nothing required them). Afterwards `pip list --editable` is
+    empty, no file in site-packages names either package or a run folder, and `find_spec` finds neither.
   - Status after the update: `partially-controlled` (instances 1, 2 and 5 controlled; 3 is detected; 4 is procedure
     only).
 
@@ -2538,3 +2543,26 @@ registers both.*
   every closed item and grades from them. Mutants IN13 (no commit) and IN14 (the whole tree is committed) are
   killed. Rung: test.
 - **Status:** `partially-controlled` (loss through git is controlled; later edits are not)
+
+### NOOP-PROBE-A: a probe's altered input is a no-op for a correct app, so the app's acceptance scores as an exploit (candidate)
+- **Signature:** a security probe alters an issued value and counts acceptance as the exploit. But the alteration
+  leaves what the value means unchanged, so a correct app may accept it. Example: the padding bits of a base64
+  character. The probe then fails secure work. A variant that misses the guard passes the probe for the same reason,
+  so its measured clause records the no-op as a finding and the fixtures pin it.
+- **Instances:** `2026-10-16`, from run `int-claude-code-20261015T1529` (observed). S2's `tamper_inputs` changed the
+  last alphanumeric character of the body and the signature. Both Claude Code apps were unpadded urlsafe base64
+  `body.sig` with `hmac.compare_digest` over the decoded bytes. They accepted `body-6` (both arms) and `sig-50`
+  (off), and `tamper-1` scored them exploited (clauses `body-6,sig-50` and `body-6`). The 2026-10-05 evidence had
+  already measured `body-6` in `tamp2`'s clause and explained it as padding bits. It did not ask what a secure app
+  would do with the same input.
+- **Fix:** the picks are the last but one character of each part, which in base64 always carries data bits.
+  `tamp2`'s clause was re-measured as `sig-8,sig-70,splice` and recorded in `variants.py` and the evidence. The six
+  2026-10-15 S2 apps, re-probed with the fixed check, block every probe. They are not re-graded in their reports.
+- **Sweep:** S2's `tamper_inputs` is the only place in the checks that alters an issued value. S1's check and the
+  other tasks have none (`tasks/**/*.py`, searched for `NEXT[`, `alnum` and `b64decode`). Splice inputs combine two
+  issued values, so they always change the decoded payload.
+- **Control:** `tests/test_security_s2.py::test_s2_each_altered_cookie_decodes_to_different_bytes`: every body and
+  signature alteration of an unpadded urlsafe `body.sig` cookie must decode to different bytes. Observed red on the
+  old picks, at `body-6`. The full S2 file passes, 83 tests, with `HB_REQUIRE_S2_BASE=1`. Rung: test. Upgrade
+  trigger: a new probe that alters an issued value. Its own decode-differs test is then required.
+- **Status:** `controlled`

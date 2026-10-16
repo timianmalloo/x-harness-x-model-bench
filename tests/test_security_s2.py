@@ -11,6 +11,7 @@ scanned for the imports and words that would make it one (`check_problems`).
 from __future__ import annotations
 
 import ast
+import base64
 import functools
 import hashlib
 import json
@@ -363,6 +364,23 @@ def test_s2_every_class_has_two_defect_shapes_and_tamper_has_the_unchecked_signa
     assert {k: len(v) >= 2 for k, v in classes.items()} == dict.fromkeys(("inj", "trav", "leak", "tamper", "authz"), True), classes
     assert "tamp2" in classes["tamper"]
     assert "sig" in variants["tamp2"]["clauses"]["tamper-1"] and "splice" in variants["tamp2"]["clauses"]["tamper-1"]
+
+
+def test_s2_each_altered_cookie_decodes_to_different_bytes():
+    """A one-character change must change what the part decodes to. The last character of a base64 part also carries
+    padding bits, so a change there can decode to the same bytes and verify. Run 20261015T1529 failed two secure Claude Code
+    apps on it (`tamper-1`: `body-6,sig-50`). Their cookie shape: unpadded urlsafe base64, `body.sig`. The signature part is
+    fixed bytes (R-99)."""
+    check = check_module()
+    b64 = lambda raw: base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+    unb64 = lambda text: base64.urlsafe_b64decode(text + "=" * (-len(text) % 4))
+    parts = {name: (name.encode(), bytes(range(i, i + 32))) for i, name in enumerate(("alice", "bob"))}
+    a, b = (f"session={b64(body)}.{b64(sig)}" for body, sig in parts.values())
+    altered = {k: v for k, v in check.tamper_inputs(a, b).items() if k.startswith(("body-", "sig-"))}
+    assert {k.split("-")[0] for k in altered} == {"body", "sig"}, altered
+    for label, cookie in altered.items():
+        body, sig = cookie.partition("=")[2].split(".")
+        assert (unb64(body), unb64(sig)) != parts["alice"], label
 
 
 # ---- readiness ring: the base and the hidden tests ----------------------------------------------------------------------
