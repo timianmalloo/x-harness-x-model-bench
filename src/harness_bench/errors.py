@@ -101,7 +101,8 @@ RUN_CODES: dict[str, str] = {
     "HB-PRE-011": "per-harness parallelism cap missing or above 1 for a grok or agy combo, or above the number of bench "
                   "credential homes its variable names for a pooled grok combo (names the harness, the cap and the count)",
     "HB-PRE-012": "scripted-user task refused: the profile declares `scripted_user: unsupported` (names the task and the harness)",
-    "HB-PRE-013": "interactive prepare refused: the two arms' task files differ in line endings or line-ending rule (names the first file)",
+    "HB-PRE-014": "interactive prepare refused: no `python` on PATH, or an arm's .venv could not be made (names the interpreter)",
+    "HB-PRE-013":"interactive prepare refused: the two arms' task files differ in line endings or line-ending rule (names the first file)",
     "HB-RUN-001": "ledger append failed: launching stopped, run incomplete",
     "HB-RUN-002": "a kill unconfirmed after 5 minutes (retries continue; the slot stays held)",
     "HB-RUN-003": "teardown refused: the run's lock is held by a live engine",

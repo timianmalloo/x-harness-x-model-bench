@@ -96,5 +96,68 @@
   "find": "        run(\"add\", \"-A\", \"--\", folder)",
   "replace": "        run(\"add\", \"-A\")\n        folder = \".\"",
   "tests": ["tests/test_interactive.py::test_next_commits_the_closed_task_folder_so_a_later_stash_cannot_take_it"]
+ },
+ {
+  "name": "IN15: a record matches every arm it mentions, not the arm it was launched in",
+  "file": "src/harness_bench/interactive.py",
+  "find": "matched = launched is not None and _same_dir(launched, arm_dir)",
+  "replace": "matched = any(f in head.lower() for f in forms)",
+  "tests": ["tests/test_interactive.py::test_a_record_belongs_to_the_arm_it_was_launched_in_not_to_every_arm_it_mentions"]
+ },
+ {
+  "name": "IN16: Claude Code's /c/... launch folder is not read as C:/...",
+  "file": "src/harness_bench/interactive.py",
+  "find": "    if drive:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_interactive.py::test_a_record_belongs_to_the_arm_it_was_launched_in_not_to_every_arm_it_mentions"]
+ },
+ {
+  "name": "IN17: a next.py call that handed out nothing is still a task boundary",
+  "file": "src/harness_bench/interactive.py",
+  "find": "if k < len(handouts) and handouts[k] <= end + slack:",
+  "replace": "if True:",
+  "tests": ["tests/test_interactive.py::test_a_next_call_that_handed_out_nothing_is_not_a_task_boundary"]
+ },
+ {
+  "name": "IN18: next.py prints in the console's code page",
+  "file": "src/harness_bench/interactive_next.py",
+  "find": "    sys.stdout.reconfigure(encoding=\"utf-8\", errors=\"replace\")\n",
+  "replace": "",
+  "tests": ["tests/test_interactive.py::test_next_prints_a_prompt_as_utf8_whatever_the_console_code_page"]
+ },
+ {
+  "name": "IN19: prepare copies the task source folder whole, ignored files included",
+  "file": "src/harness_bench/interactive.py",
+  "find": "ignore=_tracked_only(source))",
+  "replace": "ignore=shutil.ignore_patterns(\".git\"))",
+  "tests": ["tests/test_interactive.py::test_an_arm_holds_exactly_the_task_bases_tracked_files"]
+ },
+ {
+  "name": "IN20: the arm's .venv is not excluded from git",
+  "file": "src/harness_bench/interactive.py",
+  "find": "exclude.write(\"\\n.venv/\\n\")",
+  "replace": "exclude.write(\"\")",
+  "tests": ["tests/test_interactive.py::test_each_arm_gets_its_own_python_environment"]
+ },
+ {
+  "name": "IN21: a session outside its arm's .venv is not warned about",
+  "file": "src/harness_bench/interactive.py",
+  "find": "if norm(ran) != norm(arm_dir / \".venv\"):",
+  "replace": "if False:",
+  "tests": ["tests/test_interactive.py::test_each_arm_gets_its_own_python_environment"]
+ },
+ {
+  "name": "IN22: arms on different CLI builds are not warned about",
+  "file": "src/harness_bench/interactive.py",
+  "find": "if len({tuple(b) for b in builds.values()}) > 1:",
+  "replace": "if False:",
+  "tests": ["tests/test_interactive.py::test_the_cli_build_is_read_per_arm_and_a_difference_between_the_arms_is_a_warning"]
+ },
+ {
+  "name": "IN23: Copilot's events schema version is read as its CLI build",
+  "file": "src/harness_bench/interactive.py",
+  "find": "\"copilot\": \"copilotVersion\"",
+  "replace": "\"copilot\": \"version\"",
+  "tests": ["tests/test_interactive.py::test_the_cli_build_is_read_per_arm_and_a_difference_between_the_arms_is_a_warning"]
  }
 ]

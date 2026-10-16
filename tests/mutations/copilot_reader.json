@@ -249,12 +249,12 @@
   ]
  },
  {
-  "name": "usage records are also summarised by the shutdown row",
+  "name": "an open session's usage rows also flag the not-yet-written shutdown as missing",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "for n, stamp, usage in usage_records]\n        return ex\n",
   "replace": "for n, stamp, usage in usage_records]\n",
   "tests": [
-   "tests/test_telemetry_copilot.py::test_usage_records_are_not_added_to_the_shutdown_summary"
+   "tests/test_telemetry_copilot.py::test_a_bucket_the_usage_record_lacks_is_not_recorded_never_zero"
   ]
  },
  {
@@ -309,6 +309,24 @@
   "replace": "pass",
   "tests": [
    "tests/test_telemetry_copilot.py::test_tool_input_and_tool_call_share_the_execution_start_line_as_ordinal"
+  ]
+ },
+ {
+  "name": "usage records replace a shutdown summary they do not add up to",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "    if usage_records and last_shutdown is None:",
+  "replace": "    if usage_records:",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_usage_records_that_do_not_add_up_to_the_shutdown_leave_the_summary"
+  ]
+ },
+ {
+  "name": "matching usage records never replace the shutdown summary",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "        if not scratch.missing and _sums(per_call) == _sums(ex.model_calls):",
+  "replace": "        if False:",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_usage_records_are_not_added_to_the_shutdown_summary"
   ]
  }
 ]

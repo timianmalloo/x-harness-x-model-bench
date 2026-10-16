@@ -263,6 +263,17 @@ def pack_revision(pack_dir: Path) -> int:
     raise BenchError("HB-PRE-007", f"no revision in {pack_dir}/pack/adapters/INSTALL.md")
 
 
+def make_venv(python: str, dest: Path) -> str:
+    """`python -m venv dest` (with pip, no system site-packages); returns the venv's Python version. An interactive arm's
+    own environment, so a session's `pip install` never reaches the shared interpreter or the other arm (ARM-FAIR-A)."""
+    made = procs.run([python, "-m", "venv", str(dest)], cwd=str(dest.parent), env=None, timeout=300)
+    exe = dest / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+    if made.timed_out or made.returncode != 0 or not exe.is_file():
+        raise BenchError("HB-PRE-014", f"{python} -m venv {dest} failed ({made.returncode}): {made.stderr.strip()[-300:]}")
+    version = procs.run([str(exe), "-c", "import platform; print(platform.python_version())"], cwd=str(dest.parent), env=None, timeout=60)
+    return version.stdout.strip()
+
+
 def install_pack(pack_dir: Path, ws: Path, project: str, timeout: float) -> list[str]:
     """Install the pinned pack into a working copy, commit it, and return the manifest (paths written)."""
     script = pack_dir / "pack" / "scripts" / "pack-apply.py"

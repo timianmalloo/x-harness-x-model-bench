@@ -767,9 +767,19 @@ def test_usage_records_give_one_model_call_each_with_the_events_own_buckets(tmp_
 
 
 def test_usage_records_are_not_added_to_the_shutdown_summary(tmp_path):
-    lines = [_start(), _usage("2026-01-01T00:00:05.000Z"), _usage("2026-01-01T00:00:06.000Z"), _shutdown(_model_metrics(count=2))]
+    summary = _model_metrics(count=2, uncached=80, cache_read=1800, cache_write=120, output=80, reasoning=14)
+    lines = [_start(), _usage("2026-01-01T00:00:05.000Z"), _usage("2026-01-01T00:00:06.000Z"), _shutdown(summary)]
     calls = copilot.read(_write(tmp_path, lines)).model_calls
     assert len(calls) == 2 and sum(c.requests for c in calls) == 2  # not 2 usage rows plus the summary row
+    assert [c.start for c in calls] == ["2026-01-01T00:00:05.000Z", "2026-01-01T00:00:06.000Z"]
+
+
+def test_usage_records_that_do_not_add_up_to_the_shutdown_leave_the_summary(tmp_path):
+    """The shutdown's totals are the session's own account (and the headless path's); per-call rows that disagree with
+    them never replace them, so a lost or extra usage row cannot become a plausible wrong total."""
+    lines = [_start(), _usage("2026-01-01T00:00:05.000Z"), _shutdown(_model_metrics(count=2))]
+    calls = copilot.read(_write(tmp_path, lines)).model_calls
+    assert len(calls) == 1 and calls[0].requests == 2 and calls[0].uncached_input == 15
 
 
 def test_a_bucket_the_usage_record_lacks_is_not_recorded_never_zero(tmp_path):

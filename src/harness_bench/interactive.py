@@ -29,7 +29,8 @@ import json
 import os
 import re
 import shutil
-from datetime import UTC, datetime
+import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from harness_bench import config, engine, gitsafe, plan, readiness, views, workspace
@@ -148,12 +149,16 @@ def prepare(root: Path, run_id: str, harness: str, out_root: Path, task_ids: lis
     versions = {t: plan.task_version_hash(root / "tasks" / t) for t in task_ids}
     pack_dir = workspace.pack_checkout(Path(pin[0]), pin[1], tools_root / "pack")  # cli.cmd_plan's checkout cache
     items = _items(root, task_ids)
+    python = session_python()  # each arm's venv is made from it
+    if python is None:
+        raise BenchError("HB-PRE-014", "no `python` on PATH to make the arms' environments from")
+    versions_seen: set[str] = set()
     arms = {}
     for arm in ARMS:
         arm_dir = run_root / arm
         for tid in task_ids:
             source = workspace.task_source(root / "tasks" / tid, versions[tid], out_root / ".sources", upstream_root)
-            shutil.copytree(source, arm_dir / "tasks" / tid, ignore=shutil.ignore_patterns(".git"))
+            shutil.copytree(source, arm_dir / "tasks" / tid, ignore=_tracked_only(source))
         bench = arm_dir / ".bench"
         bench.mkdir()
         shutil.copyfile(NEXT, bench / "next.py")
@@ -170,16 +175,44 @@ def prepare(root: Path, run_id: str, harness: str, out_root: Path, task_ids: lis
         info = arm_dir / ".git" / "info"
         info.mkdir(parents=True, exist_ok=True)
         (info / "attributes").write_text(EOL_RULE, encoding="utf-8")  # ARM-FAIR-A: outranks the pack's .gitattributes
+        with (info / "exclude").open("a", encoding="utf-8") as exclude:
+            exclude.write("\n.venv/\n")
+        versions_seen.add(workspace.make_venv(python, arm_dir / ".venv"))  # ARM-FAIR-A: no shared interpreter
         if arm == config.ARM_OFF:
             found = workspace._instruction_paths(arm_dir)
             if found:  # X-PACKOFF: the pack-off arm loads no agent instruction file
                 raise BenchError("HB-PRE-009", f"the pack-off arm holds an instruction file: {found[0]}")
         arms[arm] = {"path": str(arm_dir), "base": _git(["rev-parse", "HEAD"], arm_dir).strip(), "pack_files": len(pack_files)}
     check_arms_alike(*(Path(arms[a]["path"]) for a in ARMS))
-    manifest ={"schema": SCHEMA, "run_id": run_id, "harness": harness, "created_at": _now(), "tasks": task_ids, "task_versions": versions,
+    manifest = {"schema": SCHEMA, "run_id": run_id, "harness": harness, "created_at": _now(), "tasks": task_ids, "task_versions": versions,
+                "python": {"path": python, "version": ", ".join(sorted(versions_seen))},
                 "pack_pin": {"source": pin[0], "commit": pin[1], "revision": workspace.pack_revision(pack_dir)}, "arms": arms}
     (run_root / MANIFEST).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest
+
+
+def session_python() -> str | None:
+    """The `python` a session launched from the operator's shell resolves to: PATH without the bench's own environment,
+    which `uv run bench` puts first (it would make every arm's venv from the bench's interpreter)."""
+    own = os.path.normcase(os.path.normpath(sys.prefix))
+    path = [p for p in os.environ.get("PATH", "").split(os.pathsep)
+            if p and not os.path.normcase(os.path.normpath(p)).startswith(own)]
+    return shutil.which("python", path=os.pathsep.join(path))
+
+
+def _tracked_only(source: Path):
+    """A copytree `ignore` keeping only the files the task source's base commit tracks, and the folders that hold them:
+    the replay's cell is a clone of that commit, so an ignored or stray file in the source folder never reaches an arm
+    (run 20261015T1529: S1's ignored files were replayed as the agent's new files)."""
+    tracked = {p for p in _git(["ls-files", "-z"], source).split("\0") if p}
+    folders = {str(Path(p).parent.as_posix()) for p in tracked}
+    folders |= {f.rsplit("/", k)[0] for f in list(folders) for k in range(1, f.count("/") + 1)}
+
+    def ignore(directory: str, names: list[str]) -> list[str]:
+        rel = Path(directory).relative_to(source).as_posix()
+        prefix = "" if rel == "." else rel + "/"
+        return [n for n in names if prefix + n not in tracked and prefix + n not in folders]
+    return ignore
 
 
 def check_arms_alike(off_dir: Path, on_dir: Path) -> None:
@@ -191,6 +224,18 @@ def check_arms_alike(off_dir: Path, on_dir: Path) -> None:
             raise BenchError("HB-PRE-013", f"the arms differ in line endings: off {off_row!r}, on {on_row!r}")
     if len(rows[off_dir]) != len(rows[on_dir]):
         raise BenchError("HB-PRE-013", f"the arms track {len(rows[off_dir])} and {len(rows[on_dir])} task files")
+
+
+def python_warnings(arm_dir: Path, state: dict) -> list[str]:
+    """The session must run its arm's own .venv (ARM-FAIR-A); next.py records the interpreter that ran it."""
+    ran = (state.get("python") or {}).get("prefix")
+    if ran is None:
+        return ["next.py recorded no interpreter: whether the session used the arm's .venv is not recorded"]
+    norm = lambda p: os.path.normcase(os.path.normpath(str(p)))
+    if norm(ran) != norm(arm_dir / ".venv"):
+        return [(f"next.py ran under {ran}, not the arm's .venv: the session shared an interpreter (activate .venv "
+                 "before launching the CLI)")]
+    return []
 
 
 def load(run_root: Path) -> dict:
@@ -329,9 +374,69 @@ def _path_forms(path: Path) -> list[bytes]:
     return [f.lower().encode() for f in forms]
 
 
+def _first_value(value, key: str) -> str | None:
+    """The first string under `key` in a parsed JSON value, a level's own key before its children's."""
+    if isinstance(value, dict):
+        if isinstance(value.get(key), str):
+            return value[key]
+        value = list(value.values())
+    if isinstance(value, list):
+        return next((c for c in (_first_value(v, key) for v in value) if c), None)
+    return None
+
+
+def _head_value(head: bytes, key: str) -> str | None:
+    for line in head.splitlines():
+        try:
+            found = _first_value(json.loads(line), key)
+        except ValueError:
+            continue
+        if found:
+            return found
+    return None
+
+
+def _launch_dir(head: bytes) -> str | None:
+    """The folder a JSONL record says its session was launched in: the first `cwd` in it (Claude Code: every line's
+    `cwd`; Codex: `session_meta.payload.cwd`; Copilot: `session.start.data.context.cwd`)."""
+    return _head_value(head, "cwd")
+
+
+# Where a record names the CLI build that wrote it (checked on the 2026-10-15 records). Copilot's `version` is the
+# events schema's, not the CLI's. agy's conversation db names none.
+CLI_VERSION_KEYS = {"claude-code": "version", "codex": "cli_version", "copilot": "copilotVersion"}
+
+
+def cli_version(harness: str, head: bytes) -> str | None:
+    key = CLI_VERSION_KEYS.get(harness)
+    return _head_value(head, key) if key else None
+
+
+def cli_build_warnings(arms: dict[str, dict]) -> list[str]:
+    """ARM-FAIR-A: both arms must run one CLI build. A difference, or a build not recorded, is a warning."""
+    builds = {a: sorted(set((s.get("session") or {}).get("cli_versions") or [])) for a, s in arms.items()}
+    if any(not b for b in builds.values()):
+        return ["the CLI build is not recorded for " + ", ".join(a for a, b in builds.items() if not b)
+                + "; whether the arms ran one build is unknown"]
+    if len({tuple(b) for b in builds.values()}) > 1:
+        return ["the arms ran different CLI builds (" + "; ".join(f"{a} {', '.join(b)}" for a, b in builds.items())
+                + "): an update landed between the launches, so the pack is not the only difference"]
+    return []
+
+
+def _same_dir(recorded: str, arm_dir: Path) -> bool:
+    drive = re.match(r"^/([a-zA-Z])(/|$)", recorded)  # Claude Code on Windows writes Git Bash's /c/... form
+    if drive:
+        recorded = f"{drive.group(1)}:/{recorded[3:]}"
+    norm = lambda p: os.path.normcase(os.path.normpath(str(p)))
+    return norm(recorded) == norm(arm_dir)
+
+
 def find_records(harness: str, arm_dir: Path, since: float, home: Path | None = None) -> list[Path]:
-    """The harness's session records modified since `since` (epoch seconds) that name the arm folder: a JSON record near
-    its start, an agy db (the prompt holds the workspace path) anywhere in the file."""
+    """The harness's session records modified since `since` (epoch seconds) that were launched in the arm folder. A JSONL
+    record matches by the folder it states (`_launch_dir`), never by a mention: a session that prints the other arm's path
+    is not that arm's (run int-copilot-20261015T1529). An agy db states no folder, so it matches by its prompt's
+    workspace path anywhere in the file."""
     if harness not in RECORD_HOMES:
         raise BenchError("HB-USR-002", f"no interactive record location known for {harness!r}; pass --record")
     env, default, pattern = RECORD_HOMES[harness]
@@ -343,16 +448,52 @@ def find_records(harness: str, arm_dir: Path, since: float, home: Path | None = 
             if path.stat().st_mtime < since:
                 continue
             with path.open("rb") as fh:
-                head = fh.read(SCAN_BYTES if path.suffix != ".db" else MAX_DB_SCAN).lower()
+                head = fh.read(SCAN_BYTES if path.suffix != ".db" else MAX_DB_SCAN)
         except OSError:
             continue
-        if any(f in head for f in forms):
+        if path.suffix == ".db":
+            matched = any(f in head.lower() for f in forms)
+        else:
+            launched = _launch_dir(head)
+            matched = launched is not None and _same_dir(launched, arm_dir)
+        if matched:
             found.append(path)
     return sorted(found, key=lambda p: p.stat().st_mtime)
 
 
 def _is_next(command: str | None) -> bool:
     return bool(command) and re.search(r"\.bench[\\/]+next\.py", command) is not None and "--status" not in command
+
+
+HANDOUT_SLACK_S = 2  # state.json stamps whole seconds; a record stamps the call's start and end
+
+
+def task_boundaries(ex: Extraction, trace, state: dict) -> tuple[list[int], list[int]]:
+    """(boundaries, rejected): the ordinals of the next.py calls that handed something out, and of those that did not.
+    A call naming next.py is a boundary only when a hand-out next.py recorded (an item's start, or the ALL DONE close)
+    falls in its time window; each hand-out is used once, in order. A call the record gives no times is kept unless it
+    failed. Run int-codex-20261015T1529: a blocked cell naming next.py shifted every later task by one label."""
+    entries = [*state.get("done", []), *([state["open"]] if state.get("open") else [])]
+    handouts = [datetime.fromisoformat(d["start"]) for d in entries]
+    if entries and not state.get("open") and entries[-1].get("end"):
+        handouts.append(datetime.fromisoformat(entries[-1]["end"]))  # the call that printed ALL DONE
+    tools = {t.native_ordinal: t for t in ex.tool_calls}
+    kept, rejected, k = [], [], 0
+    for ordinal in sorted(c.native_ordinal for c in trace.calls if _is_next(c.command)):
+        tool = tools.get(ordinal)
+        start, end = (_when(tool.start), _when(tool.end) or _when(tool.start)) if tool else (None, None)
+        if start is None:
+            (rejected if tool is not None and tool.ok is False else kept).append(ordinal)
+            continue
+        slack = timedelta(seconds=HANDOUT_SLACK_S)
+        while k < len(handouts) and handouts[k] < start - slack:
+            k += 1
+        if k < len(handouts) and handouts[k] <= end + slack:
+            kept.append(ordinal)
+            k += 1
+        else:
+            rejected.append(ordinal)
+    return kept, rejected
 
 
 def _peeks(trace) -> int:
@@ -474,11 +615,15 @@ def session_metrics(harness: str, records: list[Path], items: list[dict], state:
     labels = [_label(i) for i in items]
     windows = windows_of(items, state or {})
     total, per_item, notes, served, peeks = _zero(), {}, [], [], 0
+    builds: set[str] = set()
     hooks: int | None = 0
     for path in records:
         ex, trace = _read(harness, path)
-        boundaries = sorted(c.native_ordinal for c in trace.calls if _is_next(c.command))
-        segs = split(ex, boundaries, labels) if boundaries else split_by_time(ex, windows)
+        boundaries, rejected = task_boundaries(ex, trace, state or {})
+        if rejected:
+            notes.append(f"{path.name}: {len(rejected)} call(s) naming next.py handed nothing out (blocked or failed); "
+                         "they are not task boundaries")
+        segs =split(ex, boundaries, labels) if boundaries else split_by_time(ex, windows)
         for name, seg in segs.items():
             if name in labels or name == "unattributed":
                 _merge(per_item.setdefault(name, _zero()), seg)
@@ -499,9 +644,16 @@ def session_metrics(harness: str, records: list[Path], items: list[dict], state:
             notes.append(f"{path.name}: no next.py call in this record (a sub-agent's, or a resumed session's); its calls "
                          "are placed in tasks by their start time")
         served.append(_served(ex))
+        try:
+            with path.open("rb") as fh:
+                build = cli_version(harness, fh.read(SCAN_BYTES))
+        except OSError:
+            build = None
+        if build:
+            builds.add(build)
         hooks = None if hooks is None else _pack_hooks(harness, ex, hooks)
         peeks += _peeks(trace)
-    return {"records": [str(p) for p in records], "total": total, "per_item": per_item, "served": served,
+    return {"records": [str(p) for p in records], "total": total, "per_item": per_item, "served": served, "cli_versions": sorted(builds),
             "pack_hook_events": hooks, "queue_reads": peeks, "notes": notes}
 
 
@@ -571,6 +723,7 @@ def collect(root: Path, run_root: Path, arm: str, harness: str, runs: Path, cell
     outside = outside_task_folders(arm_dir, manifest["arms"][arm]["base"])
     if outside:
         warnings.append(f"{len(outside)} file(s) changed outside the task folders (not graded): {', '.join(outside[:5])}")
+    warnings += python_warnings(arm_dir, state)
     session, session_warnings = read_session(manifest, arm, harness, records)
     if state.get("open") or len(state.get("done", [])) < len(items):
         warnings.append(f"{len(state.get('done', []))} of {len(items)} items finished (next.py never printed ALL DONE)")
@@ -684,6 +837,9 @@ def report(run_root: Path, only: str | None = None) -> Path:
     lines += ["", "## Served settings (from each session's own record)", ""]
     for a, s in arms.items():
         lines.append(f"- **{a}**: " + ("; ".join(json.dumps(x) for x in s["session"]["served"]) if s["session"] else "no record"))
+        lines.append(f"- **{a}** CLI build: " + (", ".join((s["session"] or {}).get("cli_versions") or []) or "not recorded"))
+    if "python" in manifest:
+        lines.append(f"- Arm environments: a .venv per arm from `{manifest['python']['path']}` (Python {manifest['python']['version']}).")
     lines += ["", "## Tokens per task", "", "| Task | " + " | ".join(f"{a}: input+cache | {a}: output | {a}: tool calls" for a in arms) + " |",
               "|---|" + "---|---|---|" * len(arms)]
     order = {t: n for n, t in enumerate(manifest["tasks"])}
@@ -700,6 +856,8 @@ def report(run_root: Path, only: str | None = None) -> Path:
             row += [_num(inp), _num(seg["output"]), _num(seg["tool_calls"])]
         lines.append("| " + " | ".join(row) + " |")
     lines += ["", "## Warnings", ""]
+    if len(arms) > 1:
+        lines += [f"- **both arms**: {w}" for w in cli_build_warnings(arms)]
     for a, s in arms.items():
         notes = s["warnings"] + s.get("session_warnings", []) + ((s["session"] or {}).get("notes") or [])
         lines += [f"- **{a}**: {n}" for n in notes] or [f"- **{a}**: none"]

@@ -292,7 +292,7 @@ def read(path: Path) -> Extraction:
                                + [HarnessEvent(s[0], "skill_load", s[1], s[2], s[3], s[4], None) for s in skills.values()],
                                key=lambda e: e.native_ordinal)
 
-    if usage_records:  # one row per call; the shutdown summary would count the same calls again
+    if usage_records and last_shutdown is None:  # the session is still open: its per-call rows are all there is
         ex.model_calls = [_usage_call(ex, n, stamp, usage) for n, stamp, usage in usage_records]
         return ex
 
@@ -330,6 +330,11 @@ def read(path: Path) -> Extraction:
     per_request = _per_request(pairs, line_by_call)
     if per_request and _sums(per_request) == _sums(ex.model_calls):  # else the shutdown's per-session totals stay
         ex.model_calls = per_request
+    elif usage_records:  # the per-call usage rows replace the summary only when they add up to it, never beside it
+        scratch = Extraction()
+        per_call = [_usage_call(scratch, n, stamp, usage) for n, stamp, usage in usage_records]
+        if not scratch.missing and _sums(per_call) == _sums(ex.model_calls):
+            ex.model_calls = per_call
     return ex
 
 

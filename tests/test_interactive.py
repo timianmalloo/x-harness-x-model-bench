@@ -37,7 +37,7 @@ def _next(arm: Path, *args: str) -> str:
                           text=True, check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
 
 
-def _fake_pack(monkeypatch, tmp: Path) -> None:
+def _fake_pack(monkeypatch, tmp: Path, real_venv: bool = False) -> None:
     """The pack checkout and install are the engine's own (tested with the headless cells); here a stand-in writes one
     instruction file and commits it, so the arms differ as a pack-on and a pack-off arm do."""
     monkeypatch.setattr(interactive.workspace, "pack_checkout", lambda source, commit, root: tmp)
@@ -50,6 +50,8 @@ def _fake_pack(monkeypatch, tmp: Path) -> None:
         return ["AGENTS.md"]
 
     monkeypatch.setattr(interactive.workspace, "install_pack", install)
+    if not real_venv:  # a real venv takes seconds per arm; `test_each_arm_gets_its_own_python_environment` builds real ones
+        monkeypatch.setattr(interactive.workspace, "make_venv", lambda python, dest: dest.mkdir(parents=True) or "3.0.0")
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="the grader and its host are Windows-only (ADR-0018 s8)")
@@ -164,6 +166,60 @@ def test_the_arms_check_out_the_same_bytes_whatever_line_ending_rule_the_pack_sh
         shutil.rmtree(base, onexc=archive.make_writable)
 
 
+def test_an_arm_holds_exactly_the_task_bases_tracked_files(monkeypatch):
+    """Run 20261015T1529: S1's source folder held files its .gitignore names (examples/benchmark/requirements.txt);
+    prepare copied the folder, the arm's base commit skipped them, and collect replayed them as the agent's new files.
+    The replay's cell (a clone) never has them, so the arm must not either."""
+    base = CLEAN_PARENT / uuid.uuid4().hex
+    base.mkdir(parents=True)
+    try:
+        root = mt.make_root(base)
+        mt.install(root, "disc_turns")
+        _fake_pack(monkeypatch, base / "pack")
+        source_of = interactive.workspace.task_source
+
+        def with_stray(*args, **kwargs):
+            source = source_of(*args, **kwargs)
+            (source / "stray.log").write_text("not in the base commit\n", encoding="utf-8")
+            return source
+
+        monkeypatch.setattr(interactive.workspace, "task_source", with_stray)
+        manifest = interactive.prepare(root, "int-tracked", "claude-code", base / "out", [TASK], ("C:/pack", "0" * 40), base / "tools")
+        for arm in interactive.ARMS:
+            arm_dir = Path(manifest["arms"][arm]["path"])
+            assert not (arm_dir / "tasks" / TASK / "stray.log").exists()
+            assert _operator_git(["status", "--porcelain", "--ignored", "--", "tasks"], arm_dir).stdout == ""
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)
+
+
+def test_each_arm_gets_its_own_python_environment(monkeypatch):
+    """Run 20261015T1529 (ARM-FAIR-A): sessions `pip install -e`'d task folders into the one global interpreter, and the
+    Copilot on arm's NG1 test imported the off arm's tree through it. Each arm gets a venv of its own, from the same
+    interpreter, invisible to git; next.py records which interpreter ran it, and collect warns when it was not the arm's."""
+    base = CLEAN_PARENT / uuid.uuid4().hex
+    base.mkdir(parents=True)
+    try:
+        root = mt.make_root(base)
+        mt.install(root, "disc_turns")
+        _fake_pack(monkeypatch, base / "pack", real_venv=True)
+        manifest = interactive.prepare(root, "int-venv", "claude-code", base / "out", [TASK], ("C:/pack", "0" * 40), base / "tools")
+        assert manifest["python"]["version"].count(".") == 2, manifest["python"]
+        for arm in interactive.ARMS:
+            arm_dir = Path(manifest["arms"][arm]["path"])
+            venv_python = arm_dir / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+            assert venv_python.is_file()
+            assert _operator_git(["status", "--porcelain"], arm_dir).stdout == ""  # .venv is excluded, never a change
+            subprocess.run([str(venv_python), str(arm_dir / ".bench" / "next.py")], cwd=arm_dir, capture_output=True, check=True,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            state = json.loads((arm_dir / ".bench" / "state.json").read_text(encoding="utf-8"))
+            assert interactive.python_warnings(arm_dir, state) == []
+            state["python"]["prefix"] = sys.prefix  # as if the operator launched the CLI without activating the venv
+            assert "not the arm's .venv" in " ".join(interactive.python_warnings(arm_dir, state))
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)
+
+
 def test_prepare_refuses_arms_whose_task_trees_differ_in_line_endings(tmp_path):
     arms = {}
     for arm, text in (("off", b"a\r\n"), ("on", b"a\n")):
@@ -223,6 +279,21 @@ def test_next_hands_out_the_next_task_when_the_commit_cannot_be_made(tmp_path):
     assert "do B" in _next(tmp_path)
     done = json.loads((bench / "state.json").read_text(encoding="utf-8"))["done"]
     assert "error" in done[0]["commit"], done[0]
+
+
+def test_next_prints_a_prompt_as_utf8_whatever_the_console_code_page(tmp_path):
+    """Run 20261015T1529: RW1's prompt names EUR and JPY signs; next.py printed them in the console's cp1252, a CLI read
+    the pipe as UTF-8, and both Claude Code arms spent turns recovering the text (on: 3.5x the tokens of off)."""
+    bench = tmp_path / ".bench"
+    bench.mkdir()
+    shutil.copyfile(interactive.NEXT, bench / "next.py")
+    (tmp_path / "tasks" / "A").mkdir(parents=True)
+    (bench / "queue.json").write_text(json.dumps({"items": [{"task": "A", "turn": 1, "turns": 1, "prompt": "format € and ¥"}]}),
+                                      encoding="utf-8")
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTHON")} | {"PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+    out = subprocess.run([sys.executable, str(bench / "next.py")], cwd=tmp_path, env=env, capture_output=True, check=True,
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
+    assert "format € and ¥" in out.decode("utf-8")
 
 
 def test_harness_list_takes_commas_spaces_and_the_claude_alias_and_refuses_an_unknown_name():
@@ -291,6 +362,52 @@ def test_a_record_without_next_calls_is_placed_in_tasks_by_time():
     segs = interactive.split_by_time(ex, windows)
     assert {k: v["model_calls"] for k, v in segs.items()} == {"A": 1, "B": 1, "unattributed": 1}
     assert segs["A"]["reasoning"] is None  # a bucket the harness does not report stays not recorded
+
+
+def test_a_record_belongs_to_the_arm_it_was_launched_in_not_to_every_arm_it_mentions(monkeypatch, tmp_path):
+    """Run int-copilot-20261015T1529: the on session printed the off arm's path, so the off arm's search took both
+    records and summed the on session into the off totals. A record states the folder it was launched in."""
+    off, on = tmp_path / "run" / "off", tmp_path / "run" / "on"
+    home = tmp_path / "home"
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(home))
+    posix = lambda p: "/" + p.as_posix()[0].lower() + p.as_posix()[2:]  # Claude Code writes Git Bash's /c/... form
+    for name, cwd, text in (("a", off, "hello"), ("b", on, f"see {off} for the other arm")):
+        rec = home / "projects" / name / f"{name}.jsonl"
+        rec.parent.mkdir(parents=True)
+        rec.write_text(json.dumps({"type": "user", "cwd": posix(cwd), "message": {"content": text}}) + "\n", encoding="utf-8")
+    assert [p.stem for p in interactive.find_records("claude-code", off, 0)] == ["a"]
+    assert [p.stem for p in interactive.find_records("claude-code", on, 0)] == ["b"]
+    assert interactive._launch_dir(b'{"type":"session_meta","payload":{"cwd":"C:\\\\x\\\\off"}}\n') == "C:\\x\\off"  # Codex
+    assert interactive._launch_dir(b'{"type":"session.start","data":{"context":{"cwd":"C:\\\\x\\\\on"}}}\n') == "C:\\x\\on"  # Copilot
+
+
+def test_the_cli_build_is_read_per_arm_and_a_difference_between_the_arms_is_a_warning():
+    """Run int-claude-code-20261015T1529 (ARM-FAIR-A): Claude Code auto-updated between the two launches, so off ran
+    2.1.301 and on 2.1.300, and nothing said so."""
+    assert interactive.cli_version("claude-code", b'{"type":"user","version":"2.1.300","cwd":"/c/x"}\n') == "2.1.300"
+    assert interactive.cli_version("codex", b'{"type":"session_meta","payload":{"cli_version":"0.162.1"}}\n') == "0.162.1"
+    assert interactive.cli_version("copilot", b'{"type":"session.start","data":{"version":1,"copilotVersion":"1.0.98"}}\n') == "1.0.98"
+    assert interactive.cli_version("agy", b"anything") is None
+    same = {"off": {"session": {"cli_versions": ["2.1.300"]}}, "on": {"session": {"cli_versions": ["2.1.300"]}}}
+    assert interactive.cli_build_warnings(same) == []
+    differ = {"off": {"session": {"cli_versions": ["2.1.301"]}}, "on": {"session": {"cli_versions": ["2.1.300"]}}}
+    assert "different CLI builds" in " ".join(interactive.cli_build_warnings(differ))
+    unknown = {"off": {"session": {"cli_versions": []}}, "on": {"session": None}}
+    assert "not recorded" in " ".join(interactive.cli_build_warnings(unknown))
+
+
+def test_a_next_call_that_handed_out_nothing_is_not_a_task_boundary():
+    """Run int-codex-20261015T1529 (on): a cell holding `python .bench/next.py` was blocked by policy, so next.py never
+    ran, yet its text made it a boundary and every later task's tokens moved one label. A boundary is a next.py call
+    whose time window holds a hand-out next.py recorded in state.json."""
+    t = lambda s: f"2026-10-15T10:{s}+00:00"
+    tools = [ToolCall(3, "shell", "shell", t("00:00"), t("00:01"), True),
+             ToolCall(5, "shell", "shell", t("05:00"), t("05:00"), False),  # blocked: nothing handed out
+             ToolCall(7, "shell", "shell", t("05:10"), t("05:11"), True),
+             ToolCall(9, "shell", "shell", t("09:00"), t("09:01"), True)]  # ALL DONE
+    trace = type("T", (), {"calls": [type("C", (), {"native_ordinal": n, "command": "python .bench/next.py"})() for n in (3, 5, 7, 9)]})()
+    state = {"done": [{"index": 0, "start": t("00:00"), "end": t("05:10")}, {"index": 1, "start": t("05:10"), "end": t("09:00")}], "open": None}
+    assert interactive.task_boundaries(Extraction(tool_calls=tools), trace, state) == ([3, 7, 9], [5])
 
 
 def test_next_call_detection_ignores_status_and_other_scripts():

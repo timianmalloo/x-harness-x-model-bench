@@ -27,6 +27,13 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-15, later (Leader, the follow-up round): one project candidate. REC-ATTR-A: records and task boundaries
+  were attributed by a text match. ARM-FAIR-A gains per-arm venvs, a CLI-build warning and tracked-only arm trees.
+  Two further fixes were instance-only. Copilot per-call usage rows are now read; they replace the shutdown summary
+  only when they add up to it. `next.py` prints UTF-8 whatever the console code page (RW1's currency signs; IN18).
+  A finding was left open for the operator: S2's `tamper-1` flags a last-character base64 change that decodes to
+  the same signed payload. That is a grader false positive, and it failed both Claude arms. The fix is a task
+  recalibration.
 - 2026-10-15 (Leader, the first full interactive run `int-*-20261015T1529`): two project candidates. ARM-FAIR-A: the
   arms differ, or share state, beyond the pack. Instance 1, the git line-ending rule, is controlled. The shared
   site-packages, the CLI build and concurrency are open. TASK-ISO-A: a later task can undo an earlier one in the
@@ -2456,6 +2463,56 @@ registers both.*
   control is a prepare/collect check that fingerprints the shared state (CLI build per arm, site-packages entries
   naming a run folder, concurrent runs) and warns in the report.
 - **Status:** `partially-controlled` (instance 1 controlled; 2–4 open)
+- **Update `2026-10-15` (the follow-up round):**
+  - *Instance 2 (shared interpreter) is controlled.* Prepare now makes `.venv` in each arm from the `python` the
+    operator's shell resolves to (`session_python` skips the bench's own environment, which `uv run` puts first on
+    PATH; without that, every arm venv came from the bench's 3.14). `.venv/` is excluded from git. The launch step
+    activates the venv and sets `PIP_REQUIRE_VIRTUALENV=1`. `next.py` records the interpreter that ran it, and collect
+    warns when it was not the arm's `.venv`. Tests:
+    `test_each_arm_gets_its_own_python_environment` (mutants IN20 and IN21).
+  - *Instance 3 (CLI build) is detected, not prevented.* The report reads each record's build (Claude `version`,
+    Codex `cli_version`, Copilot `copilotVersion`; Copilot's `version` is its event schema's). It warns when the arms
+    differ or a build is not recorded (agy). Tests: `test_the_cli_build_is_read_per_arm_and_a_difference_between_the_arms_is_a_warning`
+    (mutants IN22 and IN23).
+  - *Instance 4 (concurrency)* is a procedure: the prompt page now says to run one CLI at a time. There is no control.
+  - *Instance 5 (new): an arm held files its replay base lacks.* Prepare copied each task source folder whole, so
+    S1's git-ignored files reached the arm, the base commit skipped them, and collect replayed them as the
+    agent's own work. Prepare now copies only the files the source commit tracks (`_tracked_only`). Test:
+    `test_an_arm_holds_exactly_the_task_bases_tracked_files` (mutant IN19).
+  - The global site-packages still holds the two editable installs from 2026-10-15. They are no longer reachable from
+    an arm venv, and cleaning them is the operator's call.
+  - Status after the update: `partially-controlled` (instances 1, 2 and 5 controlled; 3 is detected; 4 is procedure
+    only).
+
+### REC-ATTR-A: a measurement attributes a record or an event by what its text mentions, not by what happened (candidate)
+- **Signature:** a reader decides that a record belongs to an arm, or that a call marks a task boundary, because a
+  string appears in it. A session that prints the other arm's path, or a blocked command that names `next.py`,
+  satisfies the text without the event. The numbers are then summed into the wrong arm or shifted by a label, and
+  every total still looks plausible.
+- **Instances:** `2026-10-15` (the interactive runs of 2026-10-15; all observed):
+  1. `find_records` matched a record by the arm's path anywhere in its first 4 MB. The Copilot on session printed
+     the off path, so the off arm summed both sessions (its `summary.json` lists both records). The run review counted
+     240 tool calls reported against 125 in the off record; that count was not re-checked. The same rule also missed Claude Code's own records, which state `/c/...`, and matched them only through
+     Windows paths in their content.
+  2. `_is_next` took any call naming `.bench/next.py` as a boundary. One Codex on cell was blocked by policy, and
+     four Copilot calls were `pytest && next.py` chains whose tests failed. Every later task's tokens moved one
+     label (Codex on: from RW1 turn 1 onward).
+  3. The Copilot reader took the served model from `session.start.selectedModel` (`gpt-5.5`). The session
+     switched to `gpt-6.1-sol` before its first call, and every usage row names `gpt-6.1-sol`. That is a PARSE-A
+     shape: the first of several values.
+- **Fix:** a JSONL record matches by the folder it states it was launched in (`_launch_dir`: Claude `cwd`, Codex
+  `session_meta.payload.cwd`, Copilot `session.start.data.context.cwd`), never by a mention; agy's db names no folder
+  and keeps the mention rule. A boundary is a `next.py` call whose start–end window holds a hand-out `next.py`
+  recorded in `state.json`; each hand-out is used once (`task_boundaries`). Rejected calls are noted in the report.
+  The Copilot reader takes the model from the usage rows (and says when they disagree), and gives tool inputs and
+  tool calls one ordinal, so the join holds.
+- **Sweep:** checked on all six arms of 2026-10-15. Each record now matches only its own arm, and every arm keeps
+  exactly 14 boundaries (13 items plus ALL DONE). The rejected calls are Codex on 280, Copilot off 103, 269 and 511,
+  and Copilot on 609. agy is unchecked; no agy run exists yet.
+- **Control:** `test_a_record_belongs_to_the_arm_it_was_launched_in_not_to_every_arm_it_mentions` (mutants IN15 and
+  IN16), `test_a_next_call_that_handed_out_nothing_is_not_a_task_boundary` (IN17), and the Copilot reader's tests in
+  `tests/test_telemetry_copilot.py` (mutants in `tests/mutations/copilot_reader.json`). Rung: test.
+- **Status:** `controlled` (agy is unverified)
 
 ### TASK-ISO-A: a later task in one shared session can undo or rewrite an earlier task's graded work (candidate)
 - **Signature:** several tasks share one working tree, and each is graded from the final tree after the last task.

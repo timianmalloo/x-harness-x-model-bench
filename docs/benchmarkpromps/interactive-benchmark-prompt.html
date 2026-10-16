@@ -74,15 +74,24 @@ uv run bench interactive prepare --harness claude, codex, copilot</pre>
     <p>For each CLI it prints two folders, <code>C:\Projects\bench-interactive\int-CLI-&lt;UTC time&gt;\off</code> and
       <code>…\on</code>. Each holds the 11 task folders (base trees only; the hidden tests stay in the bench) and
       <code>.bench\next.py</code>, which hands out one task at a time. <code>on</code> also has the pack installed at
-      its root; <code>off</code> holds no instruction file (prepare checks). Prepare takes about half a minute per CLI.
+      its root; <code>off</code> holds no instruction file (prepare checks). Each arm also gets its own Python
+      environment, <code>.venv</code>, made from your default <code>python</code>, so a session's
+      <code>pip install</code> never reaches the other arm or your global Python. Both arms get one git line-ending
+      rule, and prepare checks that their task files match byte for byte. Prepare takes about a minute per CLI.
       For a second model of the same CLI (Copilot with <code>gpt-5.5</code>, say), run prepare again for that CLI.
       <code>--tasks</code> and <code>--pack SOURCE@COMMIT</code> still override the defaults.</p>
   </div>
 
   <div class="card">
     <h2>2. Launch the CLI in each folder (two windows per CLI)</h2>
-    <p style="margin-top:0"><code>cd</code> into the folder, then start the CLI with the line for it below. Both
-      windows of one CLI use the same line. When the CLI asks whether to trust the folder, say yes in both.</p>
+    <p style="margin-top:0">In each window, <code>cd</code> into the folder, activate its environment, then start the CLI
+      with the line for it below. Both windows of one CLI use the same line. When the CLI asks whether to trust the
+      folder, say yes in both.</p>
+<pre id="activate">.\.venv\Scripts\Activate.ps1
+$env:PIP_REQUIRE_VIRTUALENV = "1"</pre>
+    <p>The first line makes the session's <code>python</code> and <code>pip</code> the arm's own. The second refuses
+      any <code>pip install</code> that would land outside an environment. If you skip them, the report says the
+      session shared an interpreter.</p>
     <div class="table-wrap">
     <table>
       <tr><th>CLI</th><th>Launch line (pinned model, effort and window; approves its own tool calls)</th></tr>
@@ -95,8 +104,12 @@ uv run bench interactive prepare --harness claude, codex, copilot</pre>
     <ul>
       <li><strong>Approvals.</strong> One paste runs 11 tasks unattended, so each CLI approves its own calls. It is the
         same flag in both arms, so the arms stay equal. The sessions only work inside their run folder.</li>
-      <li><strong>Several CLIs at once</strong> is fine: each run has its own folders, and the gather step compares
-        them. Each window costs its own tokens.</li>
+      <li><strong>One CLI at a time.</strong> Run a CLI's two windows together, then the next CLI after both have
+        finished. On 2026-10-15 three CLIs ran at once on this machine and shared CPU, API limits and the grading
+        host, which adds noise to minutes and to timing-sensitive checks. Each window costs its own tokens.</li>
+      <li><strong>One build in both windows.</strong> Start the two windows back to back. Claude Code updated itself
+        between the two launches on 2026-10-15 (2.1.301 in off, 2.1.300 in on). The report reads each session's build
+        and warns when the arms differ.</li>
       <li><strong>Windows.</strong> Codex 872000 and Copilot <code>long_context</code> (922k) are the largest windows
         measured on the bench's pinned builds. Your installed builds are newer (Codex 0.162.1, Copilot 1.0.97). Each
         session's record shows what it served, and the report prints it. Codex's compaction limit of 750000 keeps
@@ -221,8 +234,13 @@ REPO = C:\Projects\x-harness-x-model-bench
       <li><strong>Tokens and tool calls per task</strong> come from each session's record, split at the
         <code>next.py</code> calls. The report that opens at the end of a session read the record while the session
         was still open; <code>gather</code> reads it again after you exit, and the comparison uses those numbers.
-        Copilot records usage only as a total when the session ends, so it shows session totals and no per-task
-        tokens. agy is read from its conversation database (field map checked against 1,542 requests).</li>
+        A session's record is the one launched in that arm's folder, never one that merely mentions it. A
+        <code>next.py</code> call that handed nothing out, because it was blocked or a command before it failed, is
+        not a task boundary. Copilot's per-call usage rows give per-task tokens; after exit they are used only when
+        they add up to its session total. agy is read from its conversation database (field map checked against
+        1,542 requests).</li>
+      <li><strong>Finished work is committed.</strong> When <code>next.py</code> closes a task, it commits that task's
+        folder, and only that folder, so a later task's <code>git stash</code> or reset cannot take it.</li>
       <li><strong>One session per arm</strong>, with the tasks in the same fixed order in both arms. Context carries
         from task to task, as in real use. That is why this mode is not comparable with the headless runs.</li>
       <li>A deleted file cannot be replayed, and the report lists any. So does a session that read the queue file

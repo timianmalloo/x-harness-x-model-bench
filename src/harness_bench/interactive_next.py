@@ -105,8 +105,11 @@ def _show(items: list, i: int) -> None:
 
 
 def main(argv: list[str]) -> int:
-    items = _load("queue.json", {})["items"]
+    # A CLI reads this pipe as UTF-8; the console's code page (cp1252) mangled RW1's currency signs (run 20261015T1529).
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    items =_load("queue.json", {})["items"]
     state = _load("state.json", {"done": [], "open": None})
+    state.setdefault("python", {"prefix": sys.prefix, "executable": sys.executable})  # the arm's .venv, or not (collect)
     if argv[1:] == ["--status"]:
         if state["open"] is None:
             print("ALL DONE." if len(state["done"]) == len(items) else "No task is open. Run next.py to start the next one.")
