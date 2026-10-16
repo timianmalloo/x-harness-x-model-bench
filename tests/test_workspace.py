@@ -303,6 +303,23 @@ def test_task_source_refuses_a_base_tree_that_carries_an_instruction_file(base):
     assert e.value.code == "HB-PRE-009"
 
 
+def test_task_source_refuses_a_cached_base_that_carries_an_instruction_file(base):  # CACHE-A, 2026-10-16
+    """The cache is keyed by the task's content, not by the builder: a base built before the X-PACKOFF rule kept
+    NG1's .github/copilot-instructions.md, and every later hit served it without the check (bench-cells/.sources)."""
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n"})
+    task_dir = base / "tasks" / "P7"
+    _source_task(task_dir, upstream, commit, {"README.md": "overlay\n"})
+    dest = workspace.task_source(task_dir, "v7", base / "sources", base / "upstream-cache")
+    assert workspace.task_source(task_dir, "v7", base / "sources", base / "upstream-cache") == dest  # a clean hit
+    (dest / ".github").mkdir()
+    (dest / ".github" / "copilot-instructions.md").write_text("built before the rule\n", encoding="utf-8")
+    with pytest.raises(BenchError) as e:
+        workspace.task_source(task_dir, "v7", base / "sources", base / "upstream-cache")
+    assert e.value.code == "HB-PRE-009" and "copilot-instructions.md" in str(e.value) and str(dest) in str(e.value)
+
+
 NEW_HARNESS_INSTRUCTIONS = {".agents/rules/x.md": "agy rule\n", ".agents/skills/s/SKILL.md": "agy skill\n",
                             ".grok/settings.md": "grok rule\n"}  # ADR-0025 s8: every file under these trees is loaded
 

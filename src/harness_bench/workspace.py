@@ -196,6 +196,13 @@ def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root:
     base commit, never the upstream's history (R-83)."""
     dest = sources_root / task_dir.name / version[:16]
     if (dest / ".git").is_dir():
+        # CACHE-A: the key is the task's content, not this builder, so a base built before a rule here still hits.
+        # Re-check the pack-off rule on every hit (bench-cells/.sources' NG1 kept .github/copilot-instructions.md).
+        left = _instruction_paths(dest)
+        if left:
+            raise BenchError("HB-PRE-009", f"{task_dir.name}: the cached base {dest} carries an agent instruction file: "
+                                           f"{left[0].relative_to(dest).as_posix()}. It predates the pack-off rule; "
+                                           "delete that folder and it is rebuilt")
         return dest
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = _fresh(dest)

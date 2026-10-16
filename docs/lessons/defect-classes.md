@@ -921,8 +921,15 @@ summary: >-
   No control yet. Proposed: re-run the instruction-file check on a cache hit, or put the builder's source in the key
   as `ring_cache.content_version` does. Rebuilding the stale entry is the operator's call. *Rebuilt 2026-10-16 at
   the operator's request:* the entry was deleted and `task_source` rebuilt it. The new base has no instruction file,
-  and its 46 blob ids equal every 2026-10-15 arm's NG1 base. The class is still `partially-controlled`, because a
-  cache hit still skips the check.
+  and its 46 blob ids equal every 2026-10-15 arm's NG1 base.
+  *Control, 2026-10-16:* `task_source` now re-runs the instruction-file check on every cache hit and refuses a stale
+  base with HB-PRE-009, naming the folder to delete. Test:
+  `tests/test_workspace.py::test_task_source_refuses_a_cached_base_that_carries_an_instruction_file`, observed red
+  before the change. Mutant in `tests/mutations/workspace_source.json`, killed. Sweep: 145 cached bases on this
+  machine. One more is stale, `bench-cells\.sources\S2\eadf2d35538e6514` (an old S2 version, with bottle's
+  `AGENTS.md`). It was deleted at the operator's request, and a re-sweep of the 144 left found none. The key still ignores the builder, so another
+  builder change that alters a base without an instruction file would still be served stale. Status:
+  `partially-controlled` (the pack-off rule is checked; the rest of the builder is not keyed).
   Status of the class after this instance: `partially-controlled`.
 
 ### MOD-C: a new model guard starves another guard's seeded variant
