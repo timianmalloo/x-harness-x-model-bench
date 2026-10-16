@@ -1,7 +1,9 @@
 """The task queue an interactive session works through (stdlib only; copied into each arm as `.bench/next.py`).
 
-Run with no argument, it closes the open item (end time; a turn-1 item of a two-turn task also snapshots its task folder
-into `.bench/snapshots/<task>/turn-1/`, the tree the rework grader reads) and prints the next item's prompt, or
+Run with no argument, it closes the open item (end time, and a copy of its task folder in
+`.bench/snapshots/<task>/turn-<n>/`: collect grades each turn as handed off, so a later task's edit to the folder is not
+graded as this task's work, TASK-ISO-A; turn 1 of a two-turn task is also the tree the rework grader reads) and prints
+the next item's prompt, or
 `ALL DONE`. Closing an item also commits its task folder (see `_commit`). `--status` prints the open item again without
 advancing. The queue is `.bench/queue.json` (written by
 `bench interactive prepare`); progress is `.bench/state.json`. Each call is a tool call in the session's own record, so
@@ -122,11 +124,10 @@ def main(argv: list[str]) -> int:
     opened = state["open"]
     if opened is not None:
         item = items[opened["index"]]
-        if item["turns"] > 1 and item["turn"] < item["turns"]:
-            dest = BENCH / "snapshots" / item["task"] / f"turn-{item['turn']}"
-            if dest.exists():
-                shutil.rmtree(dest)
-            shutil.copytree(ARM / "tasks" / item["task"], dest, ignore=SKIP)
+        dest = BENCH / "snapshots" / item["task"] / f"turn-{item['turn']}"
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(ARM / "tasks" / item["task"], dest, ignore=SKIP)
         state["done"].append(opened | {"end": _now(), "commit": _commit(item)})
         state["open"] = None
     index = len(state["done"])

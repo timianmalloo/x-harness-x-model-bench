@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
+**Status counts:** controlled 14 · partially-controlled 6 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
 - 2026-10-16 (Leader): one project candidate. NOOP-PROBE-A: S2's `tamper-1` altered the last base64 character,
   where padding bits live, and failed secure apps (the open finding below). It is now controlled. ARM-FAIR-A
@@ -43,7 +43,8 @@ summary: >-
   - Copilot's model is picked by hand: it starts on its default `gpt-5.5`. The prompt page says so, and the report
     now warns when the arms were served different models (`served_model_warnings`, mutant IN27).
   ARM-FAIR-A instance 1's owed sweep is closed. The headless cells had the same line-ending split, measured on real
-  bases: 10 of 11 lean tasks. `cell_working_copy` now writes the arms' rule.
+  bases: 10 of 11 lean tasks. `cell_working_copy` now writes the arms' rule. TASK-ISO-A is controlled: each
+  interactive task is graded as handed off, from `next.py`'s copy. A later task's edits are a warning, not graded.
 - 2026-10-15, later (Leader, the follow-up round): one project candidate. REC-ATTR-A: records and task boundaries
   were attributed by a text match. ARM-FAIR-A gains per-arm venvs, a CLI-build warning and tracked-only arm trees.
   Two further fixes were instance-only. Copilot per-call usage rows are now read; they replace the shutdown summary
@@ -2621,6 +2622,30 @@ registers both.*
   every closed item and grades from them. Mutants IN13 (no commit) and IN14 (the whole tree is committed) are
   killed. Rung: test.
 - **Status:** `partially-controlled` (loss through git is controlled; later edits are not)
+- **Update `2026-10-16` (later edits, at the operator's request):**
+  - *Fixed.* Each task is now graded as it was handed off. `next.py` copies the task folder to
+    `.bench/snapshots/<ID>/turn-<n>/` when it closes any item; before, it copied only a two-turn task's turn 1.
+    `build_overlays` builds each task's last turn from that copy. Base files the copy lacks are reported as
+    deletions. Files the final tree changed after the hand-off are not graded and become the warning "changed
+    after its hand-off (a later task's edits)", so a revisit is still visible. A copy is used and not the hand-off
+    commit because the commit leaves out git-ignored files, which the final-tree grading included. With no copy,
+    grading reads the final tree. That is the item still open at the end, or an arm prepared earlier (every
+    2026-10-15 run). When such an item was closed, collect warns.
+  - *Measured on a real arm* (`int-codex-20261015T1529/off`, copied; the real tasks and grader; no records):
+    - Hand-off copies taken from the final tree gave the same scores as the old grading on all 11 tasks, drift
+      included. Overlaying every file of a copy grades the same as overlaying the diff.
+    - NG1 was then reverted to its base as a later edit. It still scored `pass_at_1` 1 and `property_check_pass` 1,
+      and the warning named the 3 files.
+    - The old grading with the same edit scored NG1 0 and 0.
+  - *Control.*
+    - `tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares` now writes the other role's
+      turn-2 files after ALL DONE. It requires the role's own scores and the later-edit warning. It was observed
+      red on the un-fixed code: the turn-2 copy was missing, and with only `next.py` fixed the reference arm scored
+      `property_check_pass` 0.
+    - `::test_a_task_closed_with_no_hand_off_copy_is_graded_from_the_final_tree_with_a_warning` covers the fallback
+      and the deletion. It was observed red on the un-fixed code.
+    - Mutants IN28–IN32 are killed. IN5 is retargeted and still killed.
+  - Status after the update: `controlled`.
 
 ### NOOP-PROBE-A: a probe's altered input is a no-op for a correct app, so the app's acceptance scores as an exploit (candidate)
 - **Signature:** a security probe alters an issued value and counts acceptance as the exploit. But the alteration

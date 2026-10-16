@@ -25,6 +25,7 @@ graded here; a harness whose record summarises usage (Copilot's session.shutdown
 
 from __future__ import annotations
 
+import filecmp
 import json
 import os
 import re
@@ -273,15 +274,43 @@ def _tree_files(root: Path) -> list[str]:
     return sorted(rel for rel in (p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()) if not _skipped(rel))
 
 
+def _handed_off(arm_dir: Path, base: str, tid: str, snap: Path) -> tuple[list[str], list[str], list[str]]:
+    """(every file of the hand-off copy, the base files it lacks, the files that differ in the final tree since): the
+    task as next.py closed it, and what a later task did to its folder afterwards."""
+    prefix = f"tasks/{tid}/"
+    files = _tree_files(snap)
+    listed = (p[len(prefix):] for p in _git(["ls-tree", "-r", "-z", "--name-only", base, "--", prefix], arm_dir).split("\0") if p)
+    deleted = sorted(rel for rel in listed if not _skipped(rel) and not (snap / rel).is_file())
+    live = arm_dir / "tasks" / tid
+    later = sorted(rel for rel in set(files) | set(_tree_files(live) if live.is_dir() else [])
+                   if not ((snap / rel).is_file() and (live / rel).is_file() and filecmp.cmp(snap / rel, live / rel, shallow=False)))
+    return files, deleted, later
+
+
 def build_overlays(manifest: dict, arm: str, items: list[dict], state: dict, dest: Path) -> tuple[dict[str, Path], list[str]]:
-    """task id -> overlay folder (with turn-<n>/ folders for a multi-turn task), and the warnings."""
+    """task id -> overlay folder (with turn-<n>/ folders for a multi-turn task), and the warnings. Each task's last turn is
+    graded from next.py's copy at its hand-off (TASK-ISO-A), or from the final tree when there is none: the item still
+    open at the end, or an arm whose next.py kept a copy only of a two-turn task's turn 1."""
     arm_dir, base = Path(manifest["arms"][arm]["path"]), manifest["arms"][arm]["base"]
-    opened = {(d["task"], d["turn"]) for d in state.get("done", [])} | ({(state["open"]["task"], state["open"]["turn"])} if state.get("open") else set())
+    closed = {(d["task"], d["turn"]) for d in state.get("done", [])}
+    opened = closed | ({(state["open"]["task"], state["open"]["turn"])} if state.get("open") else set())
     overlays, warnings = {}, []
     for tid in manifest["tasks"]:
         turns = max(i["turns"] for i in items if i["task"] == tid)
         folder = dest / tid
-        files, deleted = _changes(arm_dir, base, tid)
+        snap = arm_dir / ".bench" / "snapshots" / tid / f"turn-{turns}"
+        if snap.is_dir():
+            src = snap
+            files, deleted, later = _handed_off(arm_dir, base, tid, snap)
+            if later:
+                warnings.append(f"{tid}: {len(later)} file(s) changed after its hand-off (a later task's edits) are not graded: "
+                                f"{', '.join(later[:5])}")
+        else:
+            src = arm_dir / "tasks" / tid
+            files, deleted = _changes(arm_dir, base, tid)
+            if (tid, turns) in closed:
+                warnings.append(f"{tid}: next.py kept no copy at its hand-off; graded from the final tree, which a later task "
+                                "may have changed")
         if deleted:
             warnings.append(f"{tid}: {len(deleted)} deleted file(s) cannot be replayed and stay in the graded tree: {', '.join(deleted[:5])}")
         if (tid, 1) not in opened:
@@ -290,14 +319,14 @@ def build_overlays(manifest: dict, arm: str, items: list[dict], state: dict, des
             if d["task"] == tid and isinstance(d.get("commit"), dict) and "error" in d["commit"]:
                 warnings.append(f"{tid} turn {d['turn']}: next.py could not commit the task folder ({d['commit']['error']})")
         if turns == 1:
-            _copy(files, arm_dir / "tasks" / tid, folder)
+            _copy(files, src, folder)
         else:
-            snap = arm_dir / ".bench" / "snapshots" / tid / "turn-1"
-            if snap.is_dir():
-                _copy(_tree_files(snap), snap, folder / "turn-1")
-                _copy(files, arm_dir / "tasks" / tid, folder / f"turn-{turns}")
+            first = arm_dir / ".bench" / "snapshots" / tid / "turn-1"
+            if first.is_dir():
+                _copy(_tree_files(first), first, folder / "turn-1")
+                _copy(files, src, folder / f"turn-{turns}")
             else:  # turn 2 was never handed out: the final tree is turn 1's, and the later turns change nothing
-                _copy(files, arm_dir / "tasks" / tid, folder / "turn-1")
+                _copy(files, src, folder / "turn-1")
                 warnings.append(f"{tid}: turn 2 never handed out; the tree is graded as turn 1 with no turn 2 work")
             for k in range(2, turns + 1):
                 (folder / f"turn-{k}").mkdir(parents=True, exist_ok=True)

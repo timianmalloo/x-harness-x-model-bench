@@ -30,7 +30,7 @@
  {
   "name": "IN5: a two-turn task's turn 1 is graded on the final tree instead of the turn-1 snapshot",
   "file": "src/harness_bench/interactive.py",
-  "find": "_copy(_tree_files(snap), snap, folder / \"turn-1\")",
+  "find": "_copy(_tree_files(first), first, folder / \"turn-1\")",
   "replace": "_copy(files, arm_dir / \"tasks\" / tid, folder / \"turn-1\")",
   "tests": ["tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares"]
  },
@@ -187,5 +187,40 @@
   "find": "            what.append(\"base tree\")",
   "replace": "            pass",
   "tests": ["tests/test_interactive.py::test_a_task_changed_since_prepare_regrades_only_when_what_the_session_saw_is_unchanged"]
+ },
+ {
+  "name": "IN28: next.py copies only a two-turn task's turn 1 at the hand-off (TASK-ISO-A)",
+  "file": "src/harness_bench/interactive_next.py",
+  "find": "shutil.copytree(ARM / \"tasks\" / item[\"task\"], dest, ignore=SKIP)",
+  "replace": "item[\"turn\"] < item[\"turns\"] and shutil.copytree(ARM / \"tasks\" / item[\"task\"], dest, ignore=SKIP)",
+  "tests": ["tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares"]
+ },
+ {
+  "name": "IN29: collect grades the final tree although the hand-off copy exists (TASK-ISO-A)",
+  "file": "src/harness_bench/interactive.py",
+  "find": "        if snap.is_dir():\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares"]
+ },
+ {
+  "name": "IN30: a later task's edit to a handed-off folder is not reported (TASK-ISO-A)",
+  "file": "src/harness_bench/interactive.py",
+  "find": "            if later:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares"]
+ },
+ {
+  "name": "IN31: a closed task graded from the final tree is not reported (TASK-ISO-A)",
+  "file": "src/harness_bench/interactive.py",
+  "find": "            if (tid, turns) in closed:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_interactive.py::test_a_task_closed_with_no_hand_off_copy_is_graded_from_the_final_tree_with_a_warning"]
+ },
+ {
+  "name": "IN32: a base file the hand-off copy lacks is not a deletion (TASK-ISO-A)",
+  "file": "src/harness_bench/interactive.py",
+  "find": "for rel in listed if",
+  "replace": "for rel in [] if",
+  "tests": ["tests/test_interactive.py::test_a_task_closed_with_no_hand_off_copy_is_graded_from_the_final_tree_with_a_warning"]
  }
 ]

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-16T19:26:38Z",
+  "generated": "2026-10-16T21:53:59Z",
   "audit": [
     {
       "actor": null,
@@ -189973,6 +189973,21 @@ window.AUDIT_DATA = {
       "datetime": "2026-10-16T19:26:38Z",
       "session": "prompt-log",
       "prompt": "fix the headless cells line-ending split",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M53BA9GVZDVCPATQTDYX9WXX",
+      "shortname": "fix the TASK-ISO-A later-edit gap",
+      "datetime": "2026-10-16T21:53:59Z",
+      "session": "prompt-log",
+      "prompt": "fix the TASK-ISO-A later-edit gap",
       "summary": "prompt logged for reuse",
       "kind": "prompt",
       "skill": null,

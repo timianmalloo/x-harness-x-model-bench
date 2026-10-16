@@ -201,8 +201,11 @@ REPO = C:\Projects\x-harness-x-model-bench
      arm with --record &lt;path&gt;. Never guess a path: if you cannot tell, say so and leave tokens not recorded.
 
 2. Read, for each RUN and arm: RUN\interactive-report.md, RUN\collect\ARM\summary.json, the arm's task prompts
-   (ARM\.bench\queue.json) and its work against the arm's base, never HEAD: next.py commits each finished task
-   (git -C ARM diff BASE -- tasks/&lt;ID&gt;, BASE = RUN\interactive.json arms.ARM.base, plus new files).
+   (ARM\.bench\queue.json) and its work as handed off: ARM\.bench\snapshots\&lt;ID&gt;\turn-&lt;last turn&gt;, which is
+   what was graded. Where there is no such folder, read the work against the arm's base, never HEAD, because
+   next.py commits each finished task (git -C ARM diff BASE -- tasks/&lt;ID&gt;, BASE = RUN\interactive.json
+   arms.ARM.base, plus new files). A "changed after its hand-off" warning names a later task's edits, which were
+   not graded.
 
 3. Analyse:
    - Results: hidden tests pass and property_check_pass on the 10 primary tasks, SV1 on its own row.
@@ -234,8 +237,9 @@ REPO = C:\Projects\x-harness-x-model-bench
     <ul style="margin:0">
       <li><strong>Graded the same way as a headless cell.</strong> Pass/fail and each property check come from
         the bench's own graders. Each task folder is replayed onto a fresh copy of its base tree, the path
-        <code>bench discriminate</code> uses; the two-turn tasks are graded on the turn-1 snapshot
-        <code>next.py</code> takes. Drift is the bench's change-set drift (changed lines outside each task's blast
+        <code>bench discriminate</code> uses. Each task is graded as <code>next.py</code> copied it at its
+        hand-off, so a later task's edit to its folder is not graded and is reported as a warning. The two-turn
+        tasks are graded on both turns' copies. Drift is the bench's change-set drift (changed lines outside each task's blast
         radius). The catalog's process metrics and attention drift need a record per task and are not graded here.</li>
       <li><strong>Tokens and tool calls per task</strong> come from each session's record, split at the
         <code>next.py</code> calls. The report that opens at the end of a session read the record while the session

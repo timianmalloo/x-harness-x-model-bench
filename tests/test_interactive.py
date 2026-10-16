@@ -79,9 +79,15 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
                     shutil.copyfile(path, arm_dir / "tasks" / TASK / rel)
                 out = _next(arm_dir)
                 assert ("TASK 2 of 2" in out) if turn == 1 else out.startswith("ALL DONE")
-            assert (arm_dir / ".bench" / "snapshots" / TASK / "turn-1").is_dir()
+            assert all((arm_dir / ".bench" / "snapshots" / TASK / f"turn-{n}").is_dir() for n in (1, 2))
             done = json.loads((arm_dir / ".bench" / "state.json").read_text(encoding="utf-8"))["done"]
-            assert all(re.fullmatch(r"[0-9a-f]{40}", d["commit"]) for d in done), done  # graded below from the commits
+            assert all(re.fullmatch(r"[0-9a-f]{40}", d["commit"]) for d in done), done
+            # TASK-ISO-A: a later task rewrites this one after its hand-off (the other role's turn-2 files); the grade is
+            # the task as handed off, and the report names the later edit
+            other_role = solutions["on" if arm == "off" else "off"]
+            later = task_dir / "oracle" / "solutions" / other_role / "turn-2"
+            for path in (p for p in later.rglob("*") if p.is_file()):
+                shutil.copyfile(path, arm_dir / "tasks" / TASK / path.relative_to(later))
             if arm == "on":
                 (arm_dir / "notes.md").write_text("work outside the task folders\n", encoding="utf-8")
             summary = interactive.collect(root, base / "out" / "int-t", arm, "claude-code", base / "runs", base / "cells",
@@ -89,6 +95,7 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
             expected = mt.TURNS_EXPECTED[role]
             got = {k: summary["scores"][TASK][k] for k in expected}
             assert got == expected, (arm, role, summary["warnings"])
+            assert any(w.startswith(f"{TASK}: ") and "after its hand-off" in w for w in summary["warnings"]), summary["warnings"]
             assert set(interactive.DRIFT_SCORES) <= set(summary["scores"][TASK]), summary["scores"][TASK]
             assert summary["outside_task_folders"] == (["notes.md"] if arm == "on" else [])
             assert set(summary["minutes"]) == {f"{TASK}|1", f"{TASK}|2"}
@@ -109,6 +116,32 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
         assert re.search(rf"\| {TASK} \| \S+ \| 1 \| [\d.]+ \| \S+ \| 0 \| [\d.]+ \|", text), text
     finally:
         shutil.rmtree(base, onexc=archive.make_writable)
+
+
+def test_a_task_closed_with_no_hand_off_copy_is_graded_from_the_final_tree_with_a_warning(tmp_path):
+    """TASK-ISO-A: an arm whose next.py kept no copy at the hand-off (run 20261015T1529's copied only a two-turn task's
+    turn 1) is graded from the final tree and says so; the item still open at the end has nothing after it, so no
+    warning. A file the hand-off copy lacks is a deletion the replay cannot make."""
+    arm = tmp_path / "arm"
+    for tid in ("A", "B", "C"):
+        (arm / "tasks" / tid).mkdir(parents=True)
+        (arm / "tasks" / tid / "f.txt").write_text("base\n", encoding="utf-8")
+    for args in (["init", "-q", "-b", "main"], ["add", "-A"], ["commit", "-q", "-m", "base"]):
+        gitsafe.git(args, cwd=arm, timeout=60, identity=True)
+    base = gitsafe.git(["rev-parse", "HEAD"], cwd=arm, timeout=60).stdout.strip()
+    (arm / "tasks" / "C" / "g.txt").write_text("C's work\n", encoding="utf-8")
+    (arm / "tasks" / "C" / "f.txt").unlink()
+    (arm / ".bench" / "snapshots" / "C" / "turn-1").mkdir(parents=True)  # handed off with f.txt deleted
+    (arm / ".bench" / "snapshots" / "C" / "turn-1" / "g.txt").write_text("C's work\n", encoding="utf-8")
+    manifest = {"tasks": ["A", "B", "C"], "arms": {"off": {"path": str(arm), "base": base}}}
+    items = [{"task": t, "turn": 1, "turns": 1} for t in ("A", "C", "B")]
+    state = {"done": [{"task": "A", "turn": 1}, {"task": "C", "turn": 1}], "open": {"task": "B", "turn": 1}}
+    overlays, warnings = interactive.build_overlays(manifest, "off", items, state, tmp_path / "overlays")
+    assert [w for w in warnings if w.startswith("A: ")] == [
+        "A: next.py kept no copy at its hand-off; graded from the final tree, which a later task may have changed"]
+    assert not [w for w in warnings if w.startswith("B: ")]
+    assert [w for w in warnings if w.startswith("C: ")] == ["C: 1 deleted file(s) cannot be replayed and stay in the graded tree: f.txt"]
+    assert (overlays["C"] / "g.txt").read_text(encoding="utf-8") == "C's work\n"
 
 
 def test_next_status_reprints_without_advancing_and_done_stays_done(tmp_path):
