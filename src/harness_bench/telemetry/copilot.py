@@ -165,12 +165,21 @@ def read(path: Path) -> Extraction:
     hooks: dict[str, list] = {}  # hookInvocationId -> [n, hookType, start, end, ok, detail]
     skills: dict[str, list] = {}  # toolCallId of a `skill` call -> [n, skill, start, end, ok]
     tool_tokens: int | None = None  # A7: the tool catalogue's size, in tokens, from the first usage checkpoint that states it
+    usage_records: list[tuple[int, str | None, dict]] = []  # (line, row timestamp, data.usage) of each session.usage_record
+    model_changes: list[tuple[int, str]] = []  # (line, newModel) of each session.model_change
+    first_call_line: int | None = None  # the first line that shows a model call began
 
     for n, row in rows(path, ex):
         kind = row.get("type")
         data = as_dict(row.get("data"))
         stamp = as_str(row.get("timestamp"))
 
+        if first_call_line is None and kind in ("session.usage_record", "assistant.turn_start", "assistant.message"):
+            first_call_line = n
+        if kind == "session.usage_record":
+            usage_records.append((n, stamp, as_dict(data.get("usage"))))
+        elif kind == "session.model_change" and (new_model := as_str(data.get("newModel"))):
+            model_changes.append((n, new_model))
         if kind == "assistant.message":
             messages.append((n, data))
         if kind == "session.start":
@@ -276,12 +285,16 @@ def read(path: Path) -> Extraction:
     for n, data in messages:
         if (call := as_str(data.get("apiCallId"))) is not None:
             line_by_call.setdefault(call, n)
-    ex.served = _served(start_data or {}, logs, pairs)
+    ex.served = _served(start_data or {}, logs, pairs, _served_model(usage_records, model_changes, first_call_line))
     ex.reasoning = _reasoning(messages, pairs, line_by_call)
     ex.prompt_parts = _prompt_parts(logs, pairs, tool_tokens)
     ex.harness_events = sorted([HarnessEvent(h[0], "hook", h[1], h[2], h[3], h[4], h[5]) for h in hooks.values()]
                                + [HarnessEvent(s[0], "skill_load", s[1], s[2], s[3], s[4], None) for s in skills.values()],
                                key=lambda e: e.native_ordinal)
+
+    if usage_records:  # one row per call; the shutdown summary would count the same calls again
+        ex.model_calls = [_usage_call(ex, n, stamp, usage) for n, stamp, usage in usage_records]
+        return ex
 
     if last_shutdown is None:
         ex.missing.append(MissingField(0, "session.shutdown"))
@@ -320,7 +333,49 @@ def read(path: Path) -> Extraction:
     return ex
 
 
+def _usage_call(ex: Extraction, n: int, stamp: str | None, usage: dict) -> ModelCall:
+    """One ModelCall from a `session.usage_record` (verified on interactive records of 2026-10-15): `inputTokens` is the
+    whole prompt and includes `cacheReadTokens` and `cacheWriteTokens`, so uncached = input - read - write. A bucket
+    the record lacks is None (HB-TEL-001), never 0; with no cache-write figure the uncached share cannot be separated
+    either. `start` and `end` are the row's own timestamp."""
+    def bucket(key: str) -> int | None:
+        value = usage.get(key)
+        if is_count(value):
+            return value
+        ex.missing.append(MissingField(n, key))
+        return None
+
+    total, read, write = bucket("inputTokens"), bucket("cacheReadTokens"), bucket("cacheWriteTokens")
+    output, reasoning = bucket("outputTokens"), bucket("reasoningTokens")
+    uncached = None
+    if total is not None and read is not None and write is not None:
+        if total >= read + write:
+            uncached = total - read - write
+        else:
+            ex.missing.append(MissingField(n, "input_tokens"))
+    return ModelCall(n, as_str(usage.get("model")) or "unknown", uncached, read, write, output, reasoning, stamp, stamp)
+
+
+def _served_model(usage_records: list[tuple[int, str | None, dict]], changes: list[tuple[int, str]],
+                  first_call_line: int | None) -> tuple[str, str] | None:
+    """(model, source) the session served: the model on the usage records (the most used if they disagree, and the
+    source says so), else the last `session.model_change` before the first model call, else None (selectedModel)."""
+    used: dict[str, int] = {}
+    for _, _, usage in usage_records:
+        if model := as_str(usage.get("model")):
+            used[model] = used.get(model, 0) + 1
+    if used:
+        best = max(used, key=lambda m: used[m])
+        source = f"{_SESSION_FILE}:session.usage_record.usage.model"
+        if len(used) > 1:
+            source += " (usage records disagree: " + ", ".join(f"{m} x{c}" for m, c in used.items()) + ")"
+        return best, source
+    before = [m for n, m in changes if first_call_line is None or n < first_call_line]
+    return (before[-1], f"{_SESSION_FILE}:session.model_change.newModel") if before else None
+
+
 _UNSUPPORTED = not_recorded("unsupported events.version")[1]
+_SESSION_FILE = "events.jsonl"
 _NO_LOG = "no debug process log in the cell home"
 _SESSION = "events.jsonl:session.start"
 _DEBUG = "debug-log"
@@ -416,7 +471,7 @@ def _session_value(data: dict, key: str):
     return value if value is None or isinstance(value, str) else not_recorded(f"session.start.{key} is not a string")
 
 
-def _served(start: dict, logs: list[Path], pairs: list[dict]) -> tuple[ServedSettings, ...]:
+def _served(start: dict, logs: list[Path], pairs: list[dict], served_model: tuple[str, str] | None = None) -> tuple[ServedSettings, ...]:
     api_reason = _NO_LOG if not logs else "the session record names no API model" if pairs else \
         "no model response in the debug process log"
     session = ServedSettings(
@@ -427,6 +482,8 @@ def _served(start: dict, logs: list[Path], pairs: list[dict]) -> tuple[ServedSet
         reasoning_summary=not_recorded("the session record does not show it"),
         sources={"model_served": f"{_SESSION}.selectedModel", "model_api": _SESSION, "effort": f"{_SESSION}.reasoningEffort",
                  "context_tokens": _SESSION, "context_tier": f"{_SESSION}.contextTier", "reasoning_summary": _SESSION})
+    if served_model is not None and (served_model[0] != start.get("selectedModel") or "disagree" in served_model[1]):
+        session = replace(session, model_served=served_model[0], sources={**session.sources, "model_served": served_model[1]})
     seen = dict.fromkeys((p["model"], p["api_model"], p["effort"], p["summary"]) for p in pairs)
 
     def shown(value: str | None, what: str):
@@ -581,7 +638,12 @@ def tool_inputs(path: Path) -> ProcessTrace:
     call_ids: dict[str, int] = {}
     returned: dict[str, int] = {}
     chars = messages = 0
+    started: dict[str, int] = {}  # toolCallId -> the tool.execution_start line, the ordinal `read()` gives that ToolCall
     for n, row in rows(path, ex):
+        if row.get("type") == "tool.execution_start":
+            if isinstance(call_id := as_dict(row.get("data")).get("toolCallId"), str):
+                started.setdefault(call_id, n)
+            continue
         if row.get("type") == "tool.execution_complete":
             data = as_dict(row.get("data"))
             content = as_dict(data.get("result")).get("content")
@@ -616,6 +678,8 @@ def tool_inputs(path: Path) -> ProcessTrace:
                 call_ids.setdefault(req["toolCallId"], len(calls))
             calls.append(ToolInput(n, name, paths, command, name in WRITE_TOOLS))
     for call_id, i in call_ids.items():
+        if call_id in started:  # one message can request several calls; the start line is unique per call
+            calls[i] = replace(calls[i], native_ordinal=started[call_id])
         if call_id in returned:
             calls[i] = replace(calls[i], bytes_returned=returned[call_id])
     lost = ex.truncated or ex.malformed_lines
