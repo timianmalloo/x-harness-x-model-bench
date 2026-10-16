@@ -238,5 +238,77 @@
   "tests": [
    "tests/test_telemetry_copilot.py::test_tools_advertised_is_an_empty_list_when_the_checkpoint_lists_no_tools"
   ]
+ },
+ {
+  "name": "usage record: uncached input forgets the cache write",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "uncached = total - read - write",
+  "replace": "uncached = total - read",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_usage_records_give_one_model_call_each_with_the_events_own_buckets"
+  ]
+ },
+ {
+  "name": "usage records are also summarised by the shutdown row",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "for n, stamp, usage in usage_records]\n        return ex\n",
+  "replace": "for n, stamp, usage in usage_records]\n",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_usage_records_are_not_added_to_the_shutdown_summary"
+  ]
+ },
+ {
+  "name": "usage record: a missing bucket reads as 0",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "ex.missing.append(MissingField(n, key))\n        return None\n\n    total",
+  "replace": "ex.missing.append(MissingField(n, key))\n        return 0\n\n    total",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_a_bucket_the_usage_record_lacks_is_not_recorded_never_zero"
+  ]
+ },
+ {
+  "name": "served model keeps the startup selection",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "if served_model is not None and (",
+  "replace": "if False and (",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_served_model_is_the_usage_records_not_the_startup_selection"
+  ]
+ },
+ {
+  "name": "served model on disagreement is the least used",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "best = max(used, key=lambda m: used[m])",
+  "replace": "best = min(used, key=lambda m: used[m])",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_served_model_is_the_most_used_when_usage_records_disagree_and_says_so"
+  ]
+ },
+ {
+  "name": "served model disagreement is not exposed",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "if len(used) > 1:",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_served_model_is_the_most_used_when_usage_records_disagree_and_says_so"
+  ]
+ },
+ {
+  "name": "model change after the first model call counts",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "first_call_line is None or n < first_call_line",
+  "replace": "True",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_served_model_without_usage_is_the_last_model_change_before_the_first_model_call"
+  ]
+ },
+ {
+  "name": "tool input keeps the assistant message line as ordinal",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "calls[i] = replace(calls[i], native_ordinal=started[call_id])",
+  "replace": "pass",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_tool_input_and_tool_call_share_the_execution_start_line_as_ordinal"
+  ]
  }
 ]

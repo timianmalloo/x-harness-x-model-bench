@@ -730,3 +730,116 @@ def test_tool_inputs_text_count_is_not_recorded_when_the_record_lost_lines(tmp_p
     record.write_text(json.dumps({"type": "assistant.message", "data": {"content": "hi"}}) + "\n{not json\n", encoding="utf-8")
     trace = copilot.tool_inputs(record)
     assert (trace.assistant_chars, trace.assistant_messages) == (None, None)
+
+
+# Interactive records: one `session.usage_record` per model call, the model picked after `session.start` -----------
+
+def _usage(ts, model="gpt-6-sol", inp=1000, read=900, write=60, out=40, reasoning=7, drop=()):
+    usage = {"model": model, "inputTokens": inp, "outputTokens": out, "cacheReadTokens": read, "cacheWriteTokens": write,
+             "reasoningTokens": reasoning, "duration": 1500, "apiCallId": "call-x"}
+    for key in drop:
+        usage.pop(key)
+    return _row("session.usage_record", {"usage": usage}, ts=ts)
+
+
+def _tool(call_id, ts):
+    return [_row("tool.execution_start", {"toolCallId": call_id, "toolName": "view"}, ts=ts),
+            _row("tool.execution_complete", {"toolCallId": call_id, "success": True}, ts=ts)]
+
+
+def _model_change(new, source="model_picker", ts="2026-01-01T00:00:00.500Z"):
+    return _row("session.model_change", {"source": source, "newModel": new, "previousModel": "gpt-5-x"}, ts=ts)
+
+
+def _start_with(selected):
+    return _row("session.start", {"sessionId": "syn-sid", "version": 1, "selectedModel": selected})
+
+
+def test_usage_records_give_one_model_call_each_with_the_events_own_buckets(tmp_path):
+    path = _write(tmp_path, [_start(), _usage("2026-01-01T00:00:05.000Z"),
+                             _usage("2026-01-01T00:00:09.000Z", inp=2000, read=1000, write=0, out=10, reasoning=0)])
+    ex = copilot.read(path)
+    assert [(c.uncached_input, c.cache_read, c.cache_write, c.output, c.reasoning) for c in ex.model_calls] == [
+        (40, 900, 60, 40, 7), (1000, 1000, 0, 10, 0)]  # inputTokens includes both cache buckets
+    assert [c.start for c in ex.model_calls] == ["2026-01-01T00:00:05.000Z", "2026-01-01T00:00:09.000Z"]
+    assert all(c.requests == 1 and c.model == "gpt-6-sol" for c in ex.model_calls)
+    assert ex.missing == []
+
+
+def test_usage_records_are_not_added_to_the_shutdown_summary(tmp_path):
+    lines = [_start(), _usage("2026-01-01T00:00:05.000Z"), _usage("2026-01-01T00:00:06.000Z"), _shutdown(_model_metrics(count=2))]
+    calls = copilot.read(_write(tmp_path, lines)).model_calls
+    assert len(calls) == 2 and sum(c.requests for c in calls) == 2  # not 2 usage rows plus the summary row
+
+
+def test_a_bucket_the_usage_record_lacks_is_not_recorded_never_zero(tmp_path):
+    path = _write(tmp_path, [_start(), _usage("2026-01-01T00:00:05.000Z", drop=("reasoningTokens", "cacheWriteTokens"))])
+    ex = copilot.read(path)
+    call = ex.model_calls[0]
+    assert call.reasoning is None and call.cache_write is None and call.uncached_input is None
+    assert call.cache_read == 900 and call.output == 40
+    assert {m.field for m in ex.missing} == {"reasoningTokens", "cacheWriteTokens"}
+
+
+def test_usage_records_are_placed_among_tool_calls_by_ordinal(tmp_path):
+    from harness_bench import interactive
+    lines = [_start(), *_tool("t1", "2026-01-01T00:00:02.000Z"), _usage("2026-01-01T00:00:03.000Z"),
+             *_tool("t2", "2026-01-01T00:00:04.000Z"), _usage("2026-01-01T00:00:05.000Z", out=11)]
+    ex = copilot.read(_write(tmp_path, lines))
+    segs = interactive.split(ex, [6], ["task A"])  # a next.py call at line 6, between the two usage records
+    assert segs["setup"]["output"] == 40 and segs["task A"]["output"] == 11
+
+
+def test_served_model_is_the_usage_records_not_the_startup_selection(tmp_path):
+    ex = copilot.read(_write(tmp_path, [_start_with("gpt-5-x"), _model_change("other-model"), _usage("2026-01-01T00:00:05.000Z")]))
+    assert ex.served[0].model_served == "gpt-6-sol"
+    assert "usage_record" in ex.served[0].sources["model_served"]
+
+
+def test_served_model_is_the_most_used_when_usage_records_disagree_and_says_so(tmp_path):
+    lines = [_start(), _usage("2026-01-01T00:00:05.000Z"), _usage("2026-01-01T00:00:06.000Z"),
+             _usage("2026-01-01T00:00:07.000Z", model="other-model")]
+    served = copilot.read(_write(tmp_path, lines)).served[0]
+    assert served.model_served == "gpt-6-sol"
+    assert "disagree" in served.sources["model_served"] and "other-model" in served.sources["model_served"]
+
+
+def test_served_model_without_usage_is_the_last_model_change_before_the_first_model_call(tmp_path):
+    lines = [_start_with("gpt-5-x"), _model_change("gpt-6-sol"), _row("assistant.turn_start", {}, ts="2026-01-01T00:00:03.000Z"),
+             _model_change("late-model", ts="2026-01-01T00:00:04.000Z"), _shutdown(_model_metrics())]
+    assert copilot.read(_write(tmp_path, lines)).served[0].model_served == "gpt-6-sol"
+
+
+def test_served_model_with_no_change_or_usage_stays_the_selected_model(tmp_path):
+    ex = copilot.read(_write(tmp_path, [_start_with("gpt-5-x"), _shutdown(_model_metrics())]))
+    assert ex.served[0].model_served == "gpt-5-x"
+
+
+def test_hook_events_are_exposed_by_type_and_record_no_command(tmp_path):
+    lines = [_start(), _row("hook.start", {"hookInvocationId": "h1", "hookType": "preToolUse", "input": {"sessionId": "s"}}),
+             _row("hook.end", {"hookInvocationId": "h1", "hookType": "preToolUse", "success": True})]
+    events = copilot.read(_write(tmp_path, lines)).harness_events
+    assert [(e.event, e.name, e.ok) for e in events] == [("hook", "preToolUse", True)]
+
+
+def test_tool_input_and_tool_call_share_the_execution_start_line_as_ordinal(tmp_path):
+    def request(call_id, command):
+        return {"toolCallId": call_id, "name": "powershell", "arguments": {"command": command}}
+    lines = [_start(),
+             _row("assistant.message", {"content": "", "toolRequests": [request("a", "one"), request("b", "two")]}),
+             _row("tool.execution_start", {"toolCallId": "a", "toolName": "powershell"}, ts="2026-01-01T00:00:02.000Z"),
+             _row("tool.execution_start", {"toolCallId": "b", "toolName": "powershell"}, ts="2026-01-01T00:00:03.000Z"),
+             _row("tool.execution_complete", {"toolCallId": "a", "success": True}, ts="2026-01-01T00:00:04.000Z"),
+             _row("tool.execution_complete", {"toolCallId": "b", "success": False}, ts="2026-01-01T00:00:05.000Z")]
+    path = _write(tmp_path, lines)
+    ex, trace = copilot.read(path), copilot.tool_inputs(path)
+    assert [(c.native_ordinal, c.command) for c in trace.calls] == [(3, "one"), (4, "two")]
+    assert [(t.native_ordinal, t.start, t.end, t.ok) for t in ex.tool_calls] == [
+        (3, "2026-01-01T00:00:02.000Z", "2026-01-01T00:00:04.000Z", True),
+        (4, "2026-01-01T00:00:03.000Z", "2026-01-01T00:00:05.000Z", False)]
+
+
+def test_a_tool_request_that_never_started_keeps_its_message_line(tmp_path):
+    lines = [_start(), _row("assistant.message", {"content": "", "toolRequests": [
+        {"toolCallId": "z", "name": "view", "arguments": {"path": "p"}}]})]
+    assert [c.native_ordinal for c in copilot.tool_inputs(_write(tmp_path, lines)).calls] == [2]
