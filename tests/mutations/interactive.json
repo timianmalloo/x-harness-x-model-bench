@@ -100,8 +100,8 @@
  {
   "name": "IN15: a record matches every arm it mentions, not the arm it was launched in",
   "file": "src/harness_bench/interactive.py",
-  "find": "matched = launched is not None and _same_dir(launched, arm_dir)",
-  "replace": "matched = any(f in head.lower() for f in forms)",
+  "find": "return launched is not None and _same_dir(launched, arm_dir)",
+  "replace": "return any(f in head.lower() for f in _path_forms(arm_dir))",
   "tests": ["tests/test_interactive.py::test_a_record_belongs_to_the_arm_it_was_launched_in_not_to_every_arm_it_mentions"]
  },
  {
@@ -159,5 +159,26 @@
   "find": "\"copilot\": \"copilotVersion\"",
   "replace": "\"copilot\": \"version\"",
   "tests": ["tests/test_interactive.py::test_the_cli_build_is_read_per_arm_and_a_difference_between_the_arms_is_a_warning"]
+ },
+ {
+  "name": "IN24: a refresh re-reads a kept record launched in another folder",
+  "file": "src/harness_bench/interactive.py",
+  "find": "known = [r for r in listed if _launched_in(r, Path(manifest[\"arms\"][arm][\"path\"]))]",
+  "replace": "known = listed",
+  "tests": ["tests/test_interactive.py::test_gather_rereads_the_records_the_grading_found_and_searches_only_when_it_found_none"]
+ },
+ {
+  "name": "IN25: a changed prompt is not a change to what the session saw",
+  "file": "src/harness_bench/interactive.py",
+  "find": "if [i[\"prompt\"] for i in _items(root, [tid])] != [i[\"prompt\"] for i in items if i[\"task\"] == tid]:",
+  "replace": "if False:",
+  "tests": ["tests/test_interactive.py::test_a_task_changed_since_prepare_regrades_only_when_what_the_session_saw_is_unchanged"]
+ },
+ {
+  "name": "IN26: a changed base tree is not a change to what the session saw",
+  "file": "src/harness_bench/interactive.py",
+  "find": "            what.append(\"base tree\")",
+  "replace": "            pass",
+  "tests": ["tests/test_interactive.py::test_a_task_changed_since_prepare_regrades_only_when_what_the_session_saw_is_unchanged"]
  }
 ]

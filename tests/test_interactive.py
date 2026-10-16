@@ -304,17 +304,46 @@ def test_harness_list_takes_commas_spaces_and_the_claude_alias_and_refuses_an_un
 
 
 def test_gather_rereads_the_records_the_grading_found_and_searches_only_when_it_found_none(monkeypatch, tmp_path):
-    run = tmp_path / "run"
+    """A record the grading kept is re-read only if it was launched in the arm. Run int-copilot-20261015T1529 was graded
+    before REC-ATTR-A's fix: its off arm kept the on session's record, and a refresh re-read and summed both."""
+    run, arm_dir = tmp_path / "run", tmp_path / "run" / "on"
     (run / "collect" / "on").mkdir(parents=True)
-    (run / interactive.MANIFEST).write_text(json.dumps({"schema": interactive.SCHEMA, "harness": "codex"}), encoding="utf-8")
-    known = tmp_path / "rollout-known.jsonl"
-    known.write_text("", encoding="utf-8")
+    (run / interactive.MANIFEST).write_text(json.dumps({"schema": interactive.SCHEMA, "harness": "codex",
+                                                        "arms": {"on": {"path": str(arm_dir)}}}), encoding="utf-8")
+    known, other = tmp_path / "rollout-known.jsonl", tmp_path / "rollout-other.jsonl"
+    known.write_text(json.dumps({"payload": {"cwd": str(arm_dir)}}) + "\n", encoding="utf-8")
+    other.write_text(json.dumps({"payload": {"cwd": str(tmp_path / "run" / "off")}, "text": str(arm_dir)}) + "\n", encoding="utf-8")
     read = []
     monkeypatch.setattr(interactive, "read_session", lambda manifest, arm, harness, records: (read.append(records), (None, []))[1])
-    for session, expected in (({"records": [str(known)]}, [known]), (None, None)):
+    for session, expected in (({"records": [str(known), str(other)]}, [known]), ({"records": [str(other)]}, None), (None, None)):
         (run / "collect" / "on" / "summary.json").write_text(json.dumps({"harness": "codex", "session": session}), encoding="utf-8")
-        interactive.refresh_session(run, "on")
+        refreshed = interactive.refresh_session(run, "on")
         assert read[-1] == expected  # None: read_session searches, as the grading did
+        assert (str(other) in " ".join(refreshed["session_warnings"])) == (session is not None)
+
+
+def test_a_task_changed_since_prepare_regrades_only_when_what_the_session_saw_is_unchanged(monkeypatch):
+    """S2's check was recalibrated after run 20261015T1529 (NOOP-PROBE-A), and the replay refused every run (HB-PRE-007)
+    because the task folder's hash covers the oracle too. A change to what grades a task (oracle, hidden tests) re-grades
+    with a note; a change to what the session saw (its base tree or its prompt) is still refused."""
+    base = CLEAN_PARENT / uuid.uuid4().hex
+    base.mkdir(parents=True)
+    try:
+        root = mt.make_root(base)
+        task_dir = mt.install(root, "disc_turns")
+        _fake_pack(monkeypatch, base / "pack")
+        manifest = interactive.prepare(root, "int-seen", "claude-code", base / "out", [TASK], ("C:/pack", "0" * 40), base / "tools")
+        seen = lambda: interactive.seen_changes(root, manifest, "off", base / "cells" / ".sources", base / "tools" / "upstream")
+        assert seen() == {}
+        oracle = next(p for p in (task_dir / "oracle").rglob("*") if p.is_file())
+        oracle.write_bytes(oracle.read_bytes() + b"\n")
+        assert seen() == {TASK: []}
+        (task_dir / "prompt.md").write_text((task_dir / "prompt.md").read_text(encoding="utf-8") + "And more.\n", encoding="utf-8")
+        assert seen() == {TASK: ["prompt"]}
+        (task_dir / "workspace" / "keep.txt").write_text("changed\n", encoding="utf-8")
+        assert seen() == {TASK: ["base tree", "prompt"]}
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)
 
 
 def test_default_tasks_are_every_lean_task():

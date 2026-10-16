@@ -196,7 +196,8 @@ REPO = C:\Projects\x-harness-x-model-bench
      arm with --record &lt;path&gt;. Never guess a path: if you cannot tell, say so and leave tokens not recorded.
 
 2. Read, for each RUN and arm: RUN\interactive-report.md, RUN\collect\ARM\summary.json, the arm's task prompts
-   (ARM\.bench\queue.json) and its work (git -C ARM diff HEAD -- tasks/&lt;ID&gt;, plus new files).
+   (ARM\.bench\queue.json) and its work against the arm's base, never HEAD: next.py commits each finished task
+   (git -C ARM diff BASE -- tasks/&lt;ID&gt;, BASE = RUN\interactive.json arms.ARM.base, plus new files).
 
 3. Analyse:
    - Results: hidden tests pass and property_check_pass on the 10 primary tasks, SV1 on its own row.

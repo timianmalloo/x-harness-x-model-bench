@@ -30,6 +30,12 @@ summary: >-
 - 2026-10-16 (Leader): one project candidate. NOOP-PROBE-A: S2's `tamper-1` altered the last base64 character,
   where padding bits live, and failed secure apps (the open finding below). It is now controlled. ARM-FAIR-A
   instance 2's leftover global editable installs (`cachetools`, `structlog`) were removed at the operator's request.
+  Re-grading the Claude run after the fix found three more:
+  - The replay's version guard refused every run (HB-PRE-007), because the task hash covers the oracle. This is a
+    GATE-D shape: a guard keyed on more than the invariant it states. It now refuses only when the base tree or the
+    prompt changed (`seen_changes`; mutants IN25 and IN26).
+  - REC-ATTR-A instance 4: the refresh re-read a record list kept by the old matcher.
+  - A CACHE-A instance: the shared task-source cache serves an NG1 base built before the pack-off rule. It is open.
 - 2026-10-15, later (Leader, the follow-up round): one project candidate. REC-ATTR-A: records and task boundaries
   were attributed by a text match. ARM-FAIR-A gains per-arm venvs, a CLI-build warning and tracked-only arm trees.
   Two further fixes were instance-only. Copilot per-call usage rows are now read; they replace the shutdown summary
@@ -897,6 +903,18 @@ summary: >-
 - **Sweep:** done in the fix: the four rings now use one helper. Owed: any other `tempfile.gettempdir()` cache under `tests/` or `tools/` keyed by a literal.
 - **Control:** `tests/ring_cache.py` (merged): the key is the task content plus the builder source (`content_version`), one helper for all four rings. `tests/test_ring_cache.py`: changed task content is not served from an older cache; changed builder code gets a new key; six racing builders share one valid tree with no `.tmp` left. Rung: test. Upgrade trigger: a fifth ring that builds its own cache instead of calling the helper; then a scan test refuses a literal-keyed temp cache in `tests/`.
 - **Status:** `controlled`
+- **Instance `2026-10-16` (the engine's own cache; observed, open):** `workspace.task_source` caches each base under
+  `<sources_root>/<task>/<version[:16]>`. The version is the task folder's content only, not the builder's. On a hit it
+  returns the folder at once, so the X-PACKOFF rule (2026-10-08: remove an upstream's agent instruction files, and
+  refuse with HB-PRE-009 if one is left) never runs on a base built before it. Measured: the shared
+  `C:\Projects\bench-cells\.sources\NG1\4328ddd5e4fec830` (built 2026-10-06) holds `.github/copilot-instructions.md`.
+  The same version built fresh does not, and neither do the 9 other NG1 bases on this machine: each lean run of
+  2026-10-13 and the interactive prepare of 2026-10-15 built its own `.sources`. That shared root serves the
+  interactive replay and `bench discriminate`. No agent runs there, so no score is affected (Inferred: the overlay
+  never changes the file, so drift does not count it). Found when `seen_changes` compared that base with an arm's.
+  No control yet. Proposed: re-run the instruction-file check on a cache hit, or put the builder's source in the key
+  as `ring_cache.content_version` does. Rebuilding the stale entry is the operator's call.
+  Status of the class after this instance: `partially-controlled`.
 
 ### MOD-C: a new model guard starves another guard's seeded variant
 - **Signature:** a slice adds (or removes) a guard or a lift in the TLA+ lifecycle model. The change makes the bad step of a variant seeded by an earlier slice unreachable (or reachable only by the real design), so that variant no longer violates its target, or violates it through a different path. The variant guarded a rule the new slice did not touch.
@@ -2518,6 +2536,12 @@ registers both.*
   IN16), `test_a_next_call_that_handed_out_nothing_is_not_a_task_boundary` (IN17), and the Copilot reader's tests in
   `tests/test_telemetry_copilot.py` (mutants in `tests/mutations/copilot_reader.json`). Rung: test.
 - **Status:** `controlled` (agy is unverified)
+- **Instance 4 `2026-10-16` (observed; fixed):** the fix reached the search but not the refresh. `gather`'s
+  `refresh_session` re-read the record list a grading had kept. Copilot off was graded before the fix and kept the on
+  session's `events.jsonl`, so every refresh summed both sessions again. A kept record is now re-read only if it
+  was launched in the arm (`_launched_in`, shared with `find_records`), and a dropped one is a warning. Test:
+  `test_gather_rereads_the_records_the_grading_found_and_searches_only_when_it_found_none` (mutant IN24). On the
+  real run the off arm now reads one record, and its report names the dropped one.
 
 ### TASK-ISO-A: a later task in one shared session can undo or rewrite an earlier task's graded work (candidate)
 - **Signature:** several tasks share one working tree, and each is graded from the final tree after the last task.

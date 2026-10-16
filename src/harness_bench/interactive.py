@@ -333,9 +333,13 @@ def replay(root: Path, manifest: dict, arm: str, overlays: dict[str, Path], runs
               "repetitions": 1, "combos": [{"id": f"interactive-{arm}", "harness": "synthetic", "model": "synthetic-1"}]}
     bom = config.load_yaml(root / "bench" / "bom.yaml")
     p = plan.build_plan(root, matrix, bom, run_id, {"synthetic": {"version": SYNTHETIC_VERSION}}, parallelism=4, kind="discrimination")
-    stale = sorted(c["task"] for c in p["cells"] if c["task_version"] != manifest["task_versions"][c["task"]])
-    if stale:
-        raise BenchError("HB-PRE-007", f"task(s) changed since prepare, so the base trees differ: {', '.join(stale)}")
+    seen = seen_changes(root, manifest, arm, cells_root / ".sources", upstream_root)
+    refused = {t: what for t, what in seen.items() if what}
+    if refused:
+        raise BenchError("HB-PRE-007", "task(s) changed since prepare in what the session saw: "
+                                       + "; ".join(f"{t} ({', '.join(what)})" for t, what in refused.items()))
+    notes = [f"{t}: changed since prepare only in what grades it (its base tree and prompt are unchanged); graded with the "
+             "current version" for t in seen]
     plan.confirm(run_dir, p)
     cells_root.mkdir(parents=True, exist_ok=True)
     workspace.check_cells_root(cells_root)
@@ -363,7 +367,37 @@ def replay(root: Path, manifest: dict, arm: str, overlays: dict[str, Path], runs
             keep |= set(readiness.recorded_metrics(root, task))
     (grading_id,) = passes
     scores, _pointers = readiness.run_scores(run_dir, grading_id, {c["cell_id"]: c["task"] for c in p["cells"]}, keep)
-    return run_id, scores
+    return run_id, scores, notes
+
+
+def _blob_ids(listing: str, sha_field: int, prefix: str = "") -> dict[str, str]:
+    """path (less `prefix`) -> blob id, from `git ls-files -s -z` (sha field 1) or `git ls-tree -r -z` (field 2)."""
+    rows = (entry.split("\t", 1) for entry in listing.split("\0") if entry)
+    return {path[len(prefix):]: meta.split()[sha_field] for meta, path in rows}
+
+
+def seen_changes(root: Path, manifest: dict, arm: str, sources_root: Path, upstream_root: Path) -> dict[str, list[str]]:
+    """Each task whose folder changed since prepare -> what changed of what the session saw: `base tree` (the current
+    base's blobs against the arm's base commit, both staged by gitsafe from the same files) and `prompt` (the queue's
+    text against the task's). An empty list: only what grades the task changed (its oracle, hidden tests, expectations),
+    so the session's work can be re-graded with the current version (S2's recalibration after run 20261015T1529)."""
+    arm_dir, items, _state = _arm_state(manifest, arm)
+    base = manifest["arms"][arm]["base"]
+    out = {}
+    for tid in manifest["tasks"]:
+        task_dir = root / "tasks" / tid
+        version = plan.task_version_hash(task_dir)
+        if version == manifest["task_versions"][tid]:
+            continue
+        source = workspace.task_source(task_dir, version, sources_root, upstream_root)
+        prefix = f"tasks/{tid}/"
+        what = []
+        if _blob_ids(_git(["ls-files", "-s", "-z"], source), 1) != _blob_ids(_git(["ls-tree", "-r", "-z", base, "--", prefix], arm_dir), 2, prefix):
+            what.append("base tree")
+        if [i["prompt"] for i in _items(root, [tid])] != [i["prompt"] for i in items if i["task"] == tid]:
+            what.append("prompt")
+        out[tid] = what
+    return out
 
 
 # --- collect: the session record -----------------------------------------------------------------------------------
@@ -441,24 +475,29 @@ def find_records(harness: str, arm_dir: Path, since: float, home: Path | None = 
         raise BenchError("HB-USR-002", f"no interactive record location known for {harness!r}; pass --record")
     env, default, pattern = RECORD_HOMES[harness]
     base = Path(os.environ[env]) if env and os.environ.get(env) else (home or Path.home()) / default
-    forms = _path_forms(arm_dir)
     found = []
     for path in base.glob(pattern):
         try:
             if path.stat().st_mtime < since:
                 continue
-            with path.open("rb") as fh:
-                head = fh.read(SCAN_BYTES if path.suffix != ".db" else MAX_DB_SCAN)
         except OSError:
             continue
-        if path.suffix == ".db":
-            matched = any(f in head.lower() for f in forms)
-        else:
-            launched = _launch_dir(head)
-            matched = launched is not None and _same_dir(launched, arm_dir)
-        if matched:
+        if _launched_in(path, arm_dir):
             found.append(path)
     return sorted(found, key=lambda p: p.stat().st_mtime)
+
+
+def _launched_in(path: Path, arm_dir: Path) -> bool:
+    """A JSONL record by the folder it states; an agy db by its prompt's workspace path anywhere in it."""
+    try:
+        with path.open("rb") as fh:
+            head = fh.read(SCAN_BYTES if path.suffix != ".db" else MAX_DB_SCAN)
+    except OSError:
+        return False
+    if path.suffix == ".db":
+        return any(f in head.lower() for f in _path_forms(arm_dir))
+    launched = _launch_dir(head)
+    return launched is not None and _same_dir(launched, arm_dir)
 
 
 def _is_next(command: str | None) -> bool:
@@ -727,7 +766,8 @@ def collect(root: Path, run_root: Path, arm: str, harness: str, runs: Path, cell
     session, session_warnings = read_session(manifest, arm, harness, records)
     if state.get("open") or len(state.get("done", [])) < len(items):
         warnings.append(f"{len(state.get('done', []))} of {len(items)} items finished (next.py never printed ALL DONE)")
-    replay_id, scores = replay(root, manifest, arm, overlays, runs, cells_root, upstream_root)
+    replay_id, scores, notes = replay(root, manifest, arm, overlays, runs, cells_root, upstream_root)
+    warnings += notes
     summary = {"schema": "bench-interactive-summary/1", "run_id": manifest["run_id"], "arm": arm, "harness": harness,
                "collected_at": _now(), "replay_run": replay_id, "scores": scores, "minutes": _minutes(state),
                "outside_task_folders": outside, "session": session, "session_read_at": _now(),
@@ -741,12 +781,18 @@ def refresh_session(run_root: Path, arm: str) -> dict:
     """Re-read a graded arm's session records (after the CLI exited: Copilot writes its usage only then) into its
     summary.json. The records the arm's grading read are re-read; only when it read none is the search run again. A new
     search would also match any later session that named the arm folder, such as the analysis session reading its work
-    (seen in the 2026-10-15 smoke)."""
+    (seen in the 2026-10-15 smoke). A kept record launched in another folder is dropped, with a warning: a grading from
+    before REC-ATTR-A's fix kept it by a mention."""
     manifest = load(run_root)
     path = run_root / "collect" / arm / "summary.json"
     summary = json.loads(path.read_text(encoding="utf-8"))
-    known = [Path(r) for r in (summary["session"] or {}).get("records", []) if Path(r).is_file()]
+    listed = [Path(r) for r in (summary["session"] or {}).get("records", []) if Path(r).is_file()]
+    known = [r for r in listed if _launched_in(r, Path(manifest["arms"][arm]["path"]))]
     summary["session"], summary["session_warnings"] = read_session(manifest, arm, summary["harness"], known or None)
+    dropped = [str(r) for r in listed if r not in known]
+    if dropped:
+        summary["session_warnings"].append(f"{len(dropped)} record(s) the grading read were launched in another folder and "
+                                           f"are no longer read: {', '.join(dropped)}")
     summary["session_read_at"] = _now()
     path.write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     return summary
@@ -877,5 +923,5 @@ def report(run_root: Path, only: str | None = None) -> Path:
 
 
 __all__ = ["ARMS", "PASTE", "build_overlays", "collect", "default_tasks", "find_records", "gather", "harnesses",
-           "latest_pack", "load", "outside_task_folders", "prepare", "read_session", "refresh_session", "replay", "report",
+           "latest_pack", "load", "outside_task_folders", "prepare", "read_session", "refresh_session", "replay", "report", "seen_changes",
            "session_metrics", "split"]
