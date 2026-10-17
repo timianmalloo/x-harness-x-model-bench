@@ -38,7 +38,7 @@ th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); 
 <p>Hook time and failure kinds (2026-10-17):</p>
 <ul><li><strong>Hook seconds.</strong> The report gives the time inside every hook the record times. That covers pack and user-level</li></ul>
 <p>hooks together, so the pack&#x27;s share is on minus off. Only Copilot times every hook, with <code>hook.start</code> and <code>hook.end</code> pairs. In run <code>int-copilot-20261015T1529</code> that was 182.2 s over 250 hooks (on) and 1.1 s over 4 hooks (off). Claude Code keeps no start for a hook, and Codex records none, so both read <code>not recorded</code>, never 0.</p>
-<ul><li><strong>Pack hook seconds.</strong> From pack revision 109, the pack&#x27;s dispatcher times itself. <code>prepare</code> creates</li></ul>
+<ul><li><strong>Pack hook seconds.</strong> From pack revision 110, the pack&#x27;s dispatcher times itself. <code>prepare</code> creates</li></ul>
 <p><code>.git/ai-forward/hook-times.jsonl</code> in both arms, and each dispatch appends one line: host, event, hooks, start, ms and exit. The report sums them for every harness, Claude Code included. The time runs from the dispatcher&#x27;s <code>main()</code> to its exit, so the host&#x27;s <code>git -&gt; sh -&gt; python</code> launch is outside it, and Copilot&#x27;s own hook seconds are the larger figure. A pack-off arm reads 0 dispatches. An arm prepared with an older pack reads <code>not recorded</code>.</p>
 <ul><li><strong>Model and tool seconds.</strong> These use the per-cell views&#x27; rule: the union of the call spans across all of a</li></ul>
 <p>session&#x27;s records. A model call with no start makes model time <code>not recorded</code>, never a partial sum.</p>

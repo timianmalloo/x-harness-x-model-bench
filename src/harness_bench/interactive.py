@@ -67,10 +67,10 @@ RECORD_HOMES = {
 ALIASES = {"claude": "claude-code"}  # what the operator types for a harness -> its bench name
 LEAN_RING = Path("bench") / "rings" / "lean.yaml"  # its BOM subset is the default task list, in queue order
 GRADE = "grade.json"  # .bench/grade.json: the command next.py starts when the last item closes
-# The pack's dispatcher appends one line per hook dispatch here when the file exists (pack revision 109 on; its
+# The pack's dispatcher appends one line per hook dispatch here when the file exists (pack revision 110 on; its
 # dispatch.py docstring). prepare creates it in both arms, so the pack's own hook time is measured on every harness.
 HOOK_TIMES = Path(".git") / "ai-forward" / "hook-times.jsonl"
-HOOK_TIMES_REVISION = 109
+HOOK_TIMES_REVISION = 110  # the published 109 (WT-D, WT-E) does not time its hooks
 # Change-set drift (grade/drift.py; `all_tasks` metrics) graded on the replay. attention_drift and the process metrics
 # read the replay's synthetic record, not the session's, so they are not kept.
 DRIFT_SCORES = ("scope_creep", "drift_task_implied_lines", "drift_machine_lines")

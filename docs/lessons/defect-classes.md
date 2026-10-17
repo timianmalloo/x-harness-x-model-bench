@@ -38,7 +38,7 @@ summary: >-
   - Correction (same day): I first wrote that the other 1,898 ruff hits came from the operator's user-level config.
     That was false. No ruff config exists on the machine; they are the pinned ruff 0.16.5's default rules, run over
     the whole tree. LINT-A below records the class.
-  - Later the same day, the operator's three rulings: REC-UNREAD-A is now controlled (pack revision 109 times its own
+  - Later the same day, the operator's three rulings: REC-UNREAD-A is now controlled (pack revision 110 times its own
     hooks; the report adds model and tool seconds), and LINT-A is controlled by `tests/test_lint.py`.
   - CLN-A instance: stopping a background verification chain left its `pytest -m gate` child running. It held the
     suite lock for about an hour, and a mutant run waited on it until the orphan was found by the lock's pid and
@@ -2237,7 +2237,7 @@ first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two
   `tests/test_interactive.py::test_hook_time_is_summed_where_the_record_times_every_hook_and_not_recorded_where_it_cannot`,
   observed red. Mutants IN35 and IN36 are killed.
 - **Control landed (2026-10-17, operator's ruling "make the pack change"):**
-  - Pack revision 109: `dispatch.py` times itself from `main()` to its exit code. It appends one line to
+  - Pack revision 110: `dispatch.py` times itself from `main()` to its exit code. It appends one line to
     `<git-dir>/ai-forward/hook-times.jsonl`, and only where that file already exists. The pack never creates it.
     The check costs 12 µs per dispatch when the file is absent and 127 µs when present, against a dispatch of about
     155 ms. The pack's test (`test_hook_cost.py::test_a_dispatch_times_itself_only_where_the_git_dir_asks`) was
@@ -2250,12 +2250,24 @@ first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two
     observed red. Mutants IN40 and IN41 are killed.
   - Not measured: the host's launch of the dispatcher, before `main()`. Copilot's own hook rows include it, so the
     gap between the two figures is that launch cost.
-  - End to end (the bench's `install_pack` of revision 109 at `da1b9f3`, the installed Claude `PreToolUse` command
-    run 3 times through its real launcher): 3 timing rows, read as 3 dispatches and 180 ms, tree clean.
-  - Revision 109 had to pass all 18 of the pack's gates on this unprivileged Windows host. That turned up a real
+  - End to end (the bench's `install_pack` of the change at `da1b9f3`, numbered 109 before the rebase, the
+    installed Claude `PreToolUse` command run 3 times through its real launcher): 3 timing rows, read as 3
+    dispatches and 180 ms, tree clean.
+  - Revision 110 had to pass all 18 of the pack's gates on this unprivileged Windows host. That turned up a real
     gap: the pack's `delivery.py` did not treat a Windows junction as a link. The pack's own register records it as
     WIN-LINK-A.
-- **Status:** `controlled`
+- **Correction (2026-10-17, renumber):** the pack change was built as revision 109, but a parallel release took 109
+  (WT-D, WT-E), so it shipped as 110. Left at 109, `HOOK_TIMES_REVISION` would have read the empty file `prepare`
+  creates under the published 109, which never writes it, as a measured 0. The constant is 110. The test's
+  revision-109 case (a file with timing rows) was observed red against the old constant.
+- **Correction (2026-10-17, model seconds never recorded):** the `model seconds` row reads `not recorded` on all six
+  real interactive arms. Every reader stores a model call with start equal to end (`claude_code.py:377`,
+  `codex.py:315`, `copilot.py:361`), and the strict span rule rejects that. The test built its rows with a start
+  before the end, a shape no real reader produces (SPIKE-A's shape: a fixture missing the real input's shape). Tool
+  seconds (286–568 s per arm) and Copilot's hook seconds (182.2 s on, 1.1 s off) were observed correct on the same
+  arms. The model-seconds part stays open until the operator rules on deriving a start (labelled Inferred) or
+  dropping the row.
+- **Status:** `controlled` (hook seconds and pack hook seconds); model seconds open, see the correction above
 
 ### LINT-A: the repo has no lint scope or gate, so a lint result depends on who runs it (candidate)
 - **Signature:** no `[tool.ruff]` and no lint step. `ruff check .` lints everything, vendored task code and the

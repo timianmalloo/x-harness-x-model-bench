@@ -78,7 +78,7 @@ Hook time and failure kinds (2026-10-17):
   hooks together, so the pack's share is on minus off. Only Copilot times every hook, with `hook.start` and
   `hook.end` pairs. In run `int-copilot-20261015T1529` that was 182.2 s over 250 hooks (on) and 1.1 s over 4 hooks
   (off). Claude Code keeps no start for a hook, and Codex records none, so both read `not recorded`, never 0.
-- **Pack hook seconds.** From pack revision 109, the pack's dispatcher times itself. `prepare` creates
+- **Pack hook seconds.** From pack revision 110, the pack's dispatcher times itself. `prepare` creates
   `.git/ai-forward/hook-times.jsonl` in both arms, and each dispatch appends one line: host, event, hooks, start, ms
   and exit. The report sums them for every harness, Claude Code included. The time runs from the dispatcher's
   `main()` to its exit, so the host's `git -> sh -> python` launch is outside it, and Copilot's own hook seconds are

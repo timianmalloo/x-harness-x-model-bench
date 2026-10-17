@@ -104,7 +104,7 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
             other = "on" if arm == "off" else "off"
             assert f"{arm}: property_check_pass" in local and f"{other}: property_check_pass" not in local
             assert ("| pack hook seconds (the pack's dispatcher, self-timed) | not recorded (pack revision 0 does not time "
-                    "its hooks (revision 109 on)) |") in local
+                    "its hooks (revision 110 on)) |") in local
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline and len(graded.read_text().split() if graded.is_file() else []) < 2:
             time.sleep(0.2)
@@ -345,7 +345,7 @@ def test_gather_rereads_the_records_the_grading_found_and_searches_only_when_it_
     run, arm_dir = tmp_path / "run", tmp_path / "run" / "on"
     (run / "collect" / "on").mkdir(parents=True)
     (run / interactive.MANIFEST).write_text(json.dumps({"schema": interactive.SCHEMA, "harness": "codex",
-                                                        "pack_pin": {"source": "s", "commit": "0" * 40, "revision": 109},
+                                                        "pack_pin": {"source": "s", "commit": "0" * 40, "revision": 110},
                                                         "arms": {"on": {"path": str(arm_dir)}}}), encoding="utf-8")
     known, other = tmp_path / "rollout-known.jsonl", tmp_path / "rollout-other.jsonl"
     known.write_text(json.dumps({"payload": {"cwd": str(arm_dir)}}) + "\n", encoding="utf-8")
@@ -456,22 +456,22 @@ def test_hook_time_is_summed_where_the_record_times_every_hook_and_not_recorded_
 
 
 def test_the_packs_self_timed_dispatches_are_summed_and_never_a_partial_sum(tmp_path):
-    """REC-UNREAD-A: Claude Code keeps no hook start, so the pack's dispatcher (revision 109 on) times itself into the
+    """REC-UNREAD-A: Claude Code keeps no hook start, so the pack's dispatcher (revision 110 on) times itself into the
     arm's git dir. An empty file is a measured 0 (no pack hook ran: the pack-off arm); an older pack, a missing file or
     a line that is not a timing row is not recorded."""
     times = tmp_path / interactive.HOOK_TIMES
-    assert interactive.pack_hook_time(tmp_path, 109)["reason"] == "no .git/ai-forward/hook-times.jsonl in the arm"
+    assert interactive.pack_hook_time(tmp_path, 110)["reason"] == "no .git/ai-forward/hook-times.jsonl in the arm"
     times.parent.mkdir(parents=True)
     times.write_text("", encoding="utf-8")
-    assert interactive.pack_hook_time(tmp_path, 109) == {"dispatches": 0, "ms": 0, "reason": None}
+    assert interactive.pack_hook_time(tmp_path, 110) == {"dispatches": 0, "ms": 0, "reason": None}
     rows = [{"host": "claude", "event": "PreToolUse", "hooks": ["a.py"], "start": "t", "ms": ms, "exit": 0} for ms in (150.4, 160.2)]
     times.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
-    assert interactive.pack_hook_time(tmp_path, 109) == {"dispatches": 2, "ms": 311, "reason": None}
-    assert interactive.pack_hook_time(tmp_path, 108) == {
-        "dispatches": None, "ms": None, "reason": "pack revision 108 does not time its hooks (revision 109 on)"}
+    assert interactive.pack_hook_time(tmp_path, 110) == {"dispatches": 2, "ms": 311, "reason": None}
+    assert interactive.pack_hook_time(tmp_path, 109) == {
+        "dispatches": None, "ms": None, "reason": "pack revision 109 does not time its hooks (revision 110 on)"}
     with times.open("a", encoding="utf-8") as f:
         f.write('{"ms": true}\n')
-    assert interactive.pack_hook_time(tmp_path, 109)["ms"] is None
+    assert interactive.pack_hook_time(tmp_path, 110)["ms"] is None
     assert interactive._seconds({"dispatches": 2, "ms": 311, "reason": None}, "ms", "dispatches", "dispatches") == \
         "0.3 s over 2 dispatches"
 
