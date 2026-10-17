@@ -27,7 +27,22 @@ summary: >-
 
 **Status counts:** controlled 14 · partially-controlled 6 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
-- 2026-10-16 (Leader): one project candidate. NOOP-PROBE-A: S2's `tamper-1` altered the last base64 character,
+- 2026-10-17 (Leader, the review's open items): two project candidates and one recurrence.
+  - COUNT-KIND-A: `tool_failures` mixed intended non-zero exits with errors. It is controlled:
+    `tool_failures_exit`, and the Claude Code reader now reads `exit_<N>`.
+  - REC-UNREAD-A: Copilot's records timed every hook, and the report never showed it. Partially controlled: hook
+    seconds are reported for Copilot, while Claude Code needs a pack change.
+  - RADIUS-TEST-A recurred: NG1's `limiter.pyi` stub scored as scope creep. Fixed by a grader rule.
+  - Not defects: SV1's `status_checks` of 1 in Claude Code's arms is the agent's choice (it waited out the job and
+    checked once; the logs and the grader agree).
+  - Correction (same day): I first wrote that the other 1,898 ruff hits came from the operator's user-level config.
+    That was false. No ruff config exists on the machine; they are the pinned ruff 0.16.5's default rules, run over
+    the whole tree. LINT-A below records the class.
+  - Later the same day, the operator's three rulings: REC-UNREAD-A is now controlled (pack revision 109 times its own
+    hooks; the report adds model and tool seconds), and LINT-A is controlled by `tests/test_lint.py`.
+  - CLN-A instance: stopping a background verification chain left its `pytest -m gate` child running. It held the
+    suite lock for about an hour, and a mutant run waited on it until the orphan was found by the lock's pid and
+    ended. NOOP-PROBE-A: S2's `tamper-1` altered the last base64 character,
   where padding bits live, and failed secure apps (the open finding below). It is now controlled. ARM-FAIR-A
   instance 2's leftover global editable installs (`cachetools`, `structlog`) were removed at the operator's request.
   Re-grading the Claude run after the fix found three more:
@@ -2160,6 +2175,98 @@ first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two
 - **Control landed (Coordinator #3, 2026-10-12):** R-DRIFT `58c489ac` (`pack_improvement._matches_blast_radius`
   now calls `_changes.in_radius`; catalog 0.8's task-implied rule, frozen at S4b in `1f506520`) with
   `tests/test_radius_consumers.py`, joined in `d7de17d1`; green on `coord/rerun-c3` (the same named run). Rung: test.
+- **Status:** `controlled`
+- **Recurrence `2026-10-17` (interactive run `int-claude-code-20261015T1529`, both arms, NG1):**
+  - *Instance.* cachetools ships a `.pyi` stub beside every module, plus `py.typed`. Claude added
+    `src/cachetools/limiter.pyi` beside the task's `limiter.py`. The radius names only `limiter.py` and
+    `__init__.py`, so the stub scored as scope creep: 20 lines (on) and 14 (off). This is the same shape as the test
+    file: the radius leaves out a file that the package's own convention asks for.
+  - *Class rule.* Following the test-path precedent, a grader rule fixes it, so no task version is bumped (ADR-0026
+    §5). `_changes.is_stub_of_radius` marks a `.pyi` as task-implied when its `.py` module is inside the radius and
+    the pre-turn tree already holds a stub in that folder. A stub where the package keeps none stays discretionary.
+  - *Measured* (copies of both arms, re-collected): NG1's scope_creep went from 20 to 5 (on; the 5 left are its
+    `pyproject` edit) and from 14 to 0 (off). The other 10 tasks and every `pass_at_1` are unchanged.
+  - *Sweep.* The other radius consumers: `diffstats`, `rework` and `noguess` read `.py` files only, so a `.pyi`
+    never counts there. `pack_improvement.diverted_delivery` compares bytes, not scope. `tool_phases.classify`
+    labels a stub write a non-product write. That is a phase label, not a score, and it is left as is.
+  - *Control.*
+    `tests/test_drift_split.py::test_a_type_stub_of_a_radius_module_is_task_implied_where_the_package_ships_stubs`
+    covers a typed and an untyped base. It was observed red on the unfixed code. Three new mutants in
+    `tests/mutations/rerun-drift.json` are killed, and the older test-path mutant was retargeted.
+  - Status: `controlled`.
+
+### COUNT-KIND-A: a failure count that mixes intended outcomes with errors is read as agent error (candidate)
+- **Signature:** a report counts every tool call whose `ok` is False as a failure. That includes a command that ran
+  and exited non-zero by design, such as a `grep` with no match or a test run expected to fail. The count is then
+  compared across arms as if it were agent error.
+- **Why it survives:** the count is true: each call did fail. Only the reading is wrong, and the report gave no way
+  to split it. Claude Code's reader also set no `outcome_code`, so the kind could not be told even per call.
+- **Instances:**
+  - `2026-10-16` (review of the `int-*-20261015T1529` runs): `tool_failures` was 27 (on) against 10 (off) for Codex,
+    and it was read as noise of unknown kind. Measured after the fix: 26 of Codex's 27 on-arm failures, 18 of
+    Copilot's 22 and 2 of Claude Code's 3 were non-zero exits.
+- **Sweep:** every reader's `outcome_code`. Codex and Copilot already set `exit_<N>`. Claude Code set none, though
+  its failed Bash results open with `Exit code N`. Grok and agy were not checked: their interactive arms were not
+  run.
+- **Control (rung: test):**
+  - The Claude Code reader sets `exit_<N>` (`_outcome`):
+    `tests/test_reader_claude_code.py::test_a_failed_bash_result_that_opens_with_its_exit_code_is_outcome_exit_n`.
+  - The interactive totals and the per-task splits count `tool_failures_exit`, and the report shows it beside
+    `tool_failures`:
+    `tests/test_interactive.py::test_a_failure_that_was_a_non_zero_exit_is_counted_apart_in_both_splits`.
+  - Both tests were observed red. Mutants IN33 and IN34 and two in `rerun-read-cc.json` are killed.
+  - Upgrade trigger: a comparison that reads `tool_failures` without `tool_failures_exit`. Then drop the bare count
+    from comparisons.
+- **Status:** `controlled`
+
+### REC-UNREAD-A: a record holds a measure that the report never shows (candidate)
+- **Signature:** a harness's own record carries a cost measure, and the bench's reader parses it. But the report
+  that compares arms neither shows it nor says it is not recorded, so the cost reads as unmeasured.
+- **Why it survives:** the reader's tests pass and the per-cell views use the rows. Only the interactive report,
+  added later, never read them. A missing row in a report looks the same as an unmeasurable one.
+- **Instances:**
+  - `2026-10-16` (review of the `int-*-20261015T1529` runs): "hook cost unmeasured". Copilot's `hook.start` and
+    `hook.end` pairs held 250 timed hooks in the on arm, 182.2 s in all, against 1.1 s over 4 hooks off. The
+    interactive report showed only `pack hook events`, `not recorded` for Copilot.
+- **Sweep:** the other measures in the interactive report's totals. Tokens, model calls, tool calls and minutes are
+  read. Tool time and model time (`views.time_anatomy`) were not in the interactive report. Closed on 2026-10-17:
+  the report now gives model and tool seconds by the views' own span rule.
+- **Control (rung: test):** `session_metrics` sums hook time through `views.hook_time`, the one hook-time rule that
+  `time_anatomy` now also calls. A reader that keeps no hook start (Claude Code) or no hook rows (Codex) gives
+  `not recorded`, never 0. The test is
+  `tests/test_interactive.py::test_hook_time_is_summed_where_the_record_times_every_hook_and_not_recorded_where_it_cannot`,
+  observed red. Mutants IN35 and IN36 are killed.
+- **Control landed (2026-10-17, operator's ruling "make the pack change"):**
+  - Pack revision 109: `dispatch.py` times itself from `main()` to its exit code. It appends one line to
+    `<git-dir>/ai-forward/hook-times.jsonl`, and only where that file already exists. The pack never creates it.
+    The check costs 12 µs per dispatch when the file is absent and 127 µs when present, against a dispatch of about
+    155 ms. The pack's test (`test_hook_cost.py::test_a_dispatch_times_itself_only_where_the_git_dir_asks`) was
+    observed red.
+  - Bench: `prepare` creates the file in both arms, and `collect` and `gather` report `pack hook seconds` for every
+    harness. An older pack, a missing file or a bad line reads `not recorded`, never a partial sum.
+    `tests/test_interactive.py::test_the_packs_self_timed_dispatches_are_summed_and_never_a_partial_sum` and the
+    end-to-end test were observed red. Mutants IN37–IN39 are killed.
+  - Model and tool seconds (the sweep finding): `test_model_and_tool_seconds_are_the_union_of_their_spans_as_the_cell_views_count_them`,
+    observed red. Mutants IN40 and IN41 are killed.
+  - Not measured: the host's launch of the dispatcher, before `main()`. Copilot's own hook rows include it, so the
+    gap between the two figures is that launch cost.
+  - End to end (the bench's `install_pack` of revision 109 at `da1b9f3`, the installed Claude `PreToolUse` command
+    run 3 times through its real launcher): 3 timing rows, read as 3 dispatches and 180 ms, tree clean.
+  - Revision 109 had to pass all 18 of the pack's gates on this unprivileged Windows host. That turned up a real
+    gap: the pack's `delivery.py` did not treat a Windows junction as a link. The pack's own register records it as
+    WIN-LINK-A.
+- **Status:** `controlled`
+
+### LINT-A: the repo has no lint scope or gate, so a lint result depends on who runs it (candidate)
+- **Signature:** no `[tool.ruff]` and no lint step. `ruff check .` lints everything, vendored task code and the
+  pack's copy included, so its hits drown the repo's own. Nothing fails when the repo's own code gets a new hit.
+- **Instances:**
+  - `2026-10-17` (the open-items review): `ruff check .` found 1,899 hits. One was in the repo's own code
+    (RUF059, `tests/test_cost_compare_e2e.py:233`), and it had survived because nothing ran ruff.
+- **Control (rung: test):** `[tool.ruff] include` limits `ruff check` with no path to `src`, `tests` and `tools`.
+  `tests/test_lint.py` asserts that scope and that the scope is clean. It runs in the default suite, which CI also
+  runs. Both tests were observed red before the config existed, and the second one caught a hit in the test file
+  itself (PLW1510). Upgrade trigger: a ruff upgrade that changes the default rules. Then pin `select`.
 - **Status:** `controlled`
 
 ### LEAK-HOME-A: a home variable relocates only part of a harness's user state (candidate)

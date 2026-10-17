@@ -68,6 +68,7 @@ __all__ = [
     "grading_copy",
     "in_radius",
     "installed_files",
+    "is_stub_of_radius",
     "is_test_path",
     "line_delta",
     "machine_written",
@@ -295,6 +296,16 @@ def machine_written(path: str) -> str | None:
     if any(part in TOOL_CACHES for part in norm.split("/")[:-1]):
         return MACHINE_CACHE
     return MACHINE_PACK_LOG if norm in PACK_LOGS or HOOK_LEDGER.fullmatch(norm) else None
+
+
+def is_stub_of_radius(path: str, radius: list[str], base_paths: frozenset[str]) -> bool:
+    """A `.pyi` type stub of a module inside the radius, in a folder whose pre-turn tree already holds stubs: the
+    package's own convention asks for it (RADIUS-TEST-A; NG1's cachetools ships one beside every module, and Claude
+    added `limiter.pyi` beside the task's `limiter.py`). A stub where the package keeps none is the agent's choice."""
+    norm = path.replace("\\", "/")
+    folder = posixpath.dirname(norm)
+    return (norm.endswith(".pyi") and in_radius(norm[:-1], radius)
+            and any(p.endswith(".pyi") and posixpath.dirname(p) == folder for p in base_paths))
 
 
 def _record_hash(path: Path) -> str | None:

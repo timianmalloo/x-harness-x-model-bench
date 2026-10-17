@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-17T00:19:13Z",
+  "generated": "2026-10-17T15:43:24Z",
   "audit": [
     {
       "actor": null,
@@ -190018,6 +190018,36 @@ window.AUDIT_DATA = {
       "datetime": "2026-10-17T00:19:13Z",
       "session": "prompt-log",
       "prompt": "fix the diffstats gap too",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M55633FW69CV7P6J45R4QJ3H",
+      "shortname": "continue working on the remaining open items from earlier",
+      "datetime": "2026-10-17T15:01:09Z",
+      "session": "prompt-log",
+      "prompt": "continue working on the remaining open items from earlier",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M558GF17BQ30Q1X0TSGY7F8V",
+      "shortname": "1: yes make the pack change / 2: yes add the lint coverage for src, test…",
+      "datetime": "2026-10-17T15:43:24Z",
+      "session": "prompt-log",
+      "prompt": "1: yes make the pack change / 2: yes add the lint coverage for src, tests, tools / 3: yes add them (tool and model time in the interactive report)",
       "summary": "prompt logged for reuse",
       "kind": "prompt",
       "skill": null,

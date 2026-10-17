@@ -33,11 +33,11 @@ BASE = {"src/limiter.py": "from . import helper\nimport json\n\n\ndef limit():\n
         "docs/guide.md": "guide\n", "vendor/q/gate.py": "class Gate:\n    pass\n"}
 
 
-def lean_cell(tmp_path: Path, overlay: dict[str, str]) -> tuple[Path, dict, dict]:
+def lean_cell(tmp_path: Path, overlay: dict[str, str], base: dict[str, str] = BASE) -> tuple[Path, dict, dict]:
     """(archive folder, plan cell, task): the base as the root commit `L1 base (<ver12>)`, then `overlay` uncommitted."""
     folder = tmp_path / "run" / "archive" / CID / "attempt-1"
     ws = folder / "ws"
-    for rel, text in BASE.items():
+    for rel, text in base.items():
         (ws / rel).parent.mkdir(parents=True, exist_ok=True)
         (ws / rel).write_text(text, encoding="utf-8", newline="")
     git(ws, "init", "-q", "-b", "main")
@@ -139,6 +139,24 @@ def test_a_dependency_folder_an_agent_installs_into_is_machine_written_by_its_re
                     ".test-deps/pkg/edited.py": "discretionary"}
     assert {m: s.value for m, s in got.items()} == {"drift_machine_lines": 1 + 2 + 5, "drift_task_implied_lines": 0,
                                                      "scope_creep": 2, "scope_creep_files": 2}
+
+
+def test_a_type_stub_of_a_radius_module_is_task_implied_where_the_package_ships_stubs(tmp_path):
+    """Interactive run int-claude-code-20261015T1529, both arms, NG1: cachetools ships a `.pyi` beside every module,
+    and Claude added `limiter.pyi` beside the task's `limiter.py`, outside the radius. A stub of a radius module, in a
+    folder whose base already holds stubs, follows the package's convention: task-implied. A stub of a module outside
+    the radius, or in a folder with no stubs, stays discretionary."""
+    stubs = {"src/limiter.pyi": "def limit() -> int: ...\n", "src/other.pyi": "y: int\n", "vendor/q/gate.pyi": "class Gate: ...\n"}
+    rows = {}
+    for name, base in (("typed", {**BASE, "src/helper.pyi": "x: int\n"}), ("untyped", BASE)):
+        folder, cell, task = lean_cell(tmp_path / name, stubs, base)
+        inp = lean_input(tmp_path / name, folder, cell, task, by_id("scope_creep", "drift_task_implied_lines"))
+        drift.grade_cell(inp)
+        log = (inp.out_dir / "drift.log").read_text(encoding="utf-8").splitlines()
+        rows[name] = {f[1]: f[5] for f in (line.split("\t") for line in log)}
+    assert rows["typed"] == {"src/limiter.pyi": "task-implied", "src/other.pyi": "discretionary",
+                             "vendor/q/gate.pyi": "discretionary"}
+    assert set(rows["untyped"].values()) == {"discretionary"}
 
 
 # --- 2. a lean task (graders [correctness, property]) yields all four drift scores: the point of `all_tasks` ---------

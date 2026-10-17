@@ -548,6 +548,13 @@ def _hook_time_reason(harness: str) -> str:
     return getattr(sys.modules.get(getattr(read, "__module__", "")), "HOOK_TIME_REASON", None) or NO_INTERVAL
 
 
+def hook_time(harness: str, hooks: list[dict]) -> Measure:
+    """Milliseconds the hook rows cover (`busy_ms`), NOT_RECORDED where the reader keeps no hook start
+    (`_hook_time_reason`) or there are no hook rows (`NO_HOOKS`): the one hook-time rule, for a cell's time anatomy and
+    an interactive session's totals."""
+    return busy_ms(hooks, missing=_hook_time_reason(harness)) if hooks else Measure(None, NO_HOOKS)
+
+
 def time_anatomy(view: RunView, cell: CellView) -> TimeAnatomy:
     """ADR-0026 s4 for one cell, from the view's rows and the cell's archived ACP timeline."""
     timeline = read_timeline(view.run_dir, cell.cell_id)
@@ -556,8 +563,7 @@ def time_anatomy(view: RunView, cell: CellView) -> TimeAnatomy:
                 else Measure(round(sum(e - s for s, e in acp) / 1_000_000)))
     hooks = [r for r in cell_rows(view, "harness_events", cell) or [] if r.get("event") == "hook"]
     reason = stream_reason(view, "harness_events", cell)
-    hook = (Measure(None, reason) if reason is not None else busy_ms(hooks, missing=_hook_time_reason(cell.harness))
-            if hooks else Measure(None, NO_HOOKS))
+    hook = Measure(None, reason) if reason is not None else hook_time(cell.harness, hooks)
     return TimeAnatomy(cell.model_ms, estimate, cell.tool_ms, hook, _anatomy_idle(view, cell, acp, hooks, hook))
 
 

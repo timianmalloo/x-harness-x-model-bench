@@ -67,6 +67,10 @@ RECORD_HOMES = {
 ALIASES = {"claude": "claude-code"}  # what the operator types for a harness -> its bench name
 LEAN_RING = Path("bench") / "rings" / "lean.yaml"  # its BOM subset is the default task list, in queue order
 GRADE = "grade.json"  # .bench/grade.json: the command next.py starts when the last item closes
+# The pack's dispatcher appends one line per hook dispatch here when the file exists (pack revision 109 on; its
+# dispatch.py docstring). prepare creates it in both arms, so the pack's own hook time is measured on every harness.
+HOOK_TIMES = Path(".git") / "ai-forward" / "hook-times.jsonl"
+HOOK_TIMES_REVISION = 109
 # Change-set drift (grade/drift.py; `all_tasks` metrics) graded on the replay. attention_drift and the process metrics
 # read the replay's synthetic record, not the session's, so they are not kept.
 DRIFT_SCORES = ("scope_creep", "drift_task_implied_lines", "drift_machine_lines")
@@ -166,6 +170,8 @@ def prepare(root: Path, run_id: str, harness: str, out_root: Path, task_ids: lis
             (bench / GRADE).write_text(json.dumps({"argv": argv, "cwd": str(root.resolve()),
                                                    "log": str(run_root.resolve() / f"grade-{arm}.log")}, indent=2), encoding="utf-8")
         _git(["init", "-q", "-b", "main"], arm_dir)
+        (arm_dir / HOOK_TIMES).parent.mkdir(parents=True, exist_ok=True)
+        (arm_dir / HOOK_TIMES).write_text("", encoding="utf-8")  # asks the pack's dispatcher to time itself (REC-UNREAD-A)
         _git(["add", "-A"], arm_dir)
         gitsafe.git(["commit", "-q", "-m", f"interactive base ({arm})"], cwd=arm_dir, timeout=GIT_TIMEOUT, identity=True)
         pack_files = workspace.install_pack(pack_dir, arm_dir, project=run_id, timeout=300) if arm == ARM_ON else []
@@ -580,7 +586,16 @@ TOKEN_FIELDS = ("uncached_input", "cache_read", "cache_write", "output", "reason
 
 
 def _zero() -> dict:
-    return {**dict.fromkeys(TOKEN_FIELDS, 0), "model_calls": 0, "tool_calls": 0, "tool_failures": 0}
+    return {**dict.fromkeys(TOKEN_FIELDS, 0), "model_calls": 0, "tool_calls": 0, "tool_failures": 0, "tool_failures_exit": 0}
+
+
+def _count_tool(seg: dict, tool) -> None:
+    """One tool call into a segment. `tool_failures_exit` is the failures that were a command returning non-zero
+    (`outcome_code` `exit_<N>`): it ran, and the exit is often intended (a `grep` with no match, a test run expected to
+    fail), so `tool_failures` alone is not agent error."""
+    seg["tool_calls"] += 1
+    seg["tool_failures"] += tool.ok is False
+    seg["tool_failures_exit"] += tool.ok is False and (tool.outcome_code or "").startswith("exit_")
 
 
 def _add(seg: dict, call) -> None:
@@ -610,9 +625,7 @@ def split(ex: Extraction, boundaries: list[int], labels: list[str]) -> dict[str,
         for seg in segs.values():
             seg.update(dict.fromkeys(TOKEN_FIELDS))
     for tool in ex.tool_calls:
-        seg = segs[seg_of(tool.native_ordinal)]
-        seg["tool_calls"] += 1
-        seg["tool_failures"] += tool.ok is False
+        _count_tool(segs[seg_of(tool.native_ordinal)], tool)
     return segs
 
 
@@ -637,9 +650,7 @@ def split_by_time(ex: Extraction, windows: list[tuple[str, datetime, datetime | 
     for call in ex.model_calls:
         _add(segs.setdefault(name_of(call.start, call.requests > 1), _zero()), call)
     for tool in ex.tool_calls:
-        seg = segs.setdefault(name_of(tool.start), _zero())
-        seg["tool_calls"] += 1
-        seg["tool_failures"] += tool.ok is False
+        _count_tool(segs.setdefault(name_of(tool.start), _zero()), tool)
     return segs
 
 
@@ -691,6 +702,9 @@ def session_metrics(harness: str, records: list[Path], items: list[dict], state:
     total, per_item, notes, served, peeks = _zero(), {}, [], [], 0
     builds: set[str] = set()
     hooks: int | None = 0
+    hook_rows: list[dict] | str = []  # every hook the records time (pack and user-level), or why a reader keeps none
+    model_rows: list[dict] = []
+    tool_rows: list[dict] = []
     for path in records:
         ex, trace = _read(harness, path)
         boundaries, rejected = task_boundaries(ex, trace, state or {})
@@ -706,8 +720,10 @@ def session_metrics(harness: str, records: list[Path], items: list[dict], state:
             rec = None if any(v is None for v in values) else sum(values)
             total[f] = None if total[f] is None or rec is None else total[f] + rec
         total["model_calls"] += sum(c.requests for c in ex.model_calls)
-        total["tool_calls"] += len(ex.tool_calls)
-        total["tool_failures"] += sum(1 for t in ex.tool_calls if t.ok is False)
+        for tool in ex.tool_calls:
+            _count_tool(total, tool)
+        model_rows += [{"start": c.start, "end": c.end} for c in ex.model_calls]
+        tool_rows += [{"start": t.start, "end": t.end} for t in ex.tool_calls]
         if any(c.requests > 1 for c in ex.model_calls):
             notes.append(f"{path.name}: usage is a session summary; per-task tokens are not recorded")
         if ex.missing:
@@ -726,9 +742,20 @@ def session_metrics(harness: str, records: list[Path], items: list[dict], state:
         if build:
             builds.add(build)
         hooks = None if hooks is None else _pack_hooks(harness, ex, hooks)
+        if isinstance(hook_rows, list):
+            hook_rows = (ex.harness_events if isinstance(ex.harness_events, str) else
+                         hook_rows + [{"start": e.start, "end": e.end} for e in ex.harness_events if e.event == "hook"])
         peeks += _peeks(trace)
+    hook_ms = views.hook_time(harness, hook_rows) if isinstance(hook_rows, list) else views.Measure(None, hook_rows)
+    # The per-cell views' rules (views.time_anatomy): the union of the calls' spans, NOT_RECORDED when one lacks an end.
+    model_ms = (views.busy_ms(model_rows, positive=True, missing=views.NO_MODEL_START) if model_rows
+                else views.Measure(None, views.NO_MODEL_START))
+    tool_ms = views.busy_ms(tool_rows)
     return {"records": [str(p) for p in records], "total": total, "per_item": per_item, "served": served, "cli_versions": sorted(builds),
-            "pack_hook_events": hooks, "queue_reads": peeks, "notes": notes}
+            "pack_hook_events": hooks, "hook_events": len(hook_rows) if isinstance(hook_rows, list) else None,
+            "hook_ms": hook_ms.value, "hook_ms_reason": hook_ms.reason, "model_ms": model_ms.value,
+            "model_ms_reason": model_ms.reason, "tool_ms": tool_ms.value, "tool_ms_reason": tool_ms.reason,
+            "queue_reads": peeks, "notes": notes}
 
 
 PACK_HOOK = "ai-forward-pack"  # every pack hook runs a script under docs/ai-forward-pack/hooks/ (its command names it)
@@ -741,6 +768,28 @@ def _pack_hooks(harness: str, ex: Extraction, so_far: int) -> int | None:
     if not isinstance(ex.harness_events, list) or harness == "copilot":
         return None
     return so_far + sum(1 for e in ex.harness_events if e.event == "hook" and PACK_HOOK in f"{e.name} {e.detail}")
+
+
+def pack_hook_time(arm_dir: Path, revision: int) -> dict:
+    """The pack's hooks as its dispatcher timed them in this arm: `{dispatches, ms, reason}`. Not recorded (with the
+    reason) for a pack that does not time itself, an arm prepared without the file, or a line that is not a timing row;
+    never a partial sum. A pack-off arm reads 0 dispatches: no pack hook ran there."""
+    path = arm_dir / HOOK_TIMES
+    if revision < HOOK_TIMES_REVISION:
+        return {"dispatches": None, "ms": None, "reason": f"pack revision {revision} does not time its hooks "
+                                                          f"(revision {HOOK_TIMES_REVISION} on)"}
+    if not path.is_file():
+        return {"dispatches": None, "ms": None, "reason": f"no {HOOK_TIMES.as_posix()} in the arm"}
+    total, count = 0.0, 0
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            ms = json.loads(line)["ms"]
+        except (ValueError, KeyError, TypeError):
+            ms = None
+        if not isinstance(ms, (int, float)) or isinstance(ms, bool):
+            return {"dispatches": None, "ms": None, "reason": f"{HOOK_TIMES.as_posix()} holds a line that is not a timing row"}
+        total, count = total + ms, count + 1
+    return {"dispatches": count, "ms": round(total), "reason": None}
 
 
 def _minutes(state: dict) -> dict[str, float]:
@@ -806,7 +855,8 @@ def collect(root: Path, run_root: Path, arm: str, harness: str, runs: Path, cell
     summary = {"schema": "bench-interactive-summary/1", "run_id": manifest["run_id"], "arm": arm, "harness": harness,
                "collected_at": _now(), "replay_run": replay_id, "scores": scores, "minutes": _minutes(state),
                "outside_task_folders": outside, "session": session, "session_read_at": _now(),
-               "session_warnings": session_warnings, "warnings": warnings}
+               "session_warnings": session_warnings, "warnings": warnings,
+               "pack_hook_time": pack_hook_time(arm_dir, manifest["pack_pin"]["revision"])}
     out.mkdir(parents=True, exist_ok=True)
     (out / "summary.json").write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     return summary
@@ -829,6 +879,7 @@ def refresh_session(run_root: Path, arm: str) -> dict:
         summary["session_warnings"].append(f"{len(dropped)} record(s) the grading read were launched in another folder and "
                                            f"are no longer read: {', '.join(dropped)}")
     summary["session_read_at"] = _now()
+    summary["pack_hook_time"] = pack_hook_time(Path(manifest["arms"][arm]["path"]), manifest["pack_pin"]["revision"])
     path.write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     return summary
 
@@ -862,6 +913,22 @@ def _score(value) -> str:
 
 def _num(value) -> str:
     return "not recorded" if value is None else f"{value:,}" if isinstance(value, int) else str(value)
+
+
+def _seconds(found: dict | None, key: str, count: str | None = None, noun: str = "") -> str:
+    """`<s> s` (`over <n> <noun>` with `count`), or `not recorded (<reason>)` from `<key>_reason` / `reason`; a summary
+    collected before the measure existed reads `not recorded`."""
+    if not found or key not in found:
+        return "not recorded"
+    if found[key] is None:
+        reason = found.get(f"{key}_reason", found.get("reason")) or ""
+        return reason if reason.startswith("not recorded") else f"not recorded ({reason})"
+    text = f"{found[key] / 1000:,.1f} s"
+    return f"{text} over {found[count]:,} {noun}" if count else text
+
+
+def _hook_seconds(session: dict | None) -> str:
+    return _seconds(session, "hook_ms", "hook_events", "hooks")
 
 
 def report(run_root: Path, only: str | None = None) -> Path:
@@ -911,10 +978,19 @@ def report(run_root: Path, only: str | None = None) -> Path:
     lines.append("| property_check_pass (primary, without SV1) | " + " | ".join(count(s, "property_check_pass", primary) for s in arms.values()) + " |")
     lines.append("| hidden tests pass (all tasks) | " + " | ".join(count(s, "pass_at_1", manifest["tasks"]) for s in arms.values()) + " |")
     lines.append("| wall minutes (sum of tasks) | " + " | ".join(_num(round(sum(s["minutes"].values()), 1)) for s in arms.values()) + " |")
-    for f in (*TOKEN_FIELDS, "model_calls", "tool_calls", "tool_failures"):
-        lines.append(f"| {f} | " + " | ".join(_num((s["session"] or {}).get("total", {}).get(f)) if s["session"] else "not recorded" for s in arms.values()) + " |")
+    for f in (*TOKEN_FIELDS, "model_calls", "tool_calls", "tool_failures", "tool_failures_exit"):
+        label = "tool_failures_exit (of those, a command that ran and exited non-zero)" if f == "tool_failures_exit" else f
+        lines.append(f"| {label} | " + " | ".join(_num((s["session"] or {}).get("total", {}).get(f)) if s["session"] else "not recorded" for s in arms.values()) + " |")
     lines.append("| pack hook events | " + " | ".join(_num(s["session"]["pack_hook_events"]) if s["session"] else "not recorded"
                                                      for s in arms.values()) + " |")
+    lines.append("| hook seconds (every hook the record times, pack and user-level) | " + " | ".join(
+        _hook_seconds(s["session"]) for s in arms.values()) + " |")
+    lines.append("| pack hook seconds (the pack's dispatcher, self-timed) | " + " | ".join(
+        _seconds(s.get("pack_hook_time"), "ms", "dispatches", "dispatches") for s in arms.values()) + " |")
+    lines.append("| model seconds (union of model-call spans) | " + " | ".join(
+        _seconds(s["session"], "model_ms") for s in arms.values()) + " |")
+    lines.append("| tool seconds (union of tool-call spans) | " + " | ".join(
+        _seconds(s["session"], "tool_ms") for s in arms.values()) + " |")
     lines += ["", "## Served settings (from each session's own record)", ""]
     for a, s in arms.items():
         lines.append(f"- **{a}**: " + ("; ".join(json.dumps(x) for x in s["session"]["served"]) if s["session"] else "no record"))

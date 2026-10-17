@@ -46,7 +46,7 @@ itself and ends with its report open in Chrome. The analysis prompt only gathers
 | collect: session | The session's records are found under the CLI's home by the arm path (`find_records`) or given with `--record`. Each is read by the harness's reader; agy's conversation db is read by `agy.read_db`. Model and tool calls are split per task at the `next.py` calls (`split`). | `interactive.read_session`, `session_metrics` |
 | collect `--open` | The arm's own report, `<run>/collect/<arm>/report.md`, rendered to HTML and opened in Chrome. A failed grading opens `<run>/grade-<arm>-failed.md` instead. | `cli.cmd_interactive`, `interactive.report(only=arm)` |
 | gather | After every CLI has exited: re-read the session records each graded arm's grading found (the search runs again only for an arm whose grading found none, because a new search also matches any later session that named the arm folder, as this session's own transcript did in the 2026-10-15 smoke) and write each run's two-arm `interactive-report.md`. An arm not graded is listed, not graded. | `interactive.gather`, `refresh_session` |
-| report | The collected arms side by side: scores, drift, minutes, session tokens, per-task tokens, served settings, pack hook events, warnings. | `interactive.report` |
+| report | The collected arms side by side: scores, drift, minutes, session tokens, per-task tokens, served settings, tool failures and the non-zero exits among them, pack hook events, hook seconds, pack hook seconds, model and tool seconds, warnings. | `interactive.report` |
 
 The end-to-end test (`tests/test_interactive.py`) plays the fixture two-turn task's reference solution in one arm and
 its naive solution in the other, through the real path. It requires the scores the fixture declares
@@ -72,6 +72,22 @@ What the smoke changed: both Claude Code arms ran the operator's own user-level 
 pack-off record held four lifecycle hook rows (`sessionStart`, `agentStop`, ...) that name no command. So the report
 counts **pack** hook events, those whose command runs a script under `docs/ai-forward-pack/`. The count is `not
 recorded` for Copilot (event names only) and for Codex and agy (their readers record no hook events).
+
+Hook time and failure kinds (2026-10-17):
+- **Hook seconds.** The report gives the time inside every hook the record times. That covers pack and user-level
+  hooks together, so the pack's share is on minus off. Only Copilot times every hook, with `hook.start` and
+  `hook.end` pairs. In run `int-copilot-20261015T1529` that was 182.2 s over 250 hooks (on) and 1.1 s over 4 hooks
+  (off). Claude Code keeps no start for a hook, and Codex records none, so both read `not recorded`, never 0.
+- **Pack hook seconds.** From pack revision 109, the pack's dispatcher times itself. `prepare` creates
+  `.git/ai-forward/hook-times.jsonl` in both arms, and each dispatch appends one line: host, event, hooks, start, ms
+  and exit. The report sums them for every harness, Claude Code included. The time runs from the dispatcher's
+  `main()` to its exit, so the host's `git -> sh -> python` launch is outside it, and Copilot's own hook seconds are
+  the larger figure. A pack-off arm reads 0 dispatches. An arm prepared with an older pack reads `not recorded`.
+- **Model and tool seconds.** These use the per-cell views' rule: the union of the call spans across all of a
+  session's records. A model call with no start makes model time `not recorded`, never a partial sum.
+- **`tool_failures_exit`.** These are the `tool_failures` that were a command that ran and exited non-zero: a
+  `grep` with no match, or a test run expected to fail. In the 2026-10-15 runs they were 26 of 27 failures (Codex
+  on) and 18 of 22 (Copilot on). So `tool_failures` alone is not agent error.
 
 ## 4. Limits
 

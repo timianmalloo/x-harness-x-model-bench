@@ -61,5 +61,19 @@
     "find": "    if att.get(\"type\") == \"hook_success\":\n",
     "replace": "    if att.get(\"type\") == \"hook\":\n",
     "tests": ["tests/test_reader_claude_code.py::test_a_tool_hook_that_prints_is_a_hook_row_with_its_duration_and_no_start"]
+  },
+  {
+    "name": "claude failed result's exit code not read: every failure unclassified",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "    return f\"exit_{match.group(1)}\" if match else None",
+    "replace": "    return None",
+    "tests": ["tests/test_reader_claude_code.py::test_a_failed_bash_result_that_opens_with_its_exit_code_is_outcome_exit_n"]
+  },
+  {
+    "name": "claude exit code read anywhere in the text, not only where it opens",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "    match = EXIT_CODE.match(_text(block.get(\"content\")) or \"\")",
+    "replace": "    match = EXIT_CODE.search(_text(block.get(\"content\")) or \"\")",
+    "tests": ["tests/test_reader_claude_code.py::test_a_failed_bash_result_that_opens_with_its_exit_code_is_outcome_exit_n"]
   }
 ]

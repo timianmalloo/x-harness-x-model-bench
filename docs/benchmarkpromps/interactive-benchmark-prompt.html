@@ -220,7 +220,9 @@ REPO = C:\Projects\x-harness-x-model-bench
 
 4. Write C:\Projects\bench-interactive\interactive-comparison-&lt;UTC yyyymmdd&gt;.md:
    - A summary table, one row per RUN: CLI, model and effort as served, results off vs on, drift off vs on, total
-     tokens off vs on, tool calls and failures off vs on, minutes off vs on, pack hook events in the on arm.
+     tokens off vs on, tool calls and failures off vs on (and how many failures were non-zero exits,
+     `tool_failures_exit`), minutes off vs on, pack hook events in the on arm, hook seconds and pack hook
+     seconds off vs on, model and tool seconds off vs on.
    - A section per CLI (results, drift, alignment, tokens), then a cross-CLI section on what changes with the pack
      in every CLI and what does not.
    - The warnings of every run.

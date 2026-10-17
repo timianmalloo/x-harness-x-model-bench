@@ -70,6 +70,7 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
         for arm, role in solutions.items():
             arm_dir = Path(manifest["arms"][arm]["path"])
             assert (arm_dir / "AGENTS.md").is_file() == (arm == "on")
+            assert (arm_dir / interactive.HOOK_TIMES).read_text(encoding="utf-8") == ""  # asks the pack to time its hooks
             assert not (arm_dir / "tasks" / TASK / "tests").exists()  # hidden tests never reach the arm
             first = _next(arm_dir)
             assert f"TASK 1 of 2: {TASK} (turn 1 of 2)" in first and str(arm_dir / "tasks" / TASK) in first
@@ -102,6 +103,8 @@ def test_interactive_arms_grade_as_the_fixture_declares(monkeypatch):
             local = interactive.report(base / "out" / "int-t", only=arm).read_text(encoding="utf-8")
             other = "on" if arm == "off" else "off"
             assert f"{arm}: property_check_pass" in local and f"{other}: property_check_pass" not in local
+            assert ("| pack hook seconds (the pack's dispatcher, self-timed) | not recorded (pack revision 0 does not time "
+                    "its hooks (revision 109 on)) |") in local
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline and len(graded.read_text().split() if graded.is_file() else []) < 2:
             time.sleep(0.2)
@@ -342,6 +345,7 @@ def test_gather_rereads_the_records_the_grading_found_and_searches_only_when_it_
     run, arm_dir = tmp_path / "run", tmp_path / "run" / "on"
     (run / "collect" / "on").mkdir(parents=True)
     (run / interactive.MANIFEST).write_text(json.dumps({"schema": interactive.SCHEMA, "harness": "codex",
+                                                        "pack_pin": {"source": "s", "commit": "0" * 40, "revision": 109},
                                                         "arms": {"on": {"path": str(arm_dir)}}}), encoding="utf-8")
     known, other = tmp_path / "rollout-known.jsonl", tmp_path / "rollout-other.jsonl"
     known.write_text(json.dumps({"payload": {"cwd": str(arm_dir)}}) + "\n", encoding="utf-8")
@@ -387,6 +391,22 @@ def _call(n: int, requests: int = 1) -> ModelCall:
     return ModelCall(n, "m", 10, 100, 1, 5, 2, requests=requests)
 
 
+def test_a_failure_that_was_a_non_zero_exit_is_counted_apart_in_both_splits():
+    """Run int-*-20261015T1529: `tool_failures` held a `grep` with no match and expected-red test runs beside refusals.
+    A failed call whose outcome is `exit_<N>` (the command ran) is also counted in `tool_failures_exit`."""
+    from datetime import UTC, datetime
+
+    tools = [ToolCall(2, "Bash", "shell", "2026-10-15T15:30:00+00:00", None, False, "exit_1"),
+             ToolCall(3, "Bash", "shell", "2026-10-15T15:30:01+00:00", None, False, "denied"),
+             ToolCall(4, "Bash", "shell", "2026-10-15T15:30:02+00:00", None, False),
+             ToolCall(5, "Bash", "shell", "2026-10-15T15:30:03+00:00", None, True)]
+    ex = Extraction(model_calls=[_call(1)], tool_calls=tools)
+    by_call = interactive.split(ex, [1], ["A"])["A"]
+    start = datetime(2026, 10, 15, 15, 29, tzinfo=UTC)
+    by_time = interactive.split_by_time(ex, [("A", start, None)])["A"]
+    assert [(s["tool_calls"], s["tool_failures"], s["tool_failures_exit"]) for s in (by_call, by_time)] == [(4, 3, 1)] * 2
+
+
 def test_split_attributes_by_the_next_calls_and_never_splits_a_summary():
     ex = Extraction(model_calls=[_call(1), _call(4), _call(6), _call(9)],
                     tool_calls=[ToolCall(3, "Bash", "shell", None, None, True), ToolCall(5, "Bash", "shell", None, None, True),
@@ -410,6 +430,72 @@ def test_pack_hooks_count_only_the_packs_own_and_are_not_recorded_where_the_reco
     assert interactive._pack_hooks("claude-code", ex, 0) == 1
     assert interactive._pack_hooks("copilot", ex, 0) is None
     assert interactive._pack_hooks("codex", Extraction(harness_events="not recorded: x"), 0) is None
+
+
+def test_hook_time_is_summed_where_the_record_times_every_hook_and_not_recorded_where_it_cannot(tmp_path, monkeypatch):
+    """Run int-copilot-20261015T1529 (on): Copilot's hook.start/hook.end pairs timed 249 hooks, about 182 s, which the
+    report never showed. Claude Code keeps no hook start, and Codex records no hook rows: not recorded, never 0."""
+    from harness_bench.telemetry import HarnessEvent, ProcessTrace
+
+    stamp = lambda s: f"2026-10-15T15:30:{s:02d}+00:00"
+    timed = [HarnessEvent(1, "hook", "preToolUse", stamp(0), stamp(2), True, None),
+             HarnessEvent(2, "hook", "postToolUse", stamp(5), stamp(6), True, None),
+             HarnessEvent(3, "skill_load", "x", stamp(7), stamp(9), True, None)]  # not a hook
+    claude = [HarnessEvent(1, "hook", "dispatch.py --event Stop", None, stamp(1), True, "Stop durationMs=153")]
+    record = tmp_path / "r.jsonl"
+    record.write_text("{}\n", encoding="utf-8")
+    got = {}
+    for harness, events in (("copilot", timed), ("claude-code", claude), ("codex", "not recorded: no hook rows")):
+        monkeypatch.setattr(interactive, "_read", lambda h, p, e=events: (Extraction(harness_events=e), ProcessTrace(None)))
+        s = interactive.session_metrics(harness, [record, record], [])
+        got[harness] = (s["hook_events"], s["hook_ms"], s["hook_ms_reason"] is None)
+    assert got == {"copilot": (4, 3000, True), "claude-code": (2, None, False), "codex": (None, None, False)}
+    assert interactive._hook_seconds({"hook_ms": 3000, "hook_events": 4, "hook_ms_reason": None}) == "3.0 s over 4 hooks"
+    assert interactive._hook_seconds({"hook_ms": None, "hook_ms_reason": "not recorded: x"}) == "not recorded: x"
+    assert interactive._hook_seconds({"hook_ms": None, "hook_ms_reason": "no start"}) == "not recorded (no start)"
+
+
+def test_the_packs_self_timed_dispatches_are_summed_and_never_a_partial_sum(tmp_path):
+    """REC-UNREAD-A: Claude Code keeps no hook start, so the pack's dispatcher (revision 109 on) times itself into the
+    arm's git dir. An empty file is a measured 0 (no pack hook ran: the pack-off arm); an older pack, a missing file or
+    a line that is not a timing row is not recorded."""
+    times = tmp_path / interactive.HOOK_TIMES
+    assert interactive.pack_hook_time(tmp_path, 109)["reason"] == "no .git/ai-forward/hook-times.jsonl in the arm"
+    times.parent.mkdir(parents=True)
+    times.write_text("", encoding="utf-8")
+    assert interactive.pack_hook_time(tmp_path, 109) == {"dispatches": 0, "ms": 0, "reason": None}
+    rows = [{"host": "claude", "event": "PreToolUse", "hooks": ["a.py"], "start": "t", "ms": ms, "exit": 0} for ms in (150.4, 160.2)]
+    times.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    assert interactive.pack_hook_time(tmp_path, 109) == {"dispatches": 2, "ms": 311, "reason": None}
+    assert interactive.pack_hook_time(tmp_path, 108) == {
+        "dispatches": None, "ms": None, "reason": "pack revision 108 does not time its hooks (revision 109 on)"}
+    with times.open("a", encoding="utf-8") as f:
+        f.write('{"ms": true}\n')
+    assert interactive.pack_hook_time(tmp_path, 109)["ms"] is None
+    assert interactive._seconds({"dispatches": 2, "ms": 311, "reason": None}, "ms", "dispatches", "dispatches") == \
+        "0.3 s over 2 dispatches"
+
+
+def test_model_and_tool_seconds_are_the_union_of_their_spans_as_the_cell_views_count_them(tmp_path, monkeypatch):
+    """The interactive report gave tokens and counts but no model or tool time. Spans overlap across a session's records
+    (a sub-agent's), so each is a union; a model call with no start makes model time not recorded, never a partial sum."""
+    from harness_bench.telemetry import ProcessTrace
+
+    stamp = lambda s: f"2026-10-15T15:30:{s:02d}+00:00"
+    main = Extraction(model_calls=[ModelCall(1, "m", 1, 1, 1, 1, 1, stamp(0), stamp(4))],
+                      tool_calls=[ToolCall(2, "Bash", "shell", stamp(4), stamp(6), True)])
+    sub = Extraction(model_calls=[ModelCall(1, "m", 1, 1, 1, 1, 1, stamp(2), stamp(5))],
+                     tool_calls=[ToolCall(2, "Read", "read", stamp(10), stamp(11), True)])
+    records = [tmp_path / "main.jsonl", tmp_path / "sub.jsonl"]
+    for record in records:
+        record.write_text("{}\n", encoding="utf-8")
+    by_path = dict(zip(records, (main, sub), strict=True))
+    monkeypatch.setattr(interactive, "_read", lambda h, p: (by_path[p], ProcessTrace(None)))
+    s = interactive.session_metrics("claude-code", records, [])
+    assert (s["model_ms"], s["tool_ms"]) == (5000, 3000)  # model 0-5 s (two calls overlap), tool 4-6 s and 10-11 s
+    by_path[records[1]] = Extraction(model_calls=[ModelCall(1, "m", 1, 1, 1, 1, 1, None, stamp(5))])
+    s = interactive.session_metrics("claude-code", records, [])
+    assert (s["model_ms"], s["model_ms_reason"]) == (None, interactive.views.NO_MODEL_START)
 
 
 def test_a_record_without_next_calls_is_placed_in_tasks_by_time():

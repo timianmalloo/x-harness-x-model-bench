@@ -230,7 +230,7 @@ def test_a_part_with_no_character_count_shows_its_tokens_never_a_zero(fixture_ru
     _, _, (v1, _) = fixture_runs
     done = next(e for e in v1.facts["events"] if e.get("kind") == "grading.completed" and e["grading_id"] == v1.grading_id)
     done["streams_not_recorded"] = {}
-    a, b = v1.cells
+    a, _ = v1.cells
     v1.cells = [a]
     key = {"cell_id": a.cell_id, "extraction_id": a.extraction_id}
     v1.facts["prompt_parts"] = [key | {"native_ordinal": 0, "part": "system", "chars": 40},

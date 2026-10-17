@@ -16,8 +16,8 @@
   {
     "name": "R-DRIFT: a test path outside the radius is discretionary (RADIUS-TEST-A)",
     "file": "src/harness_bench/grade/drift.py",
-    "find": "    return TASK_IMPLIED if _changes.is_test_path(path, base_paths) else DISCRETIONARY",
-    "replace": "    return DISCRETIONARY",
+    "find": "    implied = _changes.is_test_path(path, base_paths) or _changes.is_stub_of_radius(path, radius, base_paths)",
+    "replace": "    implied = _changes.is_stub_of_radius(path, radius, base_paths)",
     "tests": ["tests/test_drift_split.py::test_a_cache_a_hook_log_a_test_file_and_a_readme_edit_split_into_machine_task_implied_and_discretionary"]
   },
   {
@@ -96,5 +96,26 @@
     "find": "            rel = posixpath.normpath(posixpath.join(folder, row[0]))",
     "replace": "            rel = posixpath.normpath(row[0])",
     "tests": ["tests/test_drift_split.py::test_a_dependency_folder_an_agent_installs_into_is_machine_written_by_its_records_not_its_name"]
+  },
+  {
+    "name": "RADIUS-TEST-A: drift never asks whether a path is a radius module's stub",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    implied = _changes.is_test_path(path, base_paths) or _changes.is_stub_of_radius(path, radius, base_paths)",
+    "replace": "    implied = _changes.is_test_path(path, base_paths)",
+    "tests": ["tests/test_drift_split.py::test_a_type_stub_of_a_radius_module_is_task_implied_where_the_package_ships_stubs"]
+  },
+  {
+    "name": "RADIUS-TEST-A: any stub is task-implied, whatever module it types",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    return (norm.endswith(\".pyi\") and in_radius(norm[:-1], radius)",
+    "replace": "    return (norm.endswith(\".pyi\")",
+    "tests": ["tests/test_drift_split.py::test_a_type_stub_of_a_radius_module_is_task_implied_where_the_package_ships_stubs"]
+  },
+  {
+    "name": "RADIUS-TEST-A: a stub is task-implied where the package keeps no stubs",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "            and any(p.endswith(\".pyi\") and posixpath.dirname(p) == folder for p in base_paths))",
+    "replace": "            and True)",
+    "tests": ["tests/test_drift_split.py::test_a_type_stub_of_a_radius_module_is_task_implied_where_the_package_ships_stubs"]
   }
 ]

@@ -251,6 +251,23 @@ def test_tool_inputs_counts_visible_text_only_and_sizes_each_result_by_its_text(
     assert [c.bytes_returned for c in trace.calls] == [6, 4, None, None]
 
 
+def test_a_failed_bash_result_that_opens_with_its_exit_code_is_outcome_exit_n(tmp_path):
+    """Interactive run int-claude-code-20261015T1529: Claude Code writes a non-zero exit as an `is_error` result opening
+    `Exit code N`, the fact Codex and Copilot record as `exit_<N>`. A refusal or any other error is not classified."""
+    use = lambda tid: {"type": "tool_use", "id": tid, "name": "Bash", "input": {"command": "x"}}
+    rows = [_assistant("m1", use("t1")), _result(("t1", "Exit code 1\nno match", {"is_error": True})),
+            _assistant("m2", use("t2")), _result(("t2", [{"type": "text", "text": "Exit code 2\nsyntax"}], {"is_error": True})),
+            _assistant("m3", use("t3")), _result(("t3", "Permission to use Bash has been denied.", {"is_error": True})),
+            _assistant("m4", use("t4")), _result(("t4", "Exit code 0 lines", {})),
+            _assistant("m5", use("t5")), _result(("t5", "Exit code 3", {"is_error": True})),  # no output after it
+            _assistant("m6", use("t6")), _result(("t6", "Exit code 4 lines", {"is_error": True})),
+            _assistant("m7", use("t7")), _result(("t7", "Blocked by hook\nExit code 5\n", {"is_error": True}))]  # not its opening
+    record = tmp_path / "s.jsonl"
+    record.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    assert [(t.ok, t.outcome_code) for t in claude_code.read(record).tool_calls] == [
+        (False, "exit_1"), (False, "exit_2"), (False, None), (True, None), (False, "exit_3"), (False, None), (False, None)]
+
+
 def test_tool_inputs_text_count_is_not_recorded_when_the_record_lost_lines(tmp_path):
     record = tmp_path / "s.jsonl"
     record.write_text(json.dumps(_assistant("m1", {"type": "text", "text": "hi"})) + "\n{not json\n", encoding="utf-8")

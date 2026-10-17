@@ -222,5 +222,68 @@
   "find": "for rel in listed if",
   "replace": "for rel in [] if",
   "tests": ["tests/test_interactive.py::test_a_task_closed_with_no_hand_off_copy_is_graded_from_the_final_tree_with_a_warning"]
+ },
+ {
+  "name": "IN33: a refusal or an unclassified failure counts as a non-zero exit",
+  "file": "src/harness_bench/interactive.py",
+  "find": "    seg[\"tool_failures_exit\"] += tool.ok is False and (tool.outcome_code or \"\").startswith(\"exit_\")",
+  "replace": "    seg[\"tool_failures_exit\"] += tool.ok is False",
+  "tests": ["tests/test_interactive.py::test_a_failure_that_was_a_non_zero_exit_is_counted_apart_in_both_splits"]
+ },
+ {
+  "name": "IN34: the time split counts tool calls without their failure kinds",
+  "file": "src/harness_bench/interactive.py",
+  "find": "        _count_tool(segs.setdefault(name_of(tool.start), _zero()), tool)",
+  "replace": "        segs.setdefault(name_of(tool.start), _zero())[\"tool_calls\"] += 1",
+  "tests": ["tests/test_interactive.py::test_a_failure_that_was_a_non_zero_exit_is_counted_apart_in_both_splits"]
+ },
+ {
+  "name": "IN35: the records' hook rows are never read, so a timed session shows no hook time",
+  "file": "src/harness_bench/interactive.py",
+  "find": "hook_rows + [{\"start\": e.start, \"end\": e.end} for e in ex.harness_events if e.event == \"hook\"])",
+  "replace": "hook_rows)",
+  "tests": ["tests/test_interactive.py::test_hook_time_is_summed_where_the_record_times_every_hook_and_not_recorded_where_it_cannot"]
+ },
+ {
+  "name": "IN36: a reader that keeps no hook rows reads as zero hooks, not as not recorded",
+  "file": "src/harness_bench/interactive.py",
+  "find": "            hook_rows = (ex.harness_events if isinstance(ex.harness_events, str) else",
+  "replace": "            hook_rows = ([] if isinstance(ex.harness_events, str) else",
+  "tests": ["tests/test_interactive.py::test_hook_time_is_summed_where_the_record_times_every_hook_and_not_recorded_where_it_cannot"]
+ },
+ {
+  "name": "IN37: prepare never asks the pack to time its hooks",
+  "file": "src/harness_bench/interactive.py",
+  "find": "        (arm_dir / HOOK_TIMES).write_text(\"\", encoding=\"utf-8\")",
+  "replace": "        None",
+  "tests": ["tests/test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares"]
+ },
+ {
+  "name": "IN38: a pack that does not time itself reads as zero pack hook time",
+  "file": "src/harness_bench/interactive.py",
+  "find": "    if revision < HOOK_TIMES_REVISION:",
+  "replace": "    if False:",
+  "tests": ["tests/test_interactive.py::test_the_packs_self_timed_dispatches_are_summed_and_never_a_partial_sum"]
+ },
+ {
+  "name": "IN39: a line that is not a timing row is skipped: a partial sum",
+  "file": "src/harness_bench/interactive.py",
+  "find": "            return {\"dispatches\": None, \"ms\": None, \"reason\": f\"{HOOK_TIMES.as_posix()} holds a line that is not a timing row\"}",
+  "replace": "            continue",
+  "tests": ["tests/test_interactive.py::test_the_packs_self_timed_dispatches_are_summed_and_never_a_partial_sum"]
+ },
+ {
+  "name": "IN40: only the last record's tool calls are timed",
+  "file": "src/harness_bench/interactive.py",
+  "find": "        tool_rows += [{\"start\": t.start, \"end\": t.end} for t in ex.tool_calls]",
+  "replace": "        tool_rows = [{\"start\": t.start, \"end\": t.end} for t in ex.tool_calls]",
+  "tests": ["tests/test_interactive.py::test_model_and_tool_seconds_are_the_union_of_their_spans_as_the_cell_views_count_them"]
+ },
+ {
+  "name": "IN41: a model call with no start is dropped from model time: a partial sum",
+  "file": "src/harness_bench/interactive.py",
+  "find": "    model_ms = (views.busy_ms(model_rows, positive=True, missing=views.NO_MODEL_START) if model_rows",
+  "replace": "    model_ms = (views.busy_ms([r for r in model_rows if r[\"start\"]], positive=True, missing=views.NO_MODEL_START) if model_rows",
+  "tests": ["tests/test_interactive.py::test_model_and_tool_seconds_are_the_union_of_their_spans_as_the_cell_views_count_them"]
  }
 ]

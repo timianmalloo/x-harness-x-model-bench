@@ -29,6 +29,12 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/harness_bench"]
 
+[tool.ruff]
+# The lint covers the bench's own code: `ruff check` with no path lints src, tests and tools, with the pinned ruff's
+# default rules. tasks/ (upstream, task-versioned code), bench/ (calibration fixtures) and docs/ai-forward-pack (the
+# pack's managed copy) are not ours to restyle. tests/test_lint.py is the gate.
+include = ["src/**/*.py", "src/**/*.pyi", "tests/**/*.py", "tests/**/*.pyi", "tools/**/*.py", "tools/**/*.pyi"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Real model cells (the `credentials` marker) run only on an explicit opt-in: `-m ""` or `-m credentials` (SUITE-A).

@@ -94,6 +94,18 @@ def _text(content) -> str | None:
     return None
 
 
+EXIT_CODE = re.compile(r"Exit code (-?\d+)(?:\n|$)")  # how Claude Code opens a failed Bash result (int-claude-code-20261015T1529)
+
+
+def _outcome(block: dict) -> str | None:
+    """A failed result's `exit_<N>` when its text opens `Exit code N` (the command ran and returned N; Codex's and
+    Copilot's `exit_<N>`); None for a success, and for any other failure (the record does not say which kind)."""
+    if not block.get("is_error"):
+        return None
+    match = EXIT_CODE.match(_text(block.get("content")) or "")
+    return f"exit_{match.group(1)}" if match else None
+
+
 def _tool_use_blocks(n: int, message: dict):
     """Every `tool_use` block in one assistant row's content, in native order: `(native_ordinal,
     block)`. The one walker `read()`'s `ToolCall`s and `tool_inputs()`'s `ToolInput`s both project
@@ -334,7 +346,7 @@ def read(path: Path, acp: Path | None = None) -> Extraction:
                 if tool_id in open_tools:
                     tool = open_tools.pop(tool_id)
                     ex.tool_calls.append(ToolCall(tool["n"], tool["name"], TOOL_CLASSES.get(tool["name"], "other"),
-                                                  tool["start"], stamp, not bool(block.get("is_error"))))
+                                                  tool["start"], stamp, not bool(block.get("is_error")), _outcome(block)))
                 if tool_id in skills:
                     skill = skills.pop(tool_id)
                     events.append((skill["n"], HarnessEvent(0, "skill_load", skill["name"], skill["start"], stamp,

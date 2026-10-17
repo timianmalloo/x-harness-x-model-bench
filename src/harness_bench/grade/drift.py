@@ -10,7 +10,8 @@
   by grader rule: drift_machine_lines (a path `_changes.machine_written` names: a tool cache, or a file the pack's
   audit script or hooks write; or a file a package installer wrote, by its RECORD, `_changes.installed_files`),
   drift_task_implied_lines (a test path, `_changes.is_test_path`; stated limit: an
-  unrequested new test file counts here) and scope_creep, redefined as the discretionary rest; scope_creep_files is
+  unrequested new test file counts here; or a type stub of a radius module where the package keeps stubs,
+  `_changes.is_stub_of_radius`) and scope_creep, redefined as the discretionary rest; scope_creep_files is
   the files scope_creep counts. An outside line of drift.log gains a last field naming its class (`machine:cache`,
   `machine:pack-log`, `machine:installed`, `task-implied`, `discretionary`), so the pack's own lines show on their own row; an inside
   line keeps its 0.7 shape.
@@ -129,7 +130,8 @@ def _drift_class(path: str, radius: list[str], base_paths: frozenset[str], insta
     machine = _changes.MACHINE_INSTALLED if path in installed else _changes.machine_written(path)
     if machine is not None:
         return f"machine:{machine}"
-    return TASK_IMPLIED if _changes.is_test_path(path, base_paths) else DISCRETIONARY
+    implied = _changes.is_test_path(path, base_paths) or _changes.is_stub_of_radius(path, radius, base_paths)
+    return TASK_IMPLIED if implied else DISCRETIONARY
 
 
 @dataclass(frozen=True)
