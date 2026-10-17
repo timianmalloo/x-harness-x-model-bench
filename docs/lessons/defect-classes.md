@@ -45,6 +45,9 @@ summary: >-
   ARM-FAIR-A instance 1's owed sweep is closed. The headless cells had the same line-ending split, measured on real
   bases: 10 of 11 lean tasks. `cell_working_copy` now writes the arms' rule. TASK-ISO-A is controlled: each
   interactive task is graded as handed off, from `next.py`'s copy. A later task's edits are a warning, not graded.
+  DRIFT-MACHINE-A recurred: Codex's `pip install --target .test-deps` in RS2 scored 204,029 scope-creep lines.
+  Installed files are now machine-written by their package's RECORD. `diffstats` had the same gap. It now
+  skips the same files, and no recorded score moved.
 - 2026-10-15, later (Leader, the follow-up round): one project candidate. REC-ATTR-A: records and task boundaries
   were attributed by a text match. ARM-FAIR-A gains per-arm venvs, a CLI-build warning and tracked-only arm trees.
   Two further fixes were instance-only. Copilot per-call usage rows are now read; they replace the shutdown summary
@@ -2087,6 +2090,45 @@ first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two
   candidate `d7de17d1`; the file ran green on `coord/rerun-c3` (part of `124 passed`, the named freeze run).
   Rung: test.
 - **Status:** `controlled`
+- **Recurrence `2026-10-16` (interactive run `int-codex-20261015T1529`, on arm, RS2):**
+  - *Instance.* Codex added `.test-deps/` to RS2's `.gitignore` and ran `pip install --target .test-deps`.
+    No list held that folder name, so its files scored 204,029 lines of scope creep and 4,413 task-implied lines
+    (pytest's own sources are test paths). Drift reads the starting tree's ignore rules, never the session's, by
+    design, so the agent's ignore line does not hide them. Headless cells grade the same way. This is the shape of
+    the 2026-10-13 `.venv` instance, again with a folder name the agent chose.
+  - *Class rule.* Machine-written is now also decided by content, not only by name.
+    `_changes.installed_files` takes each added `<dir>/<name>.dist-info/RECORD` and every added file that RECORD
+    names whose sha256 matches its row. Drift tags those `machine:installed` and counts them in
+    `drift_machine_lines`. A file edited after the install, or one no RECORD names, stays authored, so the rule
+    cannot hide an edit. A forged RECORD naming authored files by their hashes would; that is written as an
+    `assume:`.
+  - *Measured* (a copy of the arm, re-collected with the real tasks and grader):
+    - RS2's scope_creep went from 204,029 to 1 (the `.gitignore` line) and task-implied from 4,413 to 0.
+    - drift_machine_lines is 208,441, in 634 files.
+    - No file under `.test-deps` is left discretionary. Pip's `bin/` scripts and `__pycache__` are already
+      outside the change set.
+    - The other 10 tasks and every `pass_at_1` are unchanged.
+    - No other dependency folder exists in the six interactive arms or the cell trees left in `bench-cells`.
+  - *Control.*
+    `tests/test_drift_split.py::test_a_dependency_folder_an_agent_installs_into_is_machine_written_by_its_records_not_its_name`
+    covers installed files, an edited file, an unnamed file and a script path that leaves the folder. It was
+    observed red on the un-fixed code. Three mutants in `tests/mutations/rerun-drift.json` are killed: the
+    installed set ignored, the hash not checked, and RECORD paths read from the tree root.
+  - *Sweep finding (open).* The sweep above says `diffstats.py` and `rework.py` "skip every non-`.py` path, so
+    caches cannot count". That is false for a dependency folder or a `.venv`, which hold `.py` files.
+    `diffstats` scans every non-test `.py` file of the final tree for `new_abstractions` and `new_dependencies`,
+    and counts outside-radius `.py` lines, with no machine-written filter. So an agent environment in an SM1/SM2
+    tree would inflate them. Not observed: SM1/SM2 scored 0/0 in all six arms. `rework.py` reads only files
+    inside the radius and is not affected. Owed: apply `machine_written` and `installed_files` in `diffstats`.
+  - *Sweep finding closed (2026-10-16).* `diffstats.measure` now reads only `_authored` files: non-test `.py`
+    files that `machine_written` does not name and `installed_files` does not hold. That applies to the
+    outside- and inside-radius line counts and to the class and import scans. The control is
+    `tests/test_grade_diffstats.py::test_sm_machine_written_python_is_not_the_agent_s_code`, observed red on the
+    unfixed code at (3, 3, 6) against an expected (1, 1, 2). It covers an installed file, an edited installed file
+    and a `.venv` file. Three new mutants in `tests/mutations/diffstats.json` are killed, and one older mutant was
+    retargeted. *Measured:* no `.py` file sits under a tool cache or a `.dist-info` package in any kept tree
+    (`bench-interactive`, `bench-cells`, `runs`), so no recorded score moves.
+  - Status: `controlled`.
 
 ### RADIUS-TEST-A: a task radius omits a file the task needs, and a radius consumer that does not use `is_test_path` counts it (candidate)
 - **Signature:** a task's prompt asks for a test file ("Add tests in `tests/test_limiter.py`") that its

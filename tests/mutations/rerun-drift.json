@@ -75,5 +75,26 @@
     "find": "    return any(_changes.in_radius(p, list(blast_radius)) for p in paths)",
     "replace": "    return any(_changes.in_radius(p.lower(), [g.lower() for g in blast_radius]) for p in paths)",
     "tests": ["tests/test_radius_consumers.py::test_one_radius_definition_case_sensitive_on_every_host"]
+  },
+  {
+    "name": "DRIFT-MACHINE-A: files a package installer wrote, by its RECORD, count as scope creep",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    machine = _changes.MACHINE_INSTALLED if path in installed else _changes.machine_written(path)",
+    "replace": "    machine = _changes.machine_written(path)",
+    "tests": ["tests/test_drift_split.py::test_a_dependency_folder_an_agent_installs_into_is_machine_written_by_its_records_not_its_name"]
+  },
+  {
+    "name": "DRIFT-MACHINE-A: a file a RECORD names is machine-written without its hash being checked",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "            if rel in added and _record_hash(tree / rel) == row[1]:",
+    "replace": "            if rel in added:",
+    "tests": ["tests/test_drift_split.py::test_a_dependency_folder_an_agent_installs_into_is_machine_written_by_its_records_not_its_name"]
+  },
+  {
+    "name": "DRIFT-MACHINE-A: a RECORD's paths are read from the tree root, not its package folder",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "            rel = posixpath.normpath(posixpath.join(folder, row[0]))",
+    "replace": "            rel = posixpath.normpath(row[0])",
+    "tests": ["tests/test_drift_split.py::test_a_dependency_folder_an_agent_installs_into_is_machine_written_by_its_records_not_its_name"]
   }
 ]

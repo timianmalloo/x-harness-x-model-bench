@@ -1,7 +1,8 @@
 """Simplicity strategy helper (W1-L rev 2 section 8; diffstats).
 
 Measures size_vs_reference, new_abstractions, new_dependencies, and outside_radius_lines
-over the non-test files of the tree.
+over the non-test files of the tree that the agent wrote: a tool cache's and a package installer's `.py` files are
+machine-written, as drift reads them (DRIFT-MACHINE-A).
 """
 
 from __future__ import annotations
@@ -56,12 +57,13 @@ def _imports(text: str) -> set[str]:
     return names
 
 
-def _scan(files: Mapping[str, Path], base_paths: frozenset[str]) -> tuple[set[str], set[str]]:
-    """(`path:qualified class` keys, top-level imported modules) over the non-test `.py` files of one tree."""
+def _scan(files: Mapping[str, Path], base_paths: frozenset[str], installed: frozenset[str]) -> tuple[set[str], set[str]]:
+    """(`path:qualified class` keys, top-level imported modules) over the agent's own non-test `.py` files of one
+    tree (`_authored`)."""
     classes: set[str] = set()
     imports: set[str] = set()
     for rel_path, p in files.items():
-        if not rel_path.endswith(".py") or _changes.is_test_path(rel_path, base_paths):
+        if not _authored(rel_path, base_paths, installed):
             continue
         try:
             text = p.read_text(encoding="utf-8")
@@ -70,6 +72,13 @@ def _scan(files: Mapping[str, Path], base_paths: frozenset[str]) -> tuple[set[st
         classes |= {f"{rel_path}:{c}" for c in _classes(text)}
         imports |= _imports(text)
     return classes, imports
+
+
+def _authored(rel_path: str, base_paths: frozenset[str], installed: frozenset[str]) -> bool:
+    """A non-test `.py` file nothing machine-wrote: not under a tool cache (`_changes.machine_written`) and not a
+    package installer's (`installed`, `_changes.installed_files`), as drift reads them (DRIFT-MACHINE-A)."""
+    return (rel_path.endswith(".py") and not _changes.is_test_path(rel_path, base_paths)
+            and rel_path not in installed and _changes.machine_written(rel_path) is None)
 
 
 def measure(
@@ -116,11 +125,12 @@ def measure(
     final_files = _changes._files(final)
 
     changes = _changes.change_set(base, final)
+    installed = _changes.installed_files(final, (p for p, s in changes.items() if s == "added"))
 
     inside = 0
     outside = 0
     for rel_path, status in changes.items():
-        if not rel_path.endswith(".py") or _changes.is_test_path(rel_path, base_paths):
+        if not _authored(rel_path, base_paths, installed):
             continue
         old_lines = _changes.product_lines(base / rel_path) if status != "added" else []
         new_lines = _changes.product_lines(final / rel_path) if status != "deleted" else []
@@ -131,8 +141,8 @@ def measure(
         else:
             outside += n
 
-    base_classes, base_imports = _scan(base_files, base_paths)
-    final_classes, final_imports = _scan(final_files, base_paths)
+    base_classes, base_imports = _scan(base_files, base_paths, frozenset())
+    final_classes, final_imports = _scan(final_files, base_paths, installed)
     new_abstractions = len(final_classes - base_classes)
 
     pkg_set = {package} if package else set()

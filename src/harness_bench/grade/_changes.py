@@ -15,9 +15,12 @@
 from __future__ import annotations
 
 import ast
+import base64
+import csv
 import difflib
 import hashlib
 import os
+import posixpath
 import re
 import shutil
 import tarfile
@@ -46,7 +49,8 @@ PACK_LOGS = frozenset(f"{d}/{f}" for d in AUDIT_DIRS for f in AUDIT_FILES)
 # The heartbeat hook's one ledger row per sample (`hooks/heartbeat.py` -> coord-core `append_event`): a ledger named
 # by the session, directly under .agents/log (its scratch is under .git, already outside every tree).
 HOOK_LEDGER = re.compile(r"\.agents/log/[^/]+\.jsonl")
-MACHINE_CACHE, MACHINE_PACK_LOG = "cache", "pack-log"
+MACHINE_CACHE, MACHINE_PACK_LOG, MACHINE_INSTALLED = "cache", "pack-log", "installed"
+DIST_RECORD = re.compile(r"(?:.+/)?[^/]+\.dist-info/RECORD")  # an installed package's own file list (installed_files)
 CHUNK = 1 << 20
 DIGEST_ALGORITHM = "sha256"
 CACHE_CAPACITY = 32
@@ -63,6 +67,7 @@ __all__ = [
     "copy_tree",
     "grading_copy",
     "in_radius",
+    "installed_files",
     "is_test_path",
     "line_delta",
     "machine_written",
@@ -290,6 +295,41 @@ def machine_written(path: str) -> str | None:
     if any(part in TOOL_CACHES for part in norm.split("/")[:-1]):
         return MACHINE_CACHE
     return MACHINE_PACK_LOG if norm in PACK_LOGS or HOOK_LEDGER.fullmatch(norm) else None
+
+
+def _record_hash(path: Path) -> str | None:
+    """A file's hash as a wheel RECORD writes it (`sha256=` + urlsafe base64, no padding); None for a symlink."""
+    if path.is_symlink() or not path.is_file():
+        return None
+    return "sha256=" + base64.urlsafe_b64encode(hashlib.sha256(path.read_bytes()).digest()).rstrip(b"=").decode()
+
+
+def installed_files(tree: Path, added: Iterable[str]) -> frozenset[str]:
+    """The added files a package installer wrote, by the package's own RECORD (DRIFT-MACHINE-A): each added
+    `<dir>/<name>.dist-info/RECORD`, and the added files it names (relative to `<dir>`) whose hash is the one it
+    records. A folder an agent installs into is then machine-written by its content, whatever its name (Codex's `pip
+    install --target .test-deps`, run int-codex-20261015T1529: 1,190 files, 204,029 lines of scope creep). A file edited
+    after the install, or one no RECORD names, stays authored. A `--target` install's scripts are recorded as
+    `../../bin/<file>` but land in `<dir>/bin/`, which BUILD_OUTPUT already leaves out.
+    assume: a RECORD in a change set was written by the installer; confirm: the files it names hash to its rows (checked
+    here); breaks: a forged RECORD naming authored files by their hashes moves them from scope_creep to
+    drift_machine_lines (drift.log still lists each as `machine:installed`)."""
+    added = set(added)
+    out: set[str] = set()
+    for record in sorted(p for p in added if DIST_RECORD.fullmatch(p)):
+        folder = posixpath.dirname(posixpath.dirname(record))
+        out.add(record)
+        try:
+            rows = list(csv.reader((tree / record).read_text(encoding="utf-8").splitlines()))
+        except (OSError, UnicodeDecodeError, csv.Error):
+            continue
+        for row in rows:
+            if len(row) < 2 or not row[1].startswith("sha256="):
+                continue
+            rel = posixpath.normpath(posixpath.join(folder, row[0]))
+            if rel in added and _record_hash(tree / rel) == row[1]:
+                out.add(rel)
+    return frozenset(out)
 
 
 def line_delta(old: list[str], new: list[str]) -> tuple[list[int], list[int]]:

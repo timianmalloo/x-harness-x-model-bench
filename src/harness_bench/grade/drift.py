@@ -8,10 +8,11 @@
   final newline is a changed line, as in `git diff`). A symlink's one line is its target's text (as `_changes`).
 - Catalog 0.8 (ADR-0026 s5) splits the lines added plus deleted in files outside the task's `blast_radius` three ways,
   by grader rule: drift_machine_lines (a path `_changes.machine_written` names: a tool cache, or a file the pack's
-  audit script or hooks write), drift_task_implied_lines (a test path, `_changes.is_test_path`; stated limit: an
+  audit script or hooks write; or a file a package installer wrote, by its RECORD, `_changes.installed_files`),
+  drift_task_implied_lines (a test path, `_changes.is_test_path`; stated limit: an
   unrequested new test file counts here) and scope_creep, redefined as the discretionary rest; scope_creep_files is
   the files scope_creep counts. An outside line of drift.log gains a last field naming its class (`machine:cache`,
-  `machine:pack-log`, `task-implied`, `discretionary`), so the pack's own lines show on their own row; an inside
+  `machine:pack-log`, `machine:installed`, `task-implied`, `discretionary`), so the pack's own lines show on their own row; an inside
   line keeps its 0.7 shape.
 - attention_drift is the share of read and search targets outside the task's neighbourhood (see `_neighbourhood`);
   calls with no extractable path are excluded and counted in attention.log.
@@ -120,11 +121,12 @@ def _ignored(base: Path, added: list[str], scratch: Path, timeout: float) -> set
 INSIDE, TASK_IMPLIED, DISCRETIONARY = "inside", "task-implied", "discretionary"
 
 
-def _drift_class(path: str, radius: list[str], base_paths: frozenset[str]) -> str:
-    """One changed file's class (ADR-0026 s5): inside the radius, else machine-written, task-implied or discretionary."""
+def _drift_class(path: str, radius: list[str], base_paths: frozenset[str], installed: frozenset[str] = frozenset()) -> str:
+    """One changed file's class (ADR-0026 s5): inside the radius, else machine-written, task-implied or discretionary.
+    `installed` is `_changes.installed_files` of the change set: files a package installer wrote, by its RECORD."""
     if _changes.in_radius(path, radius):
         return INSIDE
-    machine = _changes.machine_written(path)
+    machine = _changes.MACHINE_INSTALLED if path in installed else _changes.machine_written(path)
     if machine is not None:
         return f"machine:{machine}"
     return TASK_IMPLIED if _changes.is_test_path(path, base_paths) else DISCRETIONARY
@@ -312,13 +314,14 @@ def _measure(inp: CellInput, rules: tuple | None) -> dict[str, Score]:
             changes = _changes.change_set(base, work)
             ignored = _ignored(base, [p for p, s in changes.items() if s == "added"], work_root, timeout)
             base_paths = frozenset(_changes._files(base))
+            installed = _changes.installed_files(work, (p for p, s in changes.items() if s == "added"))
             for path, status in changes.items():
                 if path in ignored:
                     log.append(f"ignored\t{path}\n")
                     continue
                 old = _lines(base / path) if status != "added" else []
                 added, deleted = _diff(old, _lines(work / path) if status != "deleted" else [])
-                cls = _drift_class(path, radius, base_paths)
+                cls = _drift_class(path, radius, base_paths, installed)
                 if cls != INSIDE:
                     lines[cls] += len(added) + deleted
                     files[cls] += 1

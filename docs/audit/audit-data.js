@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-16T21:53:59Z",
+  "generated": "2026-10-17T00:19:13Z",
   "audit": [
     {
       "actor": null,
@@ -189988,6 +189988,36 @@ window.AUDIT_DATA = {
       "datetime": "2026-10-16T21:53:59Z",
       "session": "prompt-log",
       "prompt": "fix the TASK-ISO-A later-edit gap",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M53JX9XXXE6PGA54MYAG4PJ9",
+      "shortname": "fix the Codex .test-deps drift count",
+      "datetime": "2026-10-17T00:06:42Z",
+      "session": "prompt-log",
+      "prompt": "fix the Codex .test-deps drift count",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M53KM7FTFC0WK1VA7CMN5W0D",
+      "shortname": "fix the diffstats gap too",
+      "datetime": "2026-10-17T00:19:13Z",
+      "session": "prompt-log",
+      "prompt": "fix the diffstats gap too",
       "summary": "prompt logged for reuse",
       "kind": "prompt",
       "skill": null,

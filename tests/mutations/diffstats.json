@@ -20,8 +20,8 @@
   {
     "name": "drop clause (a): classes counted in the radius only (launderclass passes)",
     "file": "src/harness_bench/grade/diffstats.py",
-    "find": "    final_classes, final_imports = _scan(final_files, base_paths)",
-    "replace": "    final_classes, final_imports = _scan({k: v for k, v in final_files.items() if _changes.in_radius(k, list(radius))}, base_paths)",
+    "find": "    final_classes, final_imports = _scan(final_files, base_paths, installed)",
+    "replace": "    final_classes, final_imports = _scan({k: v for k, v in final_files.items() if _changes.in_radius(k, list(radius))}, base_paths, installed)",
     "tests": [
       "tests/test_grade_diffstats.py::test_sm_each_metric_and_clause_has_a_flipping_variant"
     ]
@@ -114,6 +114,33 @@
     "replace": "    if False:\n        deciding_clause = \"tests\"\n        pass_score = Score(0, None)",
     "tests": [
       "tests/test_grade_diffstats.py::test_diffstats_grade_failing_hidden_tests_score_zero"
+    ]
+  },
+  {
+    "name": "DRIFT-MACHINE-A: a package installer's files count as the agent's (installed set ignored)",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "            and rel_path not in installed and _changes.machine_written(rel_path) is None)",
+    "replace": "            and _changes.machine_written(rel_path) is None)",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_machine_written_python_is_not_the_agent_s_code"
+    ]
+  },
+  {
+    "name": "DRIFT-MACHINE-A: a tool cache's files count as the agent's (machine_written ignored)",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "            and rel_path not in installed and _changes.machine_written(rel_path) is None)",
+    "replace": "            and rel_path not in installed)",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_machine_written_python_is_not_the_agent_s_code"
+    ]
+  },
+  {
+    "name": "DRIFT-MACHINE-A: the final tree's class and import scan keeps installed files",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "    final_classes, final_imports = _scan(final_files, base_paths, installed)",
+    "replace": "    final_classes, final_imports = _scan(final_files, base_paths, frozenset())",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_machine_written_python_is_not_the_agent_s_code"
     ]
   }
 ]

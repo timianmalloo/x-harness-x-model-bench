@@ -6,6 +6,8 @@
   and audit files), task-implied (a test path) and discretionary (`scope_creep`, redefined).
 """
 
+import base64
+import hashlib
 import json
 from dataclasses import replace
 from decimal import Decimal
@@ -108,6 +110,35 @@ def test_the_machine_written_list_names_the_caches_and_the_exact_audit_files_nev
     for authored in ("docs/audit/notes.md", "docs/audit/sub/audit-log.jsonl", ".agents/log/sub/x.jsonl", "README.md",
                      ".pytest_cache"):  # a file named like a cache dir is not under one
         assert _changes.machine_written(authored) is None, authored
+
+
+def _record_hash(text: str) -> str:
+    return "sha256=" + base64.urlsafe_b64encode(hashlib.sha256(text.encode()).digest()).rstrip(b"=").decode()
+
+
+def test_a_dependency_folder_an_agent_installs_into_is_machine_written_by_its_records_not_its_name(tmp_path):
+    """Interactive run int-codex-20261015T1529, on arm, RS2: Codex ran `pip install --target .test-deps`, a folder name
+    no list holds, and its 1,190 files scored 204,029 lines of scope creep. A file the package's own RECORD names with
+    its hash is machine-written whatever the folder is called; one edited after the install, or one no RECORD names,
+    stays authored."""
+    meta = "Name: pkg\nVersion: 1.0\n"
+    record = "".join(f"{rel},{_record_hash(text)},{len(text)}\n" for rel, text in (
+        ("pkg/__init__.py", "x = 1\n"), ("pkg-1.0.dist-info/METADATA", meta), ("pkg/edited.py", "y = 1\n")))
+    record += "pkg-1.0.dist-info/RECORD,,\n../../bin/pkg.exe,sha256=abc,3\n"  # itself, and a script that leaves the folder
+    deps = {".test-deps/pkg/__init__.py": "x = 1\n", ".test-deps/pkg-1.0.dist-info/METADATA": meta,
+            ".test-deps/pkg-1.0.dist-info/RECORD": record,
+            ".test-deps/pkg/edited.py": "y = 2\n",  # changed after the install: its hash is not the RECORD's
+            ".test-deps/notes.py": "z = 3\n"}  # no RECORD names it
+    folder, cell, task = lean_cell(tmp_path, deps)
+    inp = lean_input(tmp_path, folder, cell, task, by_id("scope_creep", "scope_creep_files", "drift_machine_lines",
+                                                          "drift_task_implied_lines"))
+    got = drift.grade_cell(inp)
+    rows = {f[1]: f[5] for f in (line.split("\t") for line in (inp.out_dir / "drift.log").read_text(encoding="utf-8").splitlines())}
+    assert rows == {".test-deps/notes.py": "discretionary", ".test-deps/pkg-1.0.dist-info/METADATA": "machine:installed",
+                    ".test-deps/pkg-1.0.dist-info/RECORD": "machine:installed", ".test-deps/pkg/__init__.py": "machine:installed",
+                    ".test-deps/pkg/edited.py": "discretionary"}
+    assert {m: s.value for m, s in got.items()} == {"drift_machine_lines": 1 + 2 + 5, "drift_task_implied_lines": 0,
+                                                     "scope_creep": 2, "scope_creep_files": 2}
 
 
 # --- 2. a lean task (graders [correctness, property]) yields all four drift scores: the point of `all_tasks` ---------

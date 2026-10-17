@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
 from decimal import Decimal
 from pathlib import Path
 
@@ -277,6 +279,35 @@ def test_sm_abstractions_counts_classdef_once(tmp_path: Path):
 
     stats = diffstats.measure(base, final, ["mod_a.py"], size_reference_lines=1)
     assert stats["new_abstractions"] == 2  # P(Protocol) + Moved
+
+
+def test_sm_machine_written_python_is_not_the_agent_s_code(tmp_path: Path):
+    """DRIFT-MACHINE-A: a dependency folder an installer wrote (by its RECORD) and a tool cache (by name) add no
+    lines, classes or dependencies; a file edited after the install is the agent's own and counts."""
+    base = tmp_path / "base"
+    base.mkdir()
+    (base / "mod.py").write_bytes(b"a = 1\n")
+    final = tmp_path / "final"
+    files = {
+        "mod.py": b"a = 1\n",
+        ".test-deps/dep/__init__.py": b"import requests\nclass Dep: pass\n",
+        ".test-deps/dep/edited.py": b"import yaml\nclass Edited: pass\n",
+        ".venv/Lib/site-packages/v.py": b"import numpy\nclass V: pass\n",
+    }
+    for rel, data in files.items():
+        (final / rel).parent.mkdir(parents=True, exist_ok=True)
+        (final / rel).write_bytes(data)
+
+    def row(rel: str, data: bytes) -> str:
+        return f"{rel},sha256={base64.urlsafe_b64encode(hashlib.sha256(data).digest()).rstrip(b'=').decode()},{len(data)}\n"
+
+    record = final / ".test-deps/dep-1.0.dist-info/RECORD"
+    record.parent.mkdir(parents=True)
+    record.write_text(row("dep/__init__.py", files[".test-deps/dep/__init__.py"]) + row("dep/edited.py", b"pass\n")
+                      + "dep-1.0.dist-info/RECORD,,\n", encoding="utf-8")
+
+    stats = diffstats.measure(base, final, ["mod.py"], size_reference_lines=1)
+    assert (stats["new_abstractions"], stats["new_dependencies"], stats["outside_radius_lines"]) == (1, 1, 2)
 
 
 def test_sm_radius_partition_counts_each_line_once(tmp_path: Path):
