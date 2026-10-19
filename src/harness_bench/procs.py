@@ -134,6 +134,16 @@ class CellProcess:
                     pass
 
 
+def open_console(argv: list[str], cwd) -> int:
+    """Open a visible console window running argv for the operator and return its pid.
+
+    No job and no pipes: the window is the operator's session (an interactive CLI arm, `interactive.launch`), so it
+    must outlive the bench process that opened it. Windows gets a new console; elsewhere the caller prints the line
+    for the operator instead, since no terminal is portable enough to open (D3: this module owns every spawn)."""
+    proc = subprocess.Popen(argv, cwd=cwd, creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0))
+    return proc.pid
+
+
 def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, *,
           console: bool = True) -> CellProcess:
     """Start argv in its own job (Windows) or process group (POSIX). Raises SpawnError, leaving no process.

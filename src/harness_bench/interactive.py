@@ -31,12 +31,23 @@ import os
 import re
 import shutil
 import sys
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from harness_bench import config, engine, gitsafe, plan, readiness, views, workspace
+from harness_bench import (
+    config,
+    engine,
+    gitsafe,
+    plan,
+    procs,
+    readiness,
+    views,
+    workspace,
+)
 from harness_bench.discriminate import SyntheticLauncher
 from harness_bench.errors import BenchError
+from harness_bench.grade import drift as _drift
 from harness_bench.grade import judge, runner
 from harness_bench.synthetic_agent import SYNTHETIC_VERSION, OverlayError, overlay_files
 from harness_bench.telemetry import (
@@ -65,6 +76,20 @@ RECORD_HOMES = {
     "agy": (None, ".gemini", "antigravity-cli/conversations/*.db"),
 }
 ALIASES = {"claude": "claude-code"}  # what the operator types for a harness -> its bench name
+# The pinned launch line per harness (model, effort, window; approves its own tool calls, the same flag in both arms) and
+# how that CLI takes an initial prompt while staying interactive, checked against the installed builds 2026-10-18:
+# `claude [prompt]`, `codex [PROMPT]`, `copilot -i <prompt>`, `agy -i <prompt>` (`--prompt-interactive`). The prompt page
+# shows these lines; tests/test_interactive.py asserts the page equals this table (one source, two surfaces).
+LAUNCH = {
+    "claude-code": (["claude", "--model", "claude-opus-5-5[1m]", "--effort", "high", "--dangerously-skip-permissions"], []),
+    "codex": (["codex", "-m", "gpt-6.1-sol", "-c", "model_reasoning_effort=high", "-c", "model_context_window=872000",
+               "-c", "model_auto_compact_token_limit=750000", "--dangerously-bypass-approvals-and-sandbox"], []),
+    "copilot": (["copilot", "--model", "gpt-6.1-sol", "--reasoning-effort", "high", "--context", "long_context", "--allow-all"], ["-i"]),
+    "agy": (["agy", "--model", "gemini-4-argon-high", "--dangerously-skip-permissions"], ["-i"]),
+}
+PASTE_FILE = "paste.txt"  # .bench/paste.txt: PASTE, read by the launch scripts as the session's first message
+LAUNCH_PS1, LAUNCH_SH = "launch.ps1", "launch.sh"  # .bench/launch.*: cd, the arm's venv, the pinned line, the paste
+POLL_SECONDS = 15  # `run_all` looks for an arm's summary.json this often while its session works
 LEAN_RING = Path("bench") / "rings" / "lean.yaml"  # its BOM subset is the default task list, in queue order
 GRADE = "grade.json"  # .bench/grade.json: the command next.py starts when the last item closes
 # The pack's dispatcher appends one line per hook dispatch here when the file exists (pack revision 110 on; its
@@ -169,6 +194,7 @@ def prepare(root: Path, run_id: str, harness: str, out_root: Path, task_ids: lis
             argv = [*bench_argv, "interactive", "collect", str(run_root.resolve()), "--arm", arm, "--open"]
             (bench / GRADE).write_text(json.dumps({"argv": argv, "cwd": str(root.resolve()),
                                                    "log": str(run_root.resolve() / f"grade-{arm}.log")}, indent=2), encoding="utf-8")
+        write_launch_scripts(arm_dir, harness)
         _git(["init", "-q", "-b", "main"], arm_dir)
         (arm_dir / HOOK_TIMES).parent.mkdir(parents=True, exist_ok=True)
         (arm_dir / HOOK_TIMES).write_text("", encoding="utf-8")  # asks the pack's dispatcher to time itself (REC-UNREAD-A)
@@ -190,6 +216,83 @@ def prepare(root: Path, run_id: str, harness: str, out_root: Path, task_ids: lis
                 "pack_pin": {"source": pin[0], "commit": pin[1], "revision": workspace.pack_revision(pack_dir)}, "arms": arms}
     (run_root / MANIFEST).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest
+
+
+def launch_line(harness: str) -> str:
+    """The pinned launch line as the prompt page shows it (no prompt)."""
+    argv, _flag = LAUNCH[harness]
+    return " ".join(f'"{a}"' if " " in a or "[" in a else a for a in argv)
+
+
+def write_launch_scripts(arm_dir: Path, harness: str) -> None:
+    """`.bench/launch.ps1` and `.bench/launch.sh`: cd into the arm, activate its own venv, refuse any pip install outside
+    one, and start the pinned CLI with PASTE (`.bench/paste.txt`) as the session's first message. What the operator did
+    by hand per window (cd, two venv lines, the launch line, the paste) on 2026-10-15; the CLI stays the real interactive
+    one in its own window. The trust prompt a CLI shows for a new folder is still the operator's to answer."""
+    bench = arm_dir / ".bench"
+    (bench / PASTE_FILE).write_text(PASTE, encoding="utf-8", newline="\n")
+    argv, flag = LAUNCH[harness]
+    ps1 = [f"Set-Location -LiteralPath '{arm_dir}'", "& .\\.venv\\Scripts\\Activate.ps1", '$env:PIP_REQUIRE_VIRTUALENV = "1"',
+           f"$paste = Get-Content -Raw -LiteralPath '.bench\\{PASTE_FILE}'",
+           "& " + " ".join(["'" + a + "'" if " " in a or "[" in a else a for a in argv] + flag + ["$paste"])]
+    (bench / LAUNCH_PS1).write_text("\n".join(ps1) + "\n", encoding="utf-8", newline="\n")
+    sh = ["#!/usr/bin/env bash", f"cd '{arm_dir.as_posix()}' || exit 1", ". ./.venv/bin/activate", "export PIP_REQUIRE_VIRTUALENV=1",
+          f'paste="$(cat .bench/{PASTE_FILE})"', "exec " + " ".join([f"'{a}'" for a in argv] + flag + ['"$paste"'])]
+    (bench / LAUNCH_SH).write_text("\n".join(sh) + "\n", encoding="utf-8", newline="\n")
+
+
+def launch(run_root: Path, spawn=None) -> list[Path]:
+    """Open one window per arm running its `.bench/launch.ps1` (Windows: a new console per arm). Elsewhere `spawn` is
+    required (the operator's terminal is not known): the default prints the two `launch.sh` paths. Returns the scripts."""
+    manifest = load(run_root)
+    scripts = []
+    for arm in ARMS:
+        bench = Path(manifest["arms"][arm]["path"]) / ".bench"
+        script = bench / (LAUNCH_PS1 if sys.platform == "win32" else LAUNCH_SH)
+        if not script.is_file():
+            raise BenchError("HB-USR-002", f"{script} is missing: prepare this run again (the launch scripts came with revision 2026-10-18)")
+        scripts.append(script)
+    if spawn is None and sys.platform == "win32":
+        spawn = _new_console
+    if spawn is None:
+        print("open a terminal per arm and run:\n  " + "\n  ".join(f"bash {s}" for s in scripts))
+    else:
+        for script in scripts:
+            spawn(script)
+    return scripts
+
+
+def _new_console(script: Path) -> None:
+    procs.open_console(["pwsh", "-NoProfile", "-NoExit", "-ExecutionPolicy", "Bypass", "-File", str(script)],
+                       cwd=script.parents[1])
+
+
+def wait_graded(run_root: Path, poll: float = POLL_SECONDS, sleep=time.sleep, clock=time.monotonic,
+                timeout: float | None = None) -> dict[str, Path]:
+    """Block until both arms' `collect/<arm>/summary.json` exist (next.py starts the grading when a session closes its
+    last item), polling every `poll` seconds; `timeout` seconds (None: no limit) raises with the arms still missing."""
+    start = clock()
+    while True:
+        found = {arm: run_root / "collect" / arm / "summary.json" for arm in ARMS}
+        missing = [arm for arm, p in found.items() if not p.is_file()]
+        if not missing:
+            return found
+        if timeout is not None and clock() - start >= timeout:
+            raise BenchError("HB-RUN-001", f"{run_root.name}: no grading for arm(s) {', '.join(missing)} after {timeout:g} s")
+        sleep(poll)
+
+
+def run_all(prepare_run, out_root: Path, harness_names: list[str], *, spawn=None, poll: float = POLL_SECONDS,
+            sleep=time.sleep, clock=time.monotonic, timeout: float | None = None, current: dict | None = None) -> list[dict]:
+    """One command for the whole interactive comparison: per harness, in turn (one CLI at a time: the 2026-10-15 rule),
+    `prepare_run(harness) -> manifest`, open its two windows, wait for both arms' gradings; then gather every run.
+    Returns gather's rows. The sessions themselves are the operator's real interactive CLIs."""
+    for harness in harness_names:
+        manifest = prepare_run(harness)
+        run_root = out_root / manifest["run_id"]
+        launch(run_root, spawn)
+        wait_graded(run_root, poll, sleep, clock, timeout)
+    return gather(out_root, current=current)
 
 
 def session_python() -> str | None:
@@ -395,8 +498,32 @@ def replay(root: Path, manifest: dict, arm: str, overlays: dict[str, Path], runs
         if task.get("property"):
             keep |= set(readiness.recorded_metrics(root, task))
     (grading_id,) = passes
-    scores, _pointers = readiness.run_scores(run_dir, grading_id, {c["cell_id"]: c["task"] for c in p["cells"]}, keep)
-    return run_id, scores, notes
+    cell_tasks = {c["cell_id"]: c["task"] for c in p["cells"]}
+    scores, _pointers = readiness.run_scores(run_dir, grading_id, cell_tasks, keep)
+    files = {task: drift_files(run_dir / "grading" / grading_id / cid / "drift" / "drift.log") for cid, task in cell_tasks.items()}
+    return run_id, scores, notes, files
+
+
+DRIFT_FILES_SHOWN = 5
+DRIFT_DISCRETIONARY = _drift.DISCRETIONARY  # the drift.log class token of a file scope_creep counts
+
+
+def drift_files(log: Path) -> list[dict]:
+    """The discretionary files of one cell's `drift.log` (grade/drift.py: one line per changed file, the class last),
+    largest change first, at most `DRIFT_FILES_SHOWN`: the evidence behind a `scope_creep` number, so a reader sees
+    `.test-deps/...` (an installer's tree) or one `pyproject.toml` edit instead of a bare line count. Empty when the log
+    is missing or holds no such file."""
+    try:
+        text = log.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    found = []
+    for line in text.splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 6 and parts[-1] == DRIFT_DISCRETIONARY:
+            m = re.fullmatch(r"\+(\d+) -(\d+)", parts[3])
+            found.append({"path": parts[1], "lines": int(m.group(1)) + int(m.group(2)) if m else 0})
+    return sorted(found, key=lambda f: (-f["lines"], f["path"]))[:DRIFT_FILES_SHOWN]
 
 
 def _blob_ids(listing: str, sha_field: int, prefix: str = "") -> dict[str, str]:
@@ -850,13 +977,14 @@ def collect(root: Path, run_root: Path, arm: str, harness: str, runs: Path, cell
     session, session_warnings = read_session(manifest, arm, harness, records)
     if state.get("open") or len(state.get("done", [])) < len(items):
         warnings.append(f"{len(state.get('done', []))} of {len(items)} items finished (next.py never printed ALL DONE)")
-    replay_id, scores, notes = replay(root, manifest, arm, overlays, runs, cells_root, upstream_root)
+    replay_id, scores, notes, files = replay(root, manifest, arm, overlays, runs, cells_root, upstream_root)
     warnings += notes
     summary = {"schema": "bench-interactive-summary/1", "run_id": manifest["run_id"], "arm": arm, "harness": harness,
-               "collected_at": _now(), "replay_run": replay_id, "scores": scores, "minutes": _minutes(state),
+               "collected_at": _now(), "replay_run": replay_id, "scores": scores, "drift_files": files, "minutes": _minutes(state),
                "outside_task_folders": outside, "session": session, "session_read_at": _now(),
                "session_warnings": session_warnings, "warnings": warnings,
-               "pack_hook_time": pack_hook_time(arm_dir, manifest["pack_pin"]["revision"])}
+               "pack_hook_time": pack_hook_time(arm_dir, manifest["pack_pin"]["revision"]),
+               "graded_with": grader_identity(root, manifest)}
     out.mkdir(parents=True, exist_ok=True)
     (out / "summary.json").write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     return summary
@@ -884,7 +1012,113 @@ def refresh_session(run_root: Path, arm: str) -> dict:
     return summary
 
 
-def gather(out_root: Path) -> list[dict]:
+def grader_identity(root: Path, manifest: dict) -> dict:
+    """What graded an arm: the bench commit (None outside git) and whether its tree was dirty, plus the task versions the
+    run was prepared with. `report` compares it with the bench grading now (STALE-GRADE-A): a grader fix after a collect
+    leaves the stored scores disagreeing with HEAD's grader, silently, until the arm is collected again."""
+    head = gitsafe.git(["rev-parse", "HEAD"], cwd=root, timeout=GIT_TIMEOUT, check=False)
+    dirty = gitsafe.git(["status", "--porcelain", "--untracked-files=no", "--", "src", "bench", "tasks"], cwd=root,
+                        timeout=GIT_TIMEOUT, check=False)
+    commit = head.stdout.strip() if head.returncode == 0 and re.fullmatch(r"[0-9a-f]{40}", head.stdout.strip()) else None
+    return {"bench_commit": commit, "dirty": bool(dirty.stdout.strip()) if dirty.returncode == 0 else None,
+            "task_versions": {t: plan.task_version_hash(root / "tasks" / t) for t in manifest["tasks"]
+                              if (root / "tasks" / t / "task.yaml").is_file()}}
+
+
+def stale_grades(arms: dict[str, dict], current: dict | None) -> list[str]:
+    """One warning per arm whose stored scores were not graded by this bench's grader: an older bench commit, a dirty
+    tree then or now, or a task version that moved; a summary from before `graded_with` existed is stale too. Nothing
+    without `current` (a report made with no bench to compare against)."""
+    if current is None:
+        return []
+    out = []
+    for arm, s in arms.items():
+        then = s.get("graded_with")
+        if then is None:
+            out.append(f"{arm}: graded before the grader build was recorded; re-run `bench interactive collect` to grade "
+                       "with this bench")
+            continue
+        why = []
+        if then["bench_commit"] != current["bench_commit"]:
+            why.append(f"graded at bench commit {(then['bench_commit'] or 'none')[:12]}, this bench is {(current['bench_commit'] or 'none')[:12]}")
+        if then.get("dirty") or current.get("dirty"):
+            why.append("the bench tree was dirty " + ("then" if then.get("dirty") else "now"))
+        moved = sorted(t for t in then["task_versions"] if current["task_versions"].get(t) != then["task_versions"][t])
+        if moved:
+            why.append(f"task version moved: {', '.join(moved)}")
+        if why:
+            out.append(f"{arm}: STALE ({'; '.join(why)}); re-run `bench interactive collect --arm {arm}`")
+    return out
+
+
+SESSIONS_FOR_VERDICT = 3  # per arm: fewer is a paired observation per task, never a per-task verdict (ADR-0022 s1 n=1 limit)
+COMPARE_BUCKETS = ("uncached_input", "cache_read", "cache_write", "output")
+
+
+def _median(values: list) -> str:
+    nums = [v for v in values if isinstance(v, (int, float))]
+    if not nums:
+        return "not recorded"
+    nums.sort()
+    mid = len(nums) // 2
+    med = nums[mid] if len(nums) % 2 else (nums[mid - 1] + nums[mid]) / 2
+    return f"{round(med):,}" if all(isinstance(v, int) for v in nums) else f"{med:,.1f}"  # counts whole, minutes to 0.1
+
+
+def compare(out_root: Path, current: dict | None = None) -> Path:
+    """Every harness across all its runs under `out_root` (the sessions are the repetitions): per task, passes per arm
+    over n sessions, the sessions where the arms disagreed, and the median per bucket of tokens and of minutes per arm.
+    Writes `<out_root>/interactive-compare.md`. A run counts for a task where both arms hold a graded score for it."""
+    runs: dict[str, list[tuple[str, dict]]] = {}
+    for manifest_path in sorted(out_root.glob(f"*/{MANIFEST}")):
+        run_root = manifest_path.parent
+        arms = {}
+        for arm in ARMS:
+            path = run_root / "collect" / arm / "summary.json"
+            if path.is_file():
+                arms[arm] = json.loads(path.read_text(encoding="utf-8"))
+        if set(arms) == set(ARMS):
+            runs.setdefault(load(run_root)["harness"], []).append((run_root.name, arms))
+    lines = ["# Interactive comparison: pack-on against pack-off, every session", "",
+             (f"- Sessions are the repetitions. A per-task verdict needs at least {SESSIONS_FOR_VERDICT} sessions per arm; "
+              "below that, a row is a paired observation, not a result."),
+             ("- A session counts for a task where both of its arms were graded on it. Tokens per bucket are medians over "
+              "those sessions (`not recorded` where a record only summarises usage)."), ""]
+    if not runs:
+        lines.append("No run under this folder has both arms graded.")
+    for harness, found in sorted(runs.items()):
+        n = len(found)
+        lines += [f"## {harness}: {n} session(s) per arm" + ("" if n >= SESSIONS_FOR_VERDICT else
+                                                             f" (needs {SESSIONS_FOR_VERDICT - n} more for a per-task verdict)"),
+                  "", "Runs: " + ", ".join(f"`{name}`" for name, _ in found) + ".", ""]
+        stale = [f"`{name}`: {w}" for name, arms in found for w in stale_grades(arms, current)]
+        if stale:
+            lines += ["**Stale scores.** " + " ".join(stale), ""]
+        tasks = []
+        for _, arms in found:
+            tasks += [t for t in arms[ARM_ON]["scores"] if t not in tasks]
+        head = ["Task", "n", "off passes", "on passes", "sessions that disagree"] + \
+               [f"{a}: median {b}" for a in ARMS for b in (*COMPARE_BUCKETS, "minutes")]
+        lines += ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
+        for task in tasks:
+            pairs = [(arms[config.ARM_OFF]["scores"].get(task, {}).get("property_check_pass"),
+                      arms[ARM_ON]["scores"].get(task, {}).get("property_check_pass")) for _, arms in found]
+            pairs = [(o, n_) for o, n_ in pairs if isinstance(o, int) and isinstance(n_, int)]
+            row = [task, str(len(pairs)), str(sum(o for o, _ in pairs)), str(sum(n_ for _, n_ in pairs)),
+                   str(sum(1 for o, n_ in pairs if o != n_))]
+            for arm in ARMS:
+                segs = [((arms[arm].get("session") or {}).get("per_item") or {}).get(task) for _, arms in found]
+                row += [_median([s[b] for s in segs if s]) for b in COMPARE_BUCKETS]
+                row.append(_median([sum(v for k, v in arms[arm]["minutes"].items() if k.split("|")[0] == task) or None
+                                    for _, arms in found]))
+            lines.append("| " + " | ".join(row) + " |")
+        lines.append("")
+    out = out_root / "interactive-compare.md"
+    out.write_text("\n".join(lines), encoding="utf-8")
+    return out
+
+
+def gather(out_root: Path, current: dict | None = None) -> list[dict]:
     """Every interactive run under `out_root`: re-read each graded arm's session and write the run's two-arm report.
     One row per run: run folder, harness, arm -> `graded` or `not graded`, and the report (None until an arm is graded)."""
     rows = []
@@ -897,7 +1131,7 @@ def gather(out_root: Path) -> list[dict]:
                 refresh_session(run_root, arm)
         graded = any(s == "graded" for s in status.values())
         if graded:
-            report(run_root)
+            report(run_root, current=current)
         rows.append({"run": str(run_root), "harness": manifest["harness"], "arms": status,
                      "report": str(run_root / "interactive-report.md") if graded else None})
     return rows
@@ -931,7 +1165,12 @@ def _hook_seconds(session: dict | None) -> str:
     return _seconds(session, "hook_ms", "hook_events", "hooks")
 
 
-def report(run_root: Path, only: str | None = None) -> Path:
+def _ratio(off, on) -> str:
+    """`on ÷ off` for two recorded, positive counts, else `-`."""
+    return f"×{on / off:.2f}" if isinstance(off, int) and isinstance(on, int) and off > 0 and on >= 0 else "-"
+
+
+def report(run_root: Path, only: str | None = None, current: dict | None = None) -> Path:
     """The collected arms side by side, as Markdown: both arms to `<run>/interactive-report.md`, or with `only` that arm
     alone to `<run>/collect/<arm>/report.md` (the report the session's own grading opens). Returns the path."""
     manifest = load(run_root)
@@ -948,8 +1187,11 @@ def report(run_root: Path, only: str | None = None) -> Path:
              f"- Harness: **{harness}**. One interactive session per arm, launched by the operator.",
              f"- Pack (on arm): `{manifest['pack_pin']['source']}` at `{manifest['pack_pin']['commit'][:12]}` (revision {manifest['pack_pin']['revision']}).",
              f"- Tasks, in queue order: {', '.join(manifest['tasks'])}. Prepared {manifest['created_at']}.",
-             "- Arms collected: " + ", ".join(f"{a} (replay run `{s['replay_run']}`)" for a, s in arms.items()) + ".", "",
-             "## Results per task", "",
+             "- Arms collected: " + ", ".join(f"{a} (replay run `{s['replay_run']}`)" for a, s in arms.items()) + "."]
+    stale = stale_grades(arms, current)
+    if stale:
+        lines += ["", "**Stale scores.** " + " ".join(stale)]
+    lines += ["", "## Results per task", "",
              "| Task | " + " | ".join(f"{a}: hidden tests (pass_at_1) | {a}: property_check_pass | {a}: minutes" for a in arms) + " |",
              "|---|" + "---|---|---|" * len(arms)]
     for tid in manifest["tasks"]:
@@ -964,41 +1206,63 @@ def report(run_root: Path, only: str | None = None) -> Path:
               "|---|" + "---|" * (len(arms) * len(DRIFT_SCORES))]
     for tid in manifest["tasks"]:
         lines.append(f"| {tid} | " + " | ".join(_score(s["scores"].get(tid, {}).get(m)) for s in arms.values() for m in DRIFT_SCORES) + " |")
+    shown = [(tid, a, s["drift_files"][tid]) for tid in manifest["tasks"] for a, s in arms.items()
+             if s.get("drift_files", {}).get(tid)]
+    if shown:
+        lines += ["", (f"Behind each scope_creep count, the largest discretionary files (at most {DRIFT_FILES_SHOWN}; the full "
+                       "list is the cell's `drift.log`):"), ""]
+        lines += [f"- {tid} {a}: " + ", ".join(f"`{f['path']}` ({f['lines']:,} lines)" for f in files) for tid, a, files in shown]
     lines.append("")
     for a, s in arms.items():
         outside = s.get("outside_task_folders") or []
         lines.append(f"- **{a}**: {len(outside)} file(s) changed outside the task folders" + (f": {', '.join(outside[:10])}" if outside else "."))
     primary = [t for t in manifest["tasks"] if t != "SV1"]
-    lines += ["", "## Totals", "", "| Measure | " + " | ".join(arms) + " |", "|---|" + "---|" * len(arms)]
+    both = set(arms) == set(ARMS)  # the on ÷ off column needs both arms
+    lines += ["", "## Totals", "", "| Measure | " + " | ".join(arms) + (" | on ÷ off |" if both else " |"),
+              "|---|" + "---|" * (len(arms) + both)]
 
     def count(arm_summary, metric, tasks):
         vals = [arm_summary["scores"].get(t, {}).get(metric) for t in tasks]
         return f"{sum(1 for v in vals if v == 1)} of {sum(1 for v in vals if isinstance(v, int))} graded"
 
-    lines.append("| property_check_pass (primary, without SV1) | " + " | ".join(count(s, "property_check_pass", primary) for s in arms.values()) + " |")
-    lines.append("| hidden tests pass (all tasks) | " + " | ".join(count(s, "pass_at_1", manifest["tasks"]) for s in arms.values()) + " |")
-    lines.append("| wall minutes (sum of tasks) | " + " | ".join(_num(round(sum(s["minutes"].values()), 1)) for s in arms.values()) + " |")
+    def total(s, f):
+        return (s["session"] or {}).get("total", {}).get(f) if s["session"] else None
+
+    def row(label, cells, values=None):
+        ratio = [_ratio(values[0], values[1])] if both and values else ["-"] if both else []
+        lines.append(f"| {label} | " + " | ".join([*cells, *ratio]) + " |")
+
+    row("property_check_pass (primary, without SV1)", [count(s, "property_check_pass", primary) for s in arms.values()])
+    row("hidden tests pass (all tasks)", [count(s, "pass_at_1", manifest["tasks"]) for s in arms.values()])
+    row("wall minutes (sum of tasks)", [_num(round(sum(s["minutes"].values()), 1)) for s in arms.values()])
+    # One row per token bucket (TOK-BUCKET-A): the pack's own cost is in uncached input and cache writes; cache reads
+    # are the context re-read on every request and dominate any one-number total (98% of a Claude session's input).
     for f in (*TOKEN_FIELDS, "model_calls", "tool_calls", "tool_failures", "tool_failures_exit"):
-        label = "tool_failures_exit (of those, a command that ran and exited non-zero)" if f == "tool_failures_exit" else f
-        lines.append(f"| {label} | " + " | ".join(_num((s["session"] or {}).get("total", {}).get(f)) if s["session"] else "not recorded" for s in arms.values()) + " |")
-    lines.append("| pack hook events | " + " | ".join(_num(s["session"]["pack_hook_events"]) if s["session"] else "not recorded"
-                                                     for s in arms.values()) + " |")
-    lines.append("| hook seconds (every hook the record times, pack and user-level) | " + " | ".join(
-        _hook_seconds(s["session"]) for s in arms.values()) + " |")
-    lines.append("| pack hook seconds (the pack's dispatcher, self-timed) | " + " | ".join(
-        _seconds(s.get("pack_hook_time"), "ms", "dispatches", "dispatches") for s in arms.values()) + " |")
-    lines.append("| model seconds (union of model-call spans) | " + " | ".join(
-        _seconds(s["session"], "model_ms") for s in arms.values()) + " |")
-    lines.append("| tool seconds (union of tool-call spans) | " + " | ".join(
-        _seconds(s["session"], "tool_ms") for s in arms.values()) + " |")
+        label = {"tool_failures_exit": "tool_failures_exit (of those, a command that ran and exited non-zero)",
+                 "uncached_input": "uncached_input tokens (the prefix and new text each request pays for)",
+                 "cache_read": "cache_read tokens (context re-read from the cache)",
+                 "cache_write": "cache_write tokens (new context written to the cache)",
+                 "output": "output tokens", "reasoning": "reasoning tokens (within output where the record says)"}.get(f, f)
+        values = [total(s, f) for s in arms.values()]
+        row(label, [_num(v) if s["session"] else "not recorded" for v, s in zip(values, arms.values())], values)
+    row("pack hook events", [_num(s["session"]["pack_hook_events"]) if s["session"] else "not recorded" for s in arms.values()],
+        [(s["session"] or {}).get("pack_hook_events") for s in arms.values()])
+    row("hook seconds (every hook the record times, pack and user-level)", [_hook_seconds(s["session"]) for s in arms.values()])
+    row("pack hook seconds (the pack's dispatcher, self-timed)",
+        [_seconds(s.get("pack_hook_time"), "ms", "dispatches", "dispatches") for s in arms.values()])
+    row("model seconds (union of model-call spans)", [_seconds(s["session"], "model_ms") for s in arms.values()])
+    row("tool seconds (union of tool-call spans)", [_seconds(s["session"], "tool_ms") for s in arms.values()])
     lines += ["", "## Served settings (from each session's own record)", ""]
     for a, s in arms.items():
         lines.append(f"- **{a}**: " + ("; ".join(json.dumps(x) for x in s["session"]["served"]) if s["session"] else "no record"))
         lines.append(f"- **{a}** CLI build: " + (", ".join((s["session"] or {}).get("cli_versions") or []) or "not recorded"))
     if "python" in manifest:
         lines.append(f"- Arm environments: a .venv per arm from `{manifest['python']['path']}` (Python {manifest['python']['version']}).")
-    lines += ["", "## Tokens per task", "", "| Task | " + " | ".join(f"{a}: input+cache | {a}: output | {a}: tool calls" for a in arms) + " |",
-              "|---|" + "---|---|---|" * len(arms)]
+    per_task = ("uncached_input", "cache_read", "cache_write", "output", "tool_calls")
+    lines += ["", ("## Tokens per task (each bucket apart: uncached input is what the pack's prefix and the task's own text cost; "
+                   "cache reads are the re-read context)"), "",
+              "| Task | " + " | ".join(f"{a}: {f}" for a in arms for f in per_task) + " |",
+              "|---|" + "---|" * (len(arms) * len(per_task))]
     order = {t: n for n, t in enumerate(manifest["tasks"])}
     labels = sorted({k for s in arms.values() if s["session"] for k in s["session"]["per_item"]},
                     key=lambda k: (order.get(k.split(" ")[0], len(order)), k))  # `unattributed` last
@@ -1006,11 +1270,7 @@ def report(run_root: Path, only: str | None = None) -> Path:
         row = [label]
         for s in arms.values():
             seg = (s["session"] or {}).get("per_item", {}).get(label)
-            if not seg:
-                row += ["not recorded"] * 3
-                continue
-            inp = None if seg["uncached_input"] is None else seg["uncached_input"] + seg["cache_read"] + seg["cache_write"]
-            row += [_num(inp), _num(seg["output"]), _num(seg["tool_calls"])]
+            row += [_num(seg[f]) for f in per_task] if seg else ["not recorded"] * len(per_task)
         lines.append("| " + " | ".join(row) + " |")
     lines += ["", "## Warnings", ""]
     if len(arms) > 1:
@@ -1033,6 +1293,7 @@ def report(run_root: Path, only: str | None = None) -> Path:
     return dest
 
 
-__all__ = ["ARMS", "PASTE", "build_overlays", "collect", "default_tasks", "find_records", "gather", "harnesses",
-           "latest_pack", "load", "outside_task_folders", "prepare", "read_session", "refresh_session", "replay", "report", "seen_changes", "served_model_warnings",
-           "session_metrics", "split"]
+__all__ = ["ARMS", "LAUNCH", "PASTE", "build_overlays", "collect", "compare", "default_tasks", "drift_files", "find_records",
+           "gather", "grader_identity", "harnesses", "latest_pack", "launch", "launch_line", "load", "outside_task_folders",
+           "prepare", "read_session", "refresh_session", "replay", "report", "run_all", "seen_changes",
+           "served_model_warnings", "session_metrics", "split", "stale_grades", "wait_graded", "write_launch_scripts"]

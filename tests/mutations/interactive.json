@@ -285,5 +285,55 @@
   "find": "    model_ms = (views.busy_ms(model_rows, positive=True, missing=views.NO_MODEL_START) if model_rows",
   "replace": "    model_ms = (views.busy_ms([r for r in model_rows if r[\"start\"]], positive=True, missing=views.NO_MODEL_START) if model_rows",
   "tests": ["tests/test_interactive.py::test_model_and_tool_seconds_are_the_union_of_their_spans_as_the_cell_views_count_them"]
+ },
+ {
+  "name": "IN42: the on / off ratio is printed for every row, a 0 denominator included",
+  "file": "src/harness_bench/interactive.py",
+  "find": "    return f\"×{on / off:.2f}\" if isinstance(off, int) and isinstance(on, int) and off > 0 and on >= 0 else \"-\"",
+  "replace": "    return f\"×{on / off:.2f}\" if isinstance(off, int) and isinstance(on, int) and on >= 0 else \"-\"",
+  "tests": ["tests/test_interactive_report.py::test_compare_pairs_every_session_per_task_and_says_how_many_more_a_verdict_needs",
+            "tests/test_interactive_report.py::test_token_buckets_are_reported_apart_with_an_on_over_off_ratio_per_bucket"]
+ },
+ {
+  "name": "IN43: a grade from another bench commit is not stale",
+  "file": "src/harness_bench/interactive.py",
+  "find": "        if then[\"bench_commit\"] != current[\"bench_commit\"]:",
+  "replace": "        if False:",
+  "tests": ["tests/test_interactive_report.py::test_a_grade_from_another_bench_commit_or_task_version_or_no_record_is_flagged_stale"]
+ },
+ {
+  "name": "IN44: a summary without graded_with passes as current",
+  "file": "src/harness_bench/interactive.py",
+  "find": "        if then is None:\n            out.append(",
+  "replace": "        if then is None:\n            continue\n            out.append(",
+  "tests": ["tests/test_interactive_report.py::test_a_grade_from_another_bench_commit_or_task_version_or_no_record_is_flagged_stale"]
+ },
+ {
+  "name": "IN45: drift files in log order, not largest first",
+  "file": "src/harness_bench/interactive.py",
+  "find": "    return sorted(found, key=lambda f: (-f[\"lines\"], f[\"path\"]))[:DRIFT_FILES_SHOWN]",
+  "replace": "    return found[:DRIFT_FILES_SHOWN]",
+  "tests": ["tests/test_interactive_report.py::test_the_files_behind_a_scope_creep_count_are_listed_largest_first"]
+ },
+ {
+  "name": "IN46: a session where the off arm passed and the on arm failed does not count as disagreement",
+  "file": "src/harness_bench/interactive.py",
+  "find": "                   str(sum(1 for o, n_ in pairs if o != n_))]",
+  "replace": "                   str(sum(1 for o, n_ in pairs if o < n_))]",
+  "tests": ["tests/test_interactive_report.py::test_compare_pairs_every_session_per_task_and_says_how_many_more_a_verdict_needs"]
+ },
+ {
+  "name": "IN47: the next harness's windows open before the one before is graded",
+  "file": "src/harness_bench/interactive.py",
+  "find": "        launch(run_root, spawn)\n        wait_graded(run_root, poll, sleep, clock, timeout)",
+  "replace": "        launch(run_root, spawn)",
+  "tests": ["tests/test_interactive.py::test_run_all_opens_two_windows_per_harness_in_turn_waits_for_both_gradings_then_gathers"]
+ },
+ {
+  "name": "IN48: the per-task token table sums the buckets again",
+  "file": "src/harness_bench/interactive.py",
+  "find": "            row += [_num(seg[f]) for f in per_task] if seg else [\"not recorded\"] * len(per_task)",
+  "replace": "            row += [_num(seg[\"uncached_input\"] + seg[\"cache_read\"] + seg[\"cache_write\"]), *[_num(seg[f]) for f in per_task[1:]]] if seg else [\"not recorded\"] * len(per_task)",
+  "tests": ["tests/test_interactive_report.py::test_token_buckets_are_reported_apart_with_an_on_over_off_ratio_per_bucket"]
  }
 ]

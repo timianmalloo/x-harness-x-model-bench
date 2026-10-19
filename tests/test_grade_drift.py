@@ -11,7 +11,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT, gate_runs_root
+from archived_runs import ROOT, archived_run
 from test_grade_correctness import d1_cell, stat_snapshot, tree_digest
 
 from harness_bench import config, plan, procs, views
@@ -230,9 +230,7 @@ def test_the_cells_own_ignore_rule_hides_nothing_and_a_tracked_file_under_a_pre_
         {"scope_creep": (1 + 1 + 2, None), "scope_creep_files": (3, None), "convention_drift": ("0.00", None)}
 
 
-# --- the gate run row15-d1-1, read-only (HB_GATE_RUNS) ---------------------------------------------------------------
-
-GATE_RUNS = gate_runs_root()
+# --- the gate run row15-d1-1, read-only (archived_runs.GATE_RUNS) -------------------------------------------------
 D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack (design: Drift, Fixtures)
     "4a6250261f80ded4": ("0.00", None),  # cp on
     "3ff04431d3b5ac27": ("0.00", None),  # cx on: committed its two files after the pack commit
@@ -245,9 +243,7 @@ D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack
 
 @pytest.mark.gate
 def test_the_d1_gate_cells_have_no_scope_creep_and_the_archive_is_unchanged(tmp_path):
-    run = GATE_RUNS / "row15-d1-1"
-    if not (run / "plan.json").is_file():
-        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    run = archived_run("row15-d1-1")
     attempts = {e["cell_id"]: e["archive_attempt"] for e in views.rows(run, "events") if e["kind"] == "cell.archived"}
     cells = {c["cell_id"]: c for c in plan.load_confirmed(run)["cells"]}
     got = {}

@@ -370,7 +370,10 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         # annotations). A new caller - a judge spawned from grade/judge.py above all - fails until added here on purpose.
         # host added (ADR-0013 Amendment 1 s5, the macOS port): POSIX creation_time() runs `ps -o lstart=` through
         # procs.run, the only sanctioned subprocess gateway (D3) -- host.py itself never calls subprocess directly.
-        allowed = {"engine", "gitsafe", "grade/correctness", "grade/property", "host", "plan", "procs", "tools", "workspace"}
+        # interactive added (2026-10-18, BOOT-STEPS-A): `launch` opens the operator's two CLI consoles through
+        # procs.open_console, a visible window in no job, so the arms outlive the bench process that opened them.
+        allowed = {"engine", "gitsafe", "grade/correctness", "grade/property", "host", "interactive", "plan", "procs",
+                   "tools", "workspace"}
         for rel in sorted(set(trees) - inside):
             if Path(rel).with_suffix("").as_posix().removeprefix("src/harness_bench/") in allowed:
                 continue

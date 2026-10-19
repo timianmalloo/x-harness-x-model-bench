@@ -18,7 +18,7 @@ from archived_runs import (
     FROZEN_ROOT,
     GOOD,
     ROOT,
-    gate_runs_root,
+    archived_run,
     make_root,
     make_run,
     pass_rows,
@@ -248,7 +248,6 @@ def test_the_committed_freeze_record_names_the_frozen_tasks_and_they_are_unchang
 # --- the 0.3 values and exports survive the 0.4.dev dispatch (R-59 c6; design: the byte-identity gate) ------------
 
 MINI_RUNS = Path(__file__).parent / "fixtures" / "ledger"  # two committed X1 runs graded under 0.3 (D6)
-GATE_RUNS = gate_runs_root()
 
 
 @pytest.mark.parametrize("name", ["c44dd2b-no-heads", "heads"])
@@ -279,9 +278,7 @@ def test_a_committed_mini_run_regrades_to_its_0_3_values_with_every_other_metric
 @pytest.mark.parametrize("name", sorted(config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs_export_3"]))
 def test_the_gate_runs_0_3_exports_equal_the_committed_baseline(name):  # P5, L-1: read-only; absent runs skip (CI)
     entry = config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs_export_3"][name]  # export shape 3 (R-86: no extraction_id)
-    if not (GATE_RUNS / name / "plan.json").is_file():
-        pytest.skip(f"gate run {name} is not on this host (set HB_GATE_RUNS to the runs folder)")
-    view = views.load(GATE_RUNS / name, "0.3")
+    view = views.load(archived_run(name), "0.3")
     data = views.export(view)
     assert (view.grading_id, len(data), hashlib.sha256(data).hexdigest()) == (entry["pass"], entry["bytes"], entry["export_sha256"])
 

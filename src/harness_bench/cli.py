@@ -284,7 +284,7 @@ def cmd_discriminate(args) -> int:
 
 def cmd_interactive(args) -> int:
     root, tools_root = Path(args.root), Path(args.tools_dir).parent
-    if args.interactive_command == "prepare":
+    if args.interactive_command in ("prepare", "run"):
         names = interactive.harnesses(args.harness)
         if args.pack_pin:
             _role, source, commit = plan.parse_binding(f"{interactive.ARM_ON}={args.pack_pin}")  # the one SOURCE@COMMIT parser
@@ -296,18 +296,39 @@ def cmd_interactive(args) -> int:
                       "--tools-dir", args.tools_dir, *(["--runs", args.runs] if args.runs else [])]
         stamp = f"{datetime.now(UTC):%Y%m%dT%H%M}"
         print(f"pack: {source} at {commit[:12]}; {len(tasks)} task(s): {', '.join(tasks)}")
-        for harness in names:
+
+        def prepare_run(harness: str) -> dict:
             run_id = f"int-{harness}-{stamp}"
             manifest = interactive.prepare(root, run_id, harness, Path(args.out), tasks, (source, commit), tools_root, bench_argv)
             print(f"\ninteractive run {run_id} (pack revision {manifest['pack_pin']['revision']}):")
             for arm in interactive.ARMS:
                 print(f"  {arm:>3}: {manifest['arms'][arm]['path']}")
-        print("\nLaunch each CLI in its two folders (one window per arm; launch lines on the prompt page) and paste the same"
-              " text into every window:\n")
-        print(interactive.PASTE)
+            return manifest
+
+        if args.interactive_command == "prepare":
+            for harness in names:
+                prepare_run(harness)
+            print("\nOpen the two windows per run with `bench interactive launch <run folder>` (each runs its arm's "
+                  ".bench/launch script: the venv, the pinned CLI line, and this paste as the first message):\n")
+            print(interactive.PASTE)
+            return OK
+        current = interactive.grader_identity(root, {"tasks": tasks})
+        rows = interactive.run_all(prepare_run, Path(args.out), names, current=current)
+        compared = interactive.compare(Path(args.out), current=current)
+        for row in rows:
+            print(f"{row['run']}: {row['report']}")
+        _render_open(root, compared)
+        return OK
+    if args.interactive_command == "launch":
+        for script in interactive.launch(Path(args.run_dir).resolve()):
+            print(f"launched {script}")
+        return OK
+    if args.interactive_command == "compare":
+        current = interactive.grader_identity(root, {"tasks": interactive.default_tasks(root)})
+        print(interactive.compare(Path(args.out), current=current))
         return OK
     if args.interactive_command == "gather":
-        rows = interactive.gather(Path(args.out))
+        rows = interactive.gather(Path(args.out), current=interactive.grader_identity(root, {"tasks": interactive.default_tasks(root)}))
         for row in rows:
             arms = ", ".join(f"{a} {s}" for a, s in row["arms"].items())
             print(f"{row['run']} [{row['harness']}]: {arms}" + (f"\n  {row['report']}" if row["report"] else ""))
@@ -334,9 +355,9 @@ def cmd_interactive(args) -> int:
         for line in warnings:
             print(f"  ! {line}")
         if args.open:
-            _render_open(root, interactive.report(run_root, only=args.arm))
+            _render_open(root, interactive.report(run_root, only=args.arm, current=interactive.grader_identity(root, manifest)))
         return OK
-    print(interactive.report(run_root))
+    print(interactive.report(run_root, current=interactive.grader_identity(root, interactive.load(run_root))))
     return OK
 
 
@@ -965,6 +986,16 @@ def build_parser() -> argparse.ArgumentParser:
     ip.add_argument("--pack", dest="pack_pin", default=None, metavar="ABSOLUTE_SOURCE@COMMIT",
                     help="the pack for the on arm (default: the latest, HEAD of ../ai-forward)")
     ip.add_argument("--out", default=str(root.parent / "bench-interactive"), help="where the run folders are made")
+    irun = isub.add_parser("run", help="the whole comparison in one command: prepare each harness, open its two CLI windows, "
+                                       "wait for both gradings, next harness; then gather and compare, and open the comparison")
+    for src_action in ip._actions:
+        if src_action.dest in ("harness", "tasks", "pack_pin", "out"):
+            irun._add_action(src_action)
+    il = isub.add_parser("launch", help="open one window per arm of a prepared run (its .bench/launch script)")
+    il.add_argument("run_dir", help="the run folder prepare made")
+    icmp = isub.add_parser("compare", help="every harness across all its runs: per task, passes per arm over n sessions, "
+                                           "discordant sessions, median tokens per bucket")
+    icmp.add_argument("--out", default=str(root.parent / "bench-interactive"), help="the folder holding the run folders")
     ig = isub.add_parser("gather", help="after the sessions exit: re-read every graded arm's session and write each run's report")
     ig.add_argument("--out", default=str(root.parent / "bench-interactive"), help="the folder holding the run folders")
     ic = isub.add_parser("collect", help="grade one arm's task folders (replay run) and read its session record")

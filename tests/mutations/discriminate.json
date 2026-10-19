@@ -170,5 +170,14 @@
   "tests": [
    "tests/test_readiness.py::test_a_check_less_variant_not_flipping_the_primary_must_still_pass_hidden_tests_r109"
   ]
+ },
+ {
+  "name": "the failed cell's detail is dropped from the HB-RDY-011 message, so a load-only failure loses its cause with the swept tree",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "{': ' + row['detail'] if row.get('detail') else ''})\"",
+  "replace": ")\"",
+  "tests": [
+   "tests/test_discriminate.py::test_an_incomplete_engine_run_writes_no_record_and_names_the_cell"
+  ]
  }
 ]

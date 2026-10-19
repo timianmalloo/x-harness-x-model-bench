@@ -42,9 +42,22 @@ summary: >-
     hooks; the report adds model and tool seconds), and LINT-A is controlled by `tests/test_lint.py`.
   - CLN-A instance: stopping a background verification chain left its `pytest -m gate` child running. It held the
     suite lock for about an hour, and a mutant run waited on it until the orphan was found by the lock's pid and
-    ended. NOOP-PROBE-A: S2's `tamper-1` altered the last base64 character,
+    ended.
+- 2026-10-18 (the operator's four-question review of the lean benchmark): five candidates, all controlled the same
+  day: CRASH-TAIL-A (the 13 Oct model-id loss), TOK-BUCKET-A, STALE-GRADE-A, DRIFT-EVIDENCE-A, BOOT-STEPS-A. The
+  precision question's answer is not a class: sessions are the repetitions, and `bench interactive compare` pairs
+  them per task and says how many more a per-task verdict needs (`SESSIONS_FOR_VERDICT` = 3). Corrections: WIN-A's
+  delete shape was controlled in code and listed as open; FLAKE-A's tool now keeps every non-pass run's output
+  (gap (c)). Ruled the same day ("skip F until we do a new benchmark test"): telling the agent at hand-out which of a
+  task's tests already fail on this host (6 of 11 lean tasks are red in a bare venv on Windows; the agents'
+  env-chasing is a third to two thirds of each arm's non-zero exits) waits for the next benchmark run, so the hand-out
+  stays comparable with the 2026-10-15 sessions until then. NOOP-PROBE-A: S2's `tamper-1` altered the last base64 character,
   where padding bits live, and failed secure apps (the open finding below). It is now controlled. ARM-FAIR-A
   instance 2's leftover global editable installs (`cachetools`, `structlog`) were removed at the operator's request.
+  The same day's disk clean-up deleted `runs/grid-1-cc` (1.9 GB, no backup), which one gate test still read: my
+  sweep for readers matched one spelling of the lookup and missed `_load("grid-1-cc")`. The operator ruled "retire
+  that one gate test"; DEL-SWEEP-A below is the class, and its control puts every archived run a test reads on one
+  list (`archived_runs.GATE_RUNS`).
   Re-grading the Claude run after the fix found three more:
   - The replay's version guard refused every run (HB-PRE-007), because the task hash covers the oracle. This is a
     GATE-D shape: a guard keyed on more than the invariant it states. It now refuses only when the base tree or the
@@ -414,7 +427,7 @@ summary: >-
   - `2026-10-06` (Coordinator #48, measured; the delete shape): `tests/test_property_real_host.py::test_not_alone_at_arrival_is_row_4_never_scored` failed in the join-x-k1c and join-x-rs recounts (`-n 4`) with `PermissionError: [WinError 32]` at `atomic.py:310`, `make_writable`'s one immediate re-call of `func(path)`. The failing run's tree survives (`pytest-34033\popen-gw1\test_not_alone_at_arrival_is_r0`): `work\property\check-run` is left **empty**, so every file was deleted and the final `rmdir` of the check's working directory was refused. Repro (`c48.md` CR48-1): a child process whose cwd is the folder makes `shutil.rmtree(onexc=make_writable)` raise WinError 32 and leave the folder empty; after `kill` and `wait` the first `rmdir` still failed and one 10 ms later succeeded; a file holder that lets go 0.3 s later still fails today, because `make_writable` never waits.
 - **Sweep:** the other `os.replace` sites that rename a folder (not a file) in `src/`: `_land` is the only one; the ledger's `os.replace` calls rename files. **Delete shape (Coordinator #48):** every `shutil.rmtree(..., onexc=make_writable)` site (`atomic.py:282`, `archive.py:299`, `:315`, `grade/correctness.py:237`, `grade/drift.py:101`, `grade/_changes.py:118` and `remove_tree` at `:154`, `plan.py:469`, `resume.py:301`, `workspace.py:83`) shares the one callback, so the one fix covers all ten. `atomic._discard_temp` logs a leaked temp by design and is swept later. Sibling finding, not fixed: `grade/property.py:330` ignores `terminate_and_confirm`'s result, so after an unconfirmed kill the cleanup runs against a live tree.
 - **Control:** `_land` retries a `PermissionError` with a bounded backoff (`RENAME_BACKOFF`, about 1.55 s in total), then raises. `tests/test_workspace.py::test_a_transient_windows_rename_refusal_is_retried` was observed red (the refusal was not retried) and is now green; `test_a_rename_refusal_that_never_clears_still_raises` guards the bound. `tests/mutations/workspace.json` holds both mutants, and the two race mutants were re-pointed at the new branch. **Delete shape (proposed, X-FLAKE F1):** `make_writable` retries `func(path)` with the same `RENAME_BACKOFF`, then raises; red first by a real cwd holder released from the patched sleep, the bound by recorded delays; mutant M27 in `tests/mutations/atomic.json`.
-- **Status:** `controlled` (rename shape); the delete shape is open until X-FLAKE joins.
+- **Status:** `controlled` (both shapes). Correction 2026-10-18: the delete shape's control is in the tree (`atomic.make_writable` retries `func(path)` over `RENAME_BACKOFF`, `atomic.py:306-318`); this line had said "open until X-FLAKE joins" after the join.
 
 ### CLN-C: a worktree force-removed in the same command as the check that should have stopped it
 - **Signature:** the Leader prints a tree's dirty-file and unmerged-commit counts, then runs `git worktree remove --force` and `git branch -D` in the same command, so the counts are never read before the removal.
@@ -1346,6 +1359,19 @@ summary: >-
     `copilot.exe`, 3 `claude.exe` and 21 `node.exe` processes; RAM 92.6 of 127.4 GB free. The change does not touch
     either node's path (cache folder names only; Inferred). N for this tree: 2 red of 3. A worker crash is a new
     stage for this class, and its cause is not recorded.
+  - `2026-10-18` (Leader, the review's chain; observed, and the first instance with its error text kept, because the
+    suite log was written to a file): `-n 4` full suite run 2 of 3 on one tree was red on
+    `test_discriminate.py::test_a_variant_whose_flips_differ_from_the_declared_ones_is_hb_rdy_003` with
+    `HB-RDY-011: trial incomplete, nothing written: DISC-P.synthetic-reference.arm-off.r1 (failed, workspace)`: the
+    cell failed in the engine's workspace-build stage (HB-CELL-113, `engine.py:775`), the engine archived the cell
+    without a `ws/`, and the grader's hidden check then raised `FileNotFoundError: [WinError 3]` copying
+    `archive/7ffde650b5802b60/attempt-1/ws` (the captured log). The build exception's own text was in the cell's
+    `cell.outcome` event only, and the test swept the tree. Run 1 on the same tree (three hygiene fixes apart, none on
+    this path) was green; alone 3 of 3; `tools/load_repro.py` 0 of 10. Load at the time: 4 `codex.exe`, 3 `claude.exe`,
+    1 `copilot.exe`, 23 `node.exe` from the operator's other sessions. N for this tree: 1 red of 2 before run 3.
+    Control added (gap (c) for this node): the HB-RDY-011 message now carries each failed cell's `detail`, so the next
+    instance records the build exception in the pytest output (`test_an_incomplete_engine_run_writes_no_record_and_names_the_cell`,
+    mutant "the failed cell's detail is dropped from the HB-RDY-011 message" in `tests/mutations/discriminate.json`).
 - **Control gaps (LOOP-J0, 2026-10-09; proposed, not fixed; X-FLAKE owns `tools/load_repro.py`):** (a) `load_repro` deletes each run's junit file and keeps no stdout, so a "no result" run loses its cause (3 of 120 disc runs): keep the junit file and the output tail of every run that is not a pass. (b) `load_repro` runs only the node, while this class's trigger is the suite's own load: add `--with <paths>` for suite-shaped co-load (for example the node's module plus `test_e1_e2e.py`). (c) `conductor-join`'s recount log keeps only pytest's summary: keep the `-rf` short summary with its messages for any red. Rung: tool option and join log. Upgrade trigger: the next instance whose stage is not recorded.
 - **PATH-B re-examination (Coordinator #41, 2026-10-06; fixtures read at `481f5c21`, lengths measured on the leftover fixture roots under `C:\Projects\bench-test`):** none of the four named instances ran under a long pytest tmp path. Each root is `CLEAN_PARENT` (`tests/clean_parent.py`: `C:/Projects/bench-test` on Windows) plus a fixed-length name, independent of `TMP`, `TEMP` and pytest's basetemp: `test_discriminate`'s two nodes and `test_engine`'s no-launch[4] use the `base` fixture (`tests/conftest.py:44-47`, `<32 hex>`, a 56-character root); the e2e `S1Repo` uses `xint-<12 hex>` (`tests/test_e1_e2e.py:137-139`). The longest path a discriminate fixture trial leaves is 139 characters below its root (measured: `runs\disc-disc-c-…\archive\<16>\attempt-1\ws\.git\objects\..`), about 195 in all, 65 under MAX_PATH; the engine fake-launcher archive is 110. And the path length is the same in the failing run and the passing re-run, so length alone cannot explain a failure that needs load. Verdicts: `test_a_leaked_temp_is_swept…` **load or unknown, not PATH-B**; `test_no_link_after_hb_rdy_010` **load or unknown, not PATH-B**; `test_engine` no-launch[4] **load (Inferred: a stop path with a release file), not PATH-B**; e2e `S1Repo` m8 `clauses.json` **load or unknown, not PATH-B** (S1's check runs the real probe host; its archive depth is Inferred from S1's tree, whose deepest oracle file is 41 characters). The one `TEMP`-dependent path in the workspace stage is gitsafe's shared state `%TEMP%\harness-bench-git` (`src/harness_bench/gitsafe.py:16`), short, and shared by every process with the same `TEMP`: a load mechanism candidate (Inferred), not a length one. **Not recorded:** the failing runs' `TEMP` and the exception text behind the "workspace" cause (`engine.py:673-675` maps any `BenchError`, `GitError` or `OSError` from the build to it, including a 120 s git timeout, `workspace.py:29`). The next instance's report records both.
 - **Candidate mechanisms (Inferred, not measured):** TIME-B (a real-time bound sized on an idle machine), WIN-A (a transient Windows refusal of a rename or delete inside the workspace build) and, for the L9 test, a real lock race. Neither `test_discriminate.py` test body sleeps or asserts a duration (read at `197092d3`, `:135-148`, `:175-189`). So TIME-B is not the obvious fit, and the "workspace" stage name points at the build of the trial's working tree. Once a repro names the mechanism, the instance moves to that class.
@@ -2279,6 +2305,101 @@ first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two
   `tests/test_lint.py` asserts that scope and that the scope is clean. It runs in the default suite, which CI also
   runs. Both tests were observed red before the config existed, and the second one caught a hit in the test file
   itself (PLW1510). Upgrade trigger: a ruff upgrade that changes the default rules. Then pin `select`.
+- **Status:** `controlled`
+
+### CRASH-TAIL-A: an adapter crash is classified without reading the stderr the adapter left (candidate)
+- **Signature:** the driver sees EOF before the first update and names the cause `adapter_crash` (HB-CELL-105, attribution
+  harness, detail "EOF before end_turn"). The CLI's own last words on stderr, kept as `adapter-stderr-tail.log`, say why
+  it died. Nothing reads them, so a benchmark-side mistake (a model id the CLI does not serve) is scored as a harness
+  crash, cell after cell, and the decision the engine has for that mistake never opens.
+- **Why it survives:** the tail is written after the outcome "best effort", so it reads as a diagnostic for a human, not
+  an input to classification. Every cell of the run fails the same way, which looks like one infrastructure fault.
+- **Instances:**
+  - `2026-10-13`: `lean-Copilot-GPT-5.5-1M-Context-pack-off` and `-on`, 108 of 120 cells HB-CELL-105 with an empty detail;
+    every stderr tail `Model "GPT-5.5" from --model flag is not available.` (the id's case). Classified, the first cell
+    would have opened the skip-combo decision (`model_unavailable` -> `qualification_gap`, `engine.py:70`).
+- **Sweep:** `_classify`'s other stderr rule (`OOM_SIGNATURE`) already reads the tail; this is its twin for a refused
+  model. The native-record scan (`normalize.classify`) covers an error the CLI wrote into its record; a CLI that dies at
+  startup writes no record, so only the tail can tell.
+- **Control (rung: test):** `engine.MODEL_REFUSED_SIGNATURE` over the tail, before the driver's cause and after the
+  memory rules; the match is the cell's detail (CAUSE-A). `tests/test_engine.py::test_classify_applies_the_cause_precedence_in_order`
+  (three refused rows, one non-refusal, a budget kill that still outranks the tail) was observed red; the detail test
+  too. Mutants in `tests/mutations/engine.json` (CRASH-TAIL-A x3) are killed. Not covered: a refusal worded outside the
+  signature (`not available|not found|not supported|unknown model`); its first instance extends the signature.
+- **Status:** `controlled`
+
+### TOK-BUCKET-A: a token comparison that sums the buckets hides the one the treatment changes (candidate)
+- **Signature:** "tokens" is one number per arm (`sum_tokens`, four buckets at equal weight) and the per-task table shows
+  "input+cache". Cache reads are the context re-read on every request (98% of a Claude session's input: 17.0M of 17.2M),
+  so the ratio of totals is the ratio of context carried, not of what the pack adds (uncached input, cache writes).
+- **Instances:** `2026-10-16`, the interactive comparison page: "x2.92 input+cache" for Claude Code read as the pack's
+  cost. The per-bucket figures were in the summaries and never shown.
+- **Control (rung: test):** the interactive report prints one row per bucket with an on / off ratio per row, and the
+  per-task table one column per bucket (`tests/test_interactive_report.py::test_token_buckets_are_reported_apart_with_an_on_over_off_ratio_per_bucket`,
+  observed red: the old table had "input+cache"). Mutants IN42 and IN48 killed. The headless lean report's ratio of
+  totals (`lean_section.RATIO_LABEL`) still sums; it is the pre-registered ADR-0023 point 9 and is left as is.
+- **Status:** `controlled` (interactive mode)
+
+### STALE-GRADE-A: a stored score carries no mark of the grader that made it (candidate)
+- **Signature:** a grader fix lands, the stored `summary.json` keeps the old score, and the report shows both the old
+  number and the new code with nothing between them. Only a re-collect into a copy shows the fix; the ledger on disk
+  and the register disagree until someone remembers.
+- **Instances:** `2026-10-16` to `2026-10-17`, three grader fixes in two days: S2's probe (both Claude arms 0 -> 1),
+  the installed-files rule (Codex RS2 `scope_creep` 204,029 -> 1) and the stub rule (NG1 20 -> 5, 14 -> 0). Each left
+  the run folders' summaries at the old values; the new ones lived only in re-collected copies.
+- **Control (rung: test):** `collect` writes `graded_with` (bench commit, dirty flag, task versions); `report`,
+  `gather` and `compare` take the grading bench's identity and print **Stale scores** naming what moved and the
+  collect to re-run; a summary without `graded_with` is stale (`test_a_grade_from_another_bench_commit_or_task_version_or_no_record_is_flagged_stale`,
+  observed red). Mutants IN43, IN44 killed.
+- **Status:** `controlled`
+
+### DRIFT-EVIDENCE-A: a drift count reaches the reader without the files behind it (candidate)
+- **Signature:** `scope_creep` is a line count in the report; its `drift.log` (one line per file, class last) stays in
+  the cell folder. A 204,029 or a 5 reads the same, and the reader cannot see an installer's tree from an agent's edit.
+- **Instances:** `2026-10-15` Codex RS2 on: 204,029 lines (`.test-deps/`, an installer's tree). `2026-10-17` NG1 on: 5
+  lines, one `pyproject.toml` edit. Both explained only by hand, in the comparison page.
+- **Control (rung: test):** `interactive.drift_files` reads each cell's `drift.log` into the summary (largest
+  discretionary files first, at most `DRIFT_FILES_SHOWN`), and the report lists them under the drift table
+  (`test_the_files_behind_a_scope_creep_count_are_listed_largest_first`, observed red). Mutant IN45 killed.
+- **Status:** `controlled`
+
+### BOOT-STEPS-A: a benchmark's operator steps live on a page, not in the code that prepared the run (candidate)
+- **Signature:** `prepare` builds the arms, then the operator does nine things per window from a page: cd, two venv
+  lines, copy the launch line, the trust prompt, the model pick, paste, wait, exit. About 58 actions for three CLIs,
+  one window at a time, each a chance to skip the venv (the report then says "shared an interpreter") or to start two
+  CLIs at once (ARM-FAIR-A instance 4). The launch lines were on the page only, so code and page could drift apart.
+- **Instances:** `2026-10-15`: the arms' `.venv` was skipped (global `pip install` in both Codex and Copilot off arms),
+  three CLIs ran at once, and Claude Code's build changed between the two launches.
+- **Control (rung: test):** the launch lines are `interactive.LAUNCH` and a test holds the page equal to them; `prepare`
+  writes `.bench/launch.ps1` and `.sh` per arm (cd, venv, `PIP_REQUIRE_VIRTUALENV`, the pinned line, PASTE as the first
+  message: all four CLIs take an initial prompt and stay interactive, checked on the installed builds); `bench
+  interactive launch` opens the two windows; `bench interactive run` does prepare, launch, wait for both gradings,
+  the next harness, then gather and compare (`test_prepare_writes_a_launch_script_per_arm_...`,
+  `test_run_all_opens_two_windows_per_harness_in_turn_...`, both observed red; the scripts of a real prepare parse under
+  PowerShell's parser and `bash -n`). Mutant IN47 killed. Still the operator's: the trust prompt each CLI shows for a
+  new folder, and Copilot's served model (the launch line pins it; the report warns when the arms differ).
+- **Status:** `controlled`
+
+### DEL-SWEEP-A: a sweep for an asset's readers matches one spelling of the lookup before the asset is deleted
+- **Signature:** before deleting a folder that is not in version control, the readers are found by one text
+  pattern (`gate_runs_root() / "<name>"`). A reader that spells the lookup differently (`_load("<name>")`,
+  `GATE_RUNS / "<name>"`, `gate_root / "<name>"`: four spellings and seven copy-pasted skips were in the tests) is
+  not found, the folder is deleted, and the reader now skips. The loss is only noticed when the gate stamp refuses
+  to renew, after the data is gone for good.
+- **Why it survives:** the lookup and its "not on this host" skip were pasted into each test module, so there was
+  no one place that said which archived runs the tests need; a sweep could only guess at spellings. The skip is
+  also silent by design (a host without the archive must not fail), so the loss looks like an ordinary skip.
+- **Instances:** `2026-10-18` (Leader, the clean-up the operator asked for): `runs/grid-1-cc` (1.9 GB, the only copy)
+  deleted; `test_pi_t15_grid_1_cc_golden` then skipped and `gate_stamp.py --renew` refused the stamp. The operator
+  ruled the test retired; its re-derivation notes stay in the module docstring as the record.
+- **Sweep:** every test that reads under `runs/` now goes through `archived_runs.archived_run(name)` (eight sites in
+  seven modules); the three archived runs tests read are `archived_runs.GATE_RUNS` (`row15-d1-1`, `a1-capture-1`,
+  `grid-1`). `tools/ci_opt/*` name the runs in prose only.
+- **Control (rung: test):** `archived_run()` raises on a name that is not on the list, and
+  `test_every_archived_run_a_test_reads_is_registered_in_the_one_list` (`tests/test_gate_stamp.py`) fails when any
+  test module spells the lookup or the skip by hand (observed red on the un-fixed tree: eight modules). Before
+  deleting under `runs/`, read `GATE_RUNS`; nothing else needs a sweep. Residual: a tool outside `tests/` that reads
+  an archived run is not covered (none does today).
 - **Status:** `controlled`
 
 ### LEAK-HOME-A: a home variable relocates only part of a harness's user state (candidate)

@@ -1,8 +1,8 @@
 """PI-T15 (design pack-improvement-section.md section 11, slow/gate ring): the golden characterization
-of `report.pack_improvement.assemble()` against the two archived grids the pack on/off analysis used,
-`runs/grid-1` and `runs/grid-1-cc`. Skips cleanly (never fails) when the primary checkout's `runs/`
-folder is not on this host -- the same pattern `test_grade_drift.py`'s own gate-run test uses via
-`archived_runs.gate_runs_root()`.
+of `report.pack_improvement.assemble()` against the archived grid the pack on/off analysis used, `runs/grid-1`
+(`archived_runs.archived_run`: a skip, never a failure, when the archive is not on this host). The grid-1-cc
+golden was retired on 2026-10-18 when that archive was deleted from the only host that held it (DEL-SWEEP-A);
+its numbers below stay as the record of the re-derivation.
 
 Deviation from R-85's own PI-T15 text, found and verified this slice (not guessed): two of the four
 named grid-1 PK-01 cells (`4a6250261f80ded4`, `c6a763578ef7e110`, both D1 copilot-sol) are NOT
@@ -55,7 +55,7 @@ import re
 from decimal import Decimal
 
 import pytest
-from archived_runs import gate_runs_root
+from archived_runs import archived_run, gate_runs_root
 
 from harness_bench import board, composites, views
 from harness_bench.report import pack_improvement as pi
@@ -64,34 +64,12 @@ ROOT = gate_runs_root().parent  # the primary checkout (gate_runs_root() is its 
 
 
 def _load(name: str):
-    run_dir = gate_runs_root() / name
-    if not (run_dir / "plan.json").is_file():
-        pytest.skip(f"archived run {name!r} is not on this host (set HB_GATE_RUNS to the runs folder)")
+    run_dir = archived_run(name)
     view = views.load(run_dir)
     cat = composites.load_catalog(ROOT)
     board_obj = board.build(view, cat)
     result = pi.assemble(view, board_obj, run_dir, ROOT, archive_present=(run_dir / "archive").is_dir())
     return result
-
-
-@pytest.mark.gate
-def test_pi_t15_grid_1_cc_golden():
-    result = _load("grid-1-cc")
-    assert result.state == pi.STATE_FULL
-    findings = {f.code: f for f in result.findings}
-    # PK-02 is absent (module docstring's re-derivation): every pre-fix "stopped without product"
-    # cell here, including the one that is also genuinely diverted, has a real in-`ws` product_write
-    # once paths are relativized -- a count of 0 is dropped, never rendered (design section 6).
-    assert set(findings) == {"PK-01", "PK-03"}
-    assert findings["PK-01"].count == 3
-    assert set(findings["PK-01"].evidence_cell_ids) == {"c4d05c98231eb3aa", "050c08027c79a944", "efbedb23da7173d0"}
-    assert findings["PK-03"].count == 3
-    assert "73c87914995c00a9" in findings["PK-03"].evidence_cell_ids
-    assert "escalated" in findings["PK-03"].title  # regression_count 3 on-cell, 0 on its off partner
-    assert "2.3x the tokens" in result.headline
-    assert "1.3x the wall clock" in result.headline
-    assert "3 of 5 pack-on failures have a pack-attributed cause" in result.headline
-    assert result.population_caveats == ()  # every combo x arm here has its full planned population
 
 
 @pytest.mark.gate
@@ -125,7 +103,7 @@ def test_pi_t15_grid_1_golden():
 
     # design section 11's own Codex threshold ("token ratio > 5"), recomputed independently here
     # (per-pair, never re-used from the assembled result) as a real cross-check, not a tautology.
-    run_dir = gate_runs_root() / "grid-1"
+    run_dir = archived_run("grid-1")
     view = views.load(run_dir)
     plan_by_id = {c["cell_id"]: c for c in (view.plan.get("cells") or [])}
     all_pairs = pi.pairs(view.cells, plan_by_id)

@@ -48,6 +48,8 @@ TIMING_ALLOWED: Mapping[str, str] = {
     "test_window_check.py::visible_window_child": _STALL,
     "test_window_check.py::test_window_check_child_with_flag_lists_nothing": _STALL,
     "test_procs.py::test_run_with_an_unconfirmed_kill_raises_nothing_and_leaks_nothing": _POLL,
+    "test_interactive.py::test_run_all_opens_two_windows_per_harness_in_turn_waits_for_both_gradings_then_gathers":
+        "the injected sleep stands in for the sessions and next.py's grading and writes both summaries; poll is 0, so no real time passes",
     "test_interactive.py::test_interactive_arms_grade_as_the_fixture_declares":
         _POLL + "; next.py starts the grading detached, so the stand-in's file is the only signal another process gives",
     "test_gateway_headless.py::test_t_gw_09_a_timed_out_call_is_unavailable_even_when_it_left_a_record": _HUNG,

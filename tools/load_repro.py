@@ -69,11 +69,16 @@ def run_repro(node: str, runs: int, out, prefix=None, cwd=None) -> dict:
         )
         walls.append(round(time.monotonic() - start, 3))
         failed = _outcome(junit, node)
-        junit.unlink(missing_ok=True)
         if failed is False:
+            junit.unlink(missing_ok=True)
             continue
+        # FLAKE-A gap (c): a run that did not pass keeps its whole output and junit beside the record, so the mechanism
+        # can be read later; every instance before 2026-10-18 lost its error text to summary lines.
+        kept = Path(out).with_name(f"{Path(out).stem}.run{run}.log")
+        kept.write_text(done.stdout + ("\n--- stderr ---\n" + done.stderr if done.stderr else ""), encoding="utf-8", newline="\n")
         stage, error = _stage_and_error(done.stdout) if failed else (NO_RESULT, "")
-        failure_list.append({"run": run, "stage": stage, "first_error": error})
+        failure_list.append({"run": run, "stage": stage, "first_error": error, "output": str(kept),
+                             "junit": str(junit) if junit.is_file() else None})
     record = {
         "node": node, "n": runs, "failures": len(failure_list), "rate": len(failure_list) / runs,
         "failure_list": failure_list, "wall_s": walls, "base_sha": _base_sha(cwd),

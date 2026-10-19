@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-from archived_runs import ROOT, gate_runs_root, make_root
+from archived_runs import ROOT, archived_run, make_root
 
 from harness_bench import config, plan, views
 from harness_bench.errors import BenchError
@@ -212,9 +212,7 @@ def _file_hashes(tree: Path) -> dict[str, str]:
 
 def test_a_junk_git_index_leaves_the_pre_turn_commit_and_file_hash_map_unchanged(tmp_path):
     """R-76 item 4. Copy one row15-d1-1 D1 cell's ws/; never write under the gate run."""
-    run = gate_runs_root() / "row15-d1-1"
-    if not (run / "plan.json").is_file():
-        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    run = archived_run("row15-d1-1")
     cell_id = "c3d40fa1377ba0dc"
     cell = next(c for c in plan.load_confirmed(run)["cells"] if c["cell_id"] == cell_id)
     attempt = next(e["archive_attempt"] for e in views.rows(run, "events")

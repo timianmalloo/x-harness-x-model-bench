@@ -993,5 +993,32 @@
   "tests": [
    "tests/test_archive_readers.py::test_t_sweep_1_exact_reader_and_exception_set"
   ]
+ },
+ {
+  "name": "CRASH-TAIL-A: a model refused on stderr stays an adapter crash",
+  "file": "src/harness_bench/engine.py",
+  "find": "        refused = MODEL_REFUSED_SIGNATURE.search(tail)\n        if refused:",
+  "replace": "        refused = MODEL_REFUSED_SIGNATURE.search(tail)\n        if refused and False:",
+  "tests": [
+   "tests/test_engine.py::test_classify_applies_the_cause_precedence_in_order"
+  ]
+ },
+ {
+  "name": "CRASH-TAIL-A: the refusal line is dropped from the detail",
+  "file": "src/harness_bench/engine.py",
+  "find": "            result.detail = refused.group(0).decode(\"utf-8\", \"replace\").strip()\n",
+  "replace": "",
+  "tests": [
+   "tests/test_engine.py::test_a_model_refused_on_stderr_keeps_the_refusal_line_as_the_detail"
+  ]
+ },
+ {
+  "name": "CRASH-TAIL-A: the tail is read after the driver's cause, so an EOF hides it",
+  "file": "src/harness_bench/engine.py",
+  "find": "        if result.cause:\n            return result.cause\n        if result.stop_reason in COMPLETED_STOP_REASONS:",
+  "replace": "        if result.cause:\n            return result.cause\n        refused = MODEL_REFUSED_SIGNATURE.search(tail)\n        if refused:\n            return Cause.model_unavailable\n        if result.stop_reason in COMPLETED_STOP_REASONS:",
+  "tests": [
+   "tests/test_engine.py::test_classify_applies_the_cause_precedence_in_order"
+  ]
  }
 ]

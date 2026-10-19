@@ -618,3 +618,88 @@ def test_the_prompt_page_shows_the_paste_verbatim_in_both_arms():
     page = (REPO / "docs" / "benchmarkpromps" / "interactive-benchmark-prompt.html").read_text(encoding="utf-8")
     blocks = re.findall(r'<pre id="paste(?:-on)?"[^>]*>(.*?)</pre>', page, re.DOTALL)
     assert len(blocks) == 2 and all(html.unescape(b).strip() == interactive.PASTE.strip() for b in blocks)
+
+
+def test_the_prompt_page_shows_the_launch_lines_the_code_pins():
+    """One source for the pinned launch lines (LAUNCH): the page's table must equal it, harness by harness."""
+    import html
+
+    page = (REPO / "docs" / "benchmarkpromps" / "interactive-benchmark-prompt.html").read_text(encoding="utf-8")
+    rows = dict(re.findall(r"<tr><td>([a-z-]+)</td><td><code>(.*?)</code></td></tr>", page))
+    assert {h: html.unescape(line) for h, line in rows.items()} == {h: interactive.launch_line(h) for h in interactive.LAUNCH}
+
+
+def test_prepare_writes_a_launch_script_per_arm_with_the_venv_the_pinned_line_and_the_paste(monkeypatch):
+    """BOOT-STEPS-A: what the operator typed per window on 2026-10-15 (cd, two venv lines, the launch line, the paste) is
+    one script per arm; the CLI gets PASTE as its first message and stays interactive."""
+    base = CLEAN_PARENT / uuid.uuid4().hex
+    base.mkdir(parents=True)
+    try:
+        root = mt.make_root(base)
+        mt.install(root, "disc_turns")
+        _fake_pack(monkeypatch, base / "pack")
+        manifest = interactive.prepare(root, "int-launch", "copilot", base / "out", [TASK], ("C:/pack", "0" * 40), base / "tools")
+        for arm in interactive.ARMS:
+            bench = Path(manifest["arms"][arm]["path"]) / ".bench"
+            assert (bench / interactive.PASTE_FILE).read_text(encoding="utf-8") == interactive.PASTE
+            ps1 = (bench / interactive.LAUNCH_PS1).read_text(encoding="utf-8").splitlines()
+            assert ps1 == [f"Set-Location -LiteralPath '{bench.parent}'", "& .\\.venv\\Scripts\\Activate.ps1",
+                           '$env:PIP_REQUIRE_VIRTUALENV = "1"', "$paste = Get-Content -Raw -LiteralPath '.bench\\paste.txt'",
+                           "& copilot --model gpt-6.1-sol --reasoning-effort high --context long_context --allow-all -i $paste"]
+            sh = (bench / interactive.LAUNCH_SH).read_text(encoding="utf-8").splitlines()
+            assert sh[1:4] == [f"cd '{bench.parent.as_posix()}' || exit 1", ". ./.venv/bin/activate", "export PIP_REQUIRE_VIRTUALENV=1"]
+            assert sh[-1].startswith("exec 'copilot' '--model' 'gpt-6.1-sol'") and sh[-1].endswith('-i "$paste"')
+        assert not (bench / interactive.LAUNCH_PS1).read_bytes().count(b"\r")  # the pack's PLAT-A rule: LF scripts
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)
+
+
+def _prepared(tmp_path: Path, run_id: str, harness: str = "claude-code") -> dict:
+    run = tmp_path / run_id
+    manifest = {"schema": interactive.SCHEMA, "run_id": run_id, "harness": harness, "created_at": "t", "tasks": [TASK],
+                "task_versions": {TASK: "v"}, "pack_pin": {"source": "s", "commit": "0" * 40, "revision": 110},
+                "arms": {a: {"path": str(run / a), "base": "0" * 40, "pack_files": 0} for a in interactive.ARMS}}
+    for arm in interactive.ARMS:
+        (run / arm / ".bench").mkdir(parents=True)
+        for name in (interactive.LAUNCH_PS1, interactive.LAUNCH_SH):
+            (run / arm / ".bench" / name).write_text("stand-in\n", encoding="utf-8")
+    (run / interactive.MANIFEST).write_text(json.dumps(manifest), encoding="utf-8")
+    return manifest
+
+
+def test_run_all_opens_two_windows_per_harness_in_turn_waits_for_both_gradings_then_gathers(monkeypatch, tmp_path):
+    """One command for the whole comparison, one CLI at a time: the next harness's windows open only after both arms of
+    the one before are graded; gather runs once at the end with the grader identity."""
+    opened, gathered, prepared = [], [], []
+    manifests = {h: _prepared(tmp_path, f"int-{h}-1", h) for h in ("claude-code", "codex")}
+
+    def spawn(script: Path) -> None:
+        run = script.parents[2]
+        if run.name == "int-codex-1":  # a later harness's windows open only once the earlier one is graded
+            assert all((tmp_path / "int-claude-code-1" / "collect" / a / "summary.json").is_file() for a in interactive.ARMS)
+        assert not (run / "collect").exists()  # and before any grading of its own run
+        opened.append(script)
+
+    def sleep(seconds: float) -> None:  # the sessions finish and next.py's grading writes both summaries
+        for script in opened:
+            out = script.parents[2] / "collect" / script.parents[1].name
+            out.mkdir(parents=True, exist_ok=True)
+            (out / "summary.json").write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(interactive, "gather", lambda out_root, current=None: gathered.append((out_root, current)) or [{"run": "r", "report": "p"}])
+    rows = interactive.run_all(lambda h: prepared.append(h) or manifests[h], tmp_path, ["claude-code", "codex"],
+                               spawn=spawn, poll=0, sleep=sleep, current={"bench_commit": "c"})
+    assert prepared == ["claude-code", "codex"] and rows == [{"run": "r", "report": "p"}]
+    assert [s.parents[2].name + "/" + s.parents[1].name for s in opened] == \
+        ["int-claude-code-1/off", "int-claude-code-1/on", "int-codex-1/off", "int-codex-1/on"]
+    assert gathered == [(tmp_path, {"bench_commit": "c"})]
+    with pytest.raises(BenchError, match=r"no grading for arm\(s\) off, on after 0 s"):
+        interactive.wait_graded(tmp_path / "int-none-1", poll=0, sleep=lambda s: None, clock=iter([0, 0, 1]).__next__, timeout=0)
+
+
+def test_launch_refuses_a_run_prepared_before_the_scripts_existed(tmp_path):
+    manifest = _prepared(tmp_path, "int-old-1")
+    for name in (interactive.LAUNCH_PS1, interactive.LAUNCH_SH):
+        (Path(manifest["arms"]["on"]["path"]) / ".bench" / name).unlink()
+    with pytest.raises(BenchError, match="prepare this run again"):
+        interactive.launch(tmp_path / "int-old-1", spawn=lambda s: None)

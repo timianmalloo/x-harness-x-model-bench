@@ -21,13 +21,12 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT, gate_runs_root
+from archived_runs import ROOT, archived_run
 
 from harness_bench import archive, config, plan, views
 from harness_bench.grade import CellInput, Score, correctness
 from harness_bench.grade.runner import applicable
 
-GATE_RUNS = gate_runs_root()
 CATALOG = config.load_yaml(ROOT / "bench" / "metrics.yaml")
 SCALES = {m["id"]: m.get("scale") for a in CATALOG["areas"].values() for m in a.get("metrics") or []}
 
@@ -117,9 +116,7 @@ GATE = sorted(config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["ru
 @pytest.mark.gate
 @pytest.mark.parametrize("name", GATE)
 def test_the_moved_grader_gives_the_gate_runs_0_3_correctness_and_leaves_the_archive_unchanged(tmp_path, name):
-    run = GATE_RUNS / name
-    if not (run / "plan.json").is_file():
-        pytest.skip(f"gate run {name} is not on this host (set HB_GATE_RUNS to the runs folder)")
+    run = archived_run(name)
     was = {c.cell_id: {m: (s.value, s.reason) for m, s in c.scores.items() if m in ("pass_at_1", "partial_credit")}
            for c in views.load(run, "0.3").cells}
     attempts = {e["cell_id"]: e["archive_attempt"] for e in views.rows(run, "events") if e["kind"] == "cell.archived"}

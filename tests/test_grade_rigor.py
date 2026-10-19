@@ -7,13 +7,12 @@
 
 from __future__ import annotations
 
-import os
 import shutil
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT, gate_runs_root
+from archived_runs import ROOT, archived_run
 from test_grade_correctness import (
     BROKEN,
     d1_cell,
@@ -358,9 +357,7 @@ def test_rigor_is_in_grader_build():
     assert Path(rigor.__file__).resolve() in {p.resolve() for p in Path(runner.__file__).parent.glob("*.py")}
 
 
-# --- the gate run row15-d1-1, read-only (HB_GATE_RUNS) ---------------------------------------------------------------
-
-GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or gate_runs_root())
+# --- the gate run row15-d1-1, read-only (archived_runs.GATE_RUNS) -------------------------------------------------
 D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack
     "2535962f830d7718": (0, None),  # cx off
     "35af195cfe821dca": (0, None),  # cc on
@@ -373,9 +370,7 @@ D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack
 
 @pytest.mark.gate
 def test_the_d1_gate_cells_static_analysis_delta_and_archive_unchanged(tmp_path):
-    run = GATE_RUNS / "row15-d1-1"
-    if not (run / "plan.json").is_file():
-        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    run = archived_run("row15-d1-1")
     attempts = {e["cell_id"]: e["archive_attempt"] for e in views.rows(run, "events") if e["kind"] == "cell.archived"}
     cells = {c["cell_id"]: c for c in plan.load_confirmed(run)["cells"]}
     got = {}

@@ -84,9 +84,18 @@ uv run bench interactive prepare --harness claude, codex, copilot</pre>
 
   <div class="card">
     <h2>2. Launch the CLI in each folder (two windows per CLI)</h2>
-    <p style="margin-top:0">In each window, <code>cd</code> into the folder, activate its environment, then start the CLI
-      with the line for it below. Both windows of one CLI use the same line. When the CLI asks whether to trust the
-      folder, say yes in both.</p>
+    <p style="margin-top:0"><strong>One command for everything.</strong> Instead of steps 1 to 4 by hand:</p>
+<pre id="run-all">cd C:\Projects\x-harness-x-model-bench
+uv run bench interactive run --harness claude, codex, copilot</pre>
+    <p>It prepares the first CLI's two folders, opens a console per arm (each runs its <code>.bench\launch.ps1</code>:
+      the folder, its own <code>.venv</code>, the pinned launch line below, and the paste as the session's first
+      message), waits until both arms have graded themselves, then does the next CLI, one CLI at a time. At the end it
+      gathers every run, writes <code>C:\Projects\bench-interactive\interactive-compare.md</code> and opens it in
+      Chrome. You still answer each window's trust prompt for the new folder. To open the windows of a run you prepared
+      earlier: <code>uv run bench interactive launch RUN</code>.</p>
+    <p><strong>By hand</strong> (what the scripts do): in each window, <code>cd</code> into the folder, activate its
+      environment, then start the CLI with the line for it below. Both windows of one CLI use the same line. When the
+      CLI asks whether to trust the folder, say yes in both.</p>
 <pre id="activate">.\.venv\Scripts\Activate.ps1
 $env:PIP_REQUIRE_VIRTUALENV = "1"</pre>
     <p>The first line makes the session's <code>python</code> and <code>pip</code> the arm's own. The second refuses
@@ -193,6 +202,11 @@ REPO = C:\Projects\x-harness-x-model-bench
 1. From REPO: uv run bench interactive gather
    It lists every run under C:\Projects\bench-interactive, re-reads each graded arm's session records now that the
    CLIs have exited (Copilot's tokens appear only now), and writes RUN\interactive-report.md for each run.
+   Then: uv run bench interactive compare
+   It writes C:\Projects\bench-interactive\interactive-compare.md: every CLI across all its sessions, per task the
+   passes per arm over n sessions, the sessions where the arms disagreed, and median tokens per bucket. Read it
+   first. With fewer than 3 sessions per arm it says so: then no per-task verdict, only paired observations.
+   A "Stale scores" line in any report means that arm was graded by an older bench: re-run the collect it names.
    - An arm shown "not graded" did not reach ALL DONE, or its grading failed (RUN\grade-ARM.log). List those arms
      and ask me before grading any of them (uv run bench interactive collect RUN --arm ARM) or leaving one out.
    - A session-record warning (none found, or several): find the session's own record (Claude Code

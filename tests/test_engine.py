@@ -1888,6 +1888,7 @@ def _classify(base, launcher=None, kill_reason=None, exit_status=0, tail=b"", **
 
 NO_MEMORY = 0xC0000017  # STATUS_NO_MEMORY
 OOM_TAIL = b"<--- Last few GCs --->\nFATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory\n"
+MODEL_TAIL = b'[copilot] starting\nModel "GPT-5.5" from --model flag is not available.\n'
 
 
 @pytest.mark.parametrize(("case", "expected"), [
@@ -1908,6 +1909,13 @@ OOM_TAIL = b"<--- Last few GCs --->\nFATAL ERROR: Reached heap limit Allocation 
     ({"cause": "blocked_auth", "stop_reason": None}, "blocked_auth"),
     ({"stop_reason": "cancelled"}, "adapter_crash"),  # the adapter_crash fallback: a stop reason that is not completion
     ({"stop_reason": None}, "adapter_crash"),
+    # CRASH-TAIL-A: the adapter died (EOF, the driver's adapter_crash) because the pinned model id is not served; the
+    # stderr tail says so. 2026-10-13: 108 of 120 cells, `Model "GPT-5.5" from --model flag is not available.`
+    ({"tail": MODEL_TAIL, "cause": "adapter_crash", "stop_reason": None}, "model_unavailable"),
+    ({"tail": b"error: unknown model: gpt-9\n", "stop_reason": None}, "model_unavailable"),
+    ({"tail": b"The model `gpt-6.1-sol` is not supported with this account\n", "stop_reason": None}, "model_unavailable"),
+    ({"tail": b"model loaded; the model is available\n", "stop_reason": None}, "adapter_crash"),  # not a refusal
+    ({"tail": MODEL_TAIL, "kill_reason": "timeout"}, "timed_out"),  # a budget kill still outranks the tail
     ({"stop_reason": "end_turn"}, None),
     ({"stop_reason": "max_tokens"}, None),
     ({"stop_reason": "max_turn_requests"}, None),
@@ -1924,6 +1932,18 @@ def test_classify_applies_the_cause_precedence_in_order(base, case, expected):
         case["cause"] = Cause[case["cause"]]
     cause = _classify(base, **case)
     assert (cause.name if cause else None) == expected
+
+
+def test_a_model_refused_on_stderr_keeps_the_refusal_line_as_the_detail(base):
+    """CRASH-TAIL-A: the cell's detail is the CLI's own line, never the driver's "EOF before end_turn" (CAUSE-A)."""
+    from harness_bench import driver
+    from harness_bench.errors import Cause
+    turn = driver.TurnResult(session_id="s-1", stop_reason=None, cause=Cause.adapter_crash, detail="EOF before end_turn")
+    config = engine.EngineConfig(run_dir=base / "runs" / "r", cells_root=base / "cells", launchers={},
+                                 build_workspace=_build_workspace, grade=None)
+    records = engine._read_records(_NativeRecords(), base, turn.session_id)
+    cause = engine.Engine(_plan(n_cells=1), config)._classify(turn, records, 1, MODEL_TAIL, None)
+    assert (cause, turn.detail) == (Cause.model_unavailable, 'Model "GPT-5.5" from --model flag is not available.')
 
 
 def test_classify_reads_every_native_record_of_the_session(base):

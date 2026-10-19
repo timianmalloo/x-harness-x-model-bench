@@ -71,6 +71,12 @@ DECISION_CAUSES = {  # design 6.1: a cell cause that can open a decision -> (dec
 }
 NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
+# CRASH-TAIL-A: a CLI that refuses the pinned model id dies before its first update, so the driver sees EOF (adapter_crash)
+# and the only word on why is the stderr tail. 2026-10-13: 108 of 120 cells of two lean runs, `Model "GPT-5.5" from
+# --model flag is not available.` (Copilot), labelled HB-CELL-105 with an empty detail; classified, the engine stops at
+# the first cell and opens the skip-combo decision (`model_unavailable` in `DECISION_KINDS`).
+MODEL_REFUSED_SIGNATURE = re.compile(rb"^.*\b(?:model\b[^\n]{0,120}?\b(?:is )?not (?:available|found|supported)"
+                                     rb"|unknown model\b)[^\n]*$", re.IGNORECASE | re.MULTILINE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
 CIRCUIT_BREAKER = 3
 LOG_EXTRAS = ("detail", "pids", "fact", "win32_error", "path_role", "errno", "run_id", "segment_id", "dead_segments",
@@ -1036,6 +1042,10 @@ class Engine:
             return Cause.host_suspended
         if exit_status in NO_MEMORY_STATUSES or OOM_SIGNATURE.search(tail):
             return Cause.memory
+        refused = MODEL_REFUSED_SIGNATURE.search(tail)
+        if refused:  # before the driver's cause: its EOF is the symptom, the tail names the cause (CAUSE-A: detail kept)
+            result.detail = refused.group(0).decode("utf-8", "replace").strip()
+            return Cause.model_unavailable
         if result.cause:
             return result.cause
         if result.stop_reason in COMPLETED_STOP_REASONS:

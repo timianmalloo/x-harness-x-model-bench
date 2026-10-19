@@ -12,7 +12,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT, gate_runs_root
+from archived_runs import ROOT, archived_run
 from test_grade_correctness import d1_cell, git, stat_snapshot, tree_digest
 
 from harness_bench import config, plan, views
@@ -448,10 +448,7 @@ GATE_D1_MUTATION: dict[str, tuple[str | None, str | None]] = {
 
 @pytest.mark.gate
 def test_row15_d1_cells_graded_twice_give_characterization_values_and_leave_archives_unchanged(tmp_path):
-    gate_root = gate_runs_root()
-    run = gate_root / "row15-d1-1"
-    if not (run / "plan.json").is_file():
-        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    run = archived_run("row15-d1-1")
     attempts = {e["cell_id"]: e["archive_attempt"] for e in views.rows(run, "events") if e["kind"] == "cell.archived"}
     cells = {c["cell_id"]: c for c in plan.load_confirmed(run)["cells"]}
 

@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 from clean_parent import CLEAN_PARENT
 
-from harness_bench import archive, discriminate, oslock, readiness
+from harness_bench import archive, discriminate, oslock, readiness, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import _env
 
@@ -170,6 +170,11 @@ def test_an_incomplete_engine_run_writes_no_record_and_names_the_cell(base, monk
     with pytest.raises(BenchError) as err:
         trial(base, root)
     assert err.value.code == "HB-RDY-011" and f"{TASK}.synthetic-" in str(err.value)
+    # FLAKE-A gap (c): the failed cell's own detail (the exception or exit the engine recorded) travels in the error, so a
+    # trial that fails only under load leaves its cause in the test output after its tree is swept (2026-10-18).
+    (run_dir,) = [p for p in (base / "runs").iterdir() if p.is_dir()]
+    failed = [e for e in views.rows(run_dir, "events") if e["kind"] == "cell.outcome" and e["outcome"] != "completed"]
+    assert failed and all(e["detail"] and e["detail"] in str(err.value) for e in failed)
     assert not (root / "bench" / "discrimination").exists() or not list((root / "bench" / "discrimination").rglob("*.json"))
     assert not list((base / "runs").rglob("discrimination-link.json"))
 

@@ -369,9 +369,10 @@ def _run_and_record(root: Path, task_id: str, task: dict, run_dir: Path, p: dict
                     declared: dict, cells_root: Path, upstream: Path, key: tuple, lock: oslock.RunLock) -> Result:
     tv, ih, path, existed = key
     summary = _run_engine(root, root / "tasks" / task_id, run_dir, p, clock, overlays, cells_root, upstream)
-    bad = [f"{c['label']} ({summary.outcomes.get(c['cell_id'], {}).get('outcome')}, "
-           f"{summary.outcomes.get(c['cell_id'], {}).get('cause')})" for c in p["cells"]
-           if summary.outcomes.get(c["cell_id"], {}).get("outcome") != "completed"]
+    # The cell's own detail (the exception or exit the engine recorded) travels: a trial that fails only under load has
+    # its tree swept by the test, so the error text is the one record of the cause (FLAKE-A gap (c), 2026-10-18).
+    bad = [f"{c['label']} ({row.get('outcome')}, {row.get('cause')}{': ' + row['detail'] if row.get('detail') else ''})"
+           for c in p["cells"] for row in (summary.outcomes.get(c["cell_id"], {}),) if row.get("outcome") != "completed"]
     if summary.exit_code != 0 or bad:
         raise _fail(clock, "failed-engine", "HB-RDY-011", f"trial incomplete, nothing written: {', '.join(bad) or 'the run stopped'}")
     passes = views.completed_passes(run_dir)

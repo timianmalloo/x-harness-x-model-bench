@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT
+from archived_runs import ROOT, archived_run
 
 _spec = importlib.util.spec_from_file_location("gate_stamp", ROOT / "tools" / "gate_stamp.py")
 gate_stamp = importlib.util.module_from_spec(_spec)
@@ -261,3 +261,15 @@ def test_every_module_a_stamped_test_file_imports_is_a_stamped_input_or_named_gl
         for module in sorted(_harness_bench_imports(path)):
             covered = module in digested or module in STAMPED_GLUE or module.startswith("harness_bench.grade")
             assert covered, f"{path.name} imports {module}: add it to STAMPED_EXTRA_INPUTS or name it in STAMPED_GLUE"
+
+
+def test_every_archived_run_a_test_reads_is_registered_in_the_one_list():
+    """DEL-SWEEP-A: a test reaches an archived run only through `archived_run()`, so whoever deletes under `runs/`
+    reads `GATE_RUNS` once instead of sweeping the tests for every spelling of the lookup (the sweep that missed
+    `_load("grid-1-cc")` on 2026-10-18). A name off the list is an error, never a silent skip."""
+    with pytest.raises(ValueError, match="not in archived_runs.GATE_RUNS"):
+        archived_run("grid-1-cc")  # the archive deleted 2026-10-18, with its golden test
+    by_hand = ("gate_runs_root" + "() /", "HB_GATE_RUNS to the " + "runs folder")  # a run looked up and skipped by hand
+    offenders = sorted(p.name for p in (ROOT / "tests").glob("test_*.py")
+                       if any(needle in p.read_text(encoding="utf-8") for needle in by_hand))
+    assert offenders == [], "resolve the run with archived_runs.archived_run(name) instead"

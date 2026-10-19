@@ -12,6 +12,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 from harness_bench import archive, ledger
@@ -56,6 +57,21 @@ def gate_runs_root() -> Path:
         if line.startswith("worktree "):
             return Path(line.removeprefix("worktree ")) / "runs"
     return ROOT / "runs"
+
+
+GATE_RUNS = ("row15-d1-1", "a1-capture-1", "grid-1")
+"""The archived runs under `gate_runs_root()` that tests read: the one list. A test reaches a run only through
+`archived_run()`, and anything that deletes under `runs/` reads this first (DEL-SWEEP-A)."""
+
+
+def archived_run(name: str) -> Path:
+    """The archived run `name`, or a pytest skip when it is not on this host. A name off `GATE_RUNS` is an error."""
+    if name not in GATE_RUNS:
+        raise ValueError(f"archived run {name!r} is not in archived_runs.GATE_RUNS; register it there first")
+    run = gate_runs_root() / name
+    if not (run / "plan.json").is_file():
+        pytest.skip(f"archived run {name} is not on this host (set HB_GATE_RUNS to the runs folder)")
+    return run
 
 
 GOOD = '''import re
